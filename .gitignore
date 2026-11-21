@@ -1,0 +1,52 @@
+# --- Never commit: source data (belongs to Vedant Fashions) ---
+# Anchored to the repo root on purpose: web/public/data/ holds the engine's
+# derived JSON output and must stay tracked.
+/data/
+
+# --- Never commit: personal files ---
+/personal assets/
+
+# --- Never commit: secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*service-role*
+*service_role*
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+
+# --- Deploy / tooling ---
+.vercel/
+supabase/.temp/
+supabase/.branches/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# --- Local agent settings ---
+.claude/settings.local.json
