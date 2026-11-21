@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { EmptyNote, NoEngineRun, PageTitle, managerHref } from "@/components/bits";
 import { loadEngineOutput } from "@/lib/data";
+import { countChecks } from "@/lib/count-checks";
 import { formatDate, formatDateRange, formatIstDateTime, formatRupees } from "@/lib/format";
 import { rupeesAtStakeShown, visibleAlerts } from "@/lib/rules";
 
@@ -12,6 +13,14 @@ export default function Home() {
   if (!data) return <NoEngineRun />;
 
   const period = data.windows.current;
+  const alertsThisWeek = data.area_managers.reduce((n, m) => n + visibleAlerts(m).length, 0);
+  const rupeesThisWeek = data.area_managers.reduce((n, m) => n + rupeesAtStakeShown(m), 0);
+  const tiles = [
+    { label: "Alerts this week", value: alertsThisWeek.toLocaleString("en-IN") },
+    { label: "Rupees at stake a week", value: formatRupees(rupeesThisWeek) },
+    { label: "Stores covered", value: data.stores.length.toLocaleString("en-IN") },
+    { label: "Figures verified in this run", value: countChecks(data).toLocaleString("en-IN") },
+  ];
 
   return (
     <>
@@ -31,35 +40,66 @@ export default function Home() {
         </p>
       </PageTitle>
 
+      <section aria-label="This week at a glance" className="-mt-2 mb-10">
+        <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {tiles.map((tile) => (
+            <div key={tile.label} className="flex flex-col-reverse justify-end rounded-xl border border-line bg-surface px-4 py-3">
+              <dt className="mt-1 text-sm leading-snug text-muted">{tile.label}</dt>
+              <dd className="text-2xl font-semibold tabular-nums tracking-tight [overflow-wrap:anywhere] sm:text-3xl">
+                {tile.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <h2 className="mb-3 text-xl font-semibold tracking-tight">Area managers</h2>
+
       {data.area_managers.length === 0 ? (
         <EmptyNote>The engine run lists no area managers.</EmptyNote>
       ) : (
         <ul className="space-y-3">
           {data.area_managers.map((manager) => {
             const shown = visibleAlerts(manager).length;
+            const storeCount = manager.store_ids.length;
             return (
               <li key={manager.area_manager_id}>
                 <Link
                   href={managerHref(manager.area_manager_id)}
-                  className="flex flex-col gap-x-6 gap-y-2 rounded-lg border border-line bg-surface px-5 py-4 no-underline hover:border-ink sm:flex-row sm:items-center sm:justify-between"
+                  className={`group flex flex-col gap-x-6 gap-y-3 rounded-xl border px-5 py-4 no-underline shadow-sm transition hover:-translate-y-0.5 hover:border-ink hover:shadow-md active:translate-y-0 active:bg-paper active:shadow-none sm:flex-row sm:items-center sm:justify-between ${shown === 0 ? "border-good-ink/30 bg-good-bg/40" : "border-line bg-surface"}`}
                 >
-                  <span>
-                    <span className="block text-xl font-semibold tracking-tight">{manager.name}</span>
-                    <span className="block text-muted">{manager.city}</span>
-                  </span>
-                  <span className="text-left sm:text-right">
-                    <span className="block font-semibold">
-                      {shown === 0 ? "No alerts this week" : shown === 1 ? "1 alert this week" : `${shown} alerts this week`}
+                  <span className="min-w-0">
+                    <span className="block text-xl font-semibold tracking-tight group-hover:underline">{manager.name}</span>
+                    <span className="block text-muted">
+                      {manager.city} · {storeCount === 1 ? "1 store" : `${storeCount} stores`}
                     </span>
-                    {shown > 0 ? (
-                      <span className="block text-muted">
-                        <span className="font-semibold tabular-nums text-ink">
-                          {formatRupees(rupeesAtStakeShown(manager))}
-                        </span>{" "}
-                        a week at stake
-                      </span>
-                    ) : null}
                   </span>
+                  {shown === 0 ? (
+                    <span className="inline-flex items-center gap-2 font-semibold text-good-ink">
+                      <svg aria-hidden="true" viewBox="0 0 20 20" className="h-5 w-5 shrink-0">
+                        <circle cx="10" cy="10" r="9" fill="currentColor" />
+                        <path d="M6 10.5l2.5 2.5L14 7.5" fill="none" stroke="var(--good-bg)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      All clear: nothing needs attention this week
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-4 sm:text-right">
+                      <span>
+                        <span className="block font-semibold">
+                          {shown === 1 ? "1 alert this week" : `${shown} alerts this week`}
+                        </span>
+                        <span className="block text-muted">
+                          <span className="font-semibold tabular-nums text-ink">
+                            {formatRupees(rupeesAtStakeShown(manager))}
+                          </span>{" "}
+                          a week at stake
+                        </span>
+                      </span>
+                      <span aria-hidden="true" className="ml-auto text-2xl text-muted transition group-hover:translate-x-1 group-hover:text-ink">
+                        →
+                      </span>
+                    </span>
+                  )}
                 </Link>
               </li>
             );

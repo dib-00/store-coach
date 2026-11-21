@@ -105,10 +105,21 @@ export default async function ManagerPage({ params }: Props) {
             : `${alerts.length} alerts this week, biggest first`}
       </h2>
       {alerts.length === 0 ? (
-        <EmptyNote>
-          No alerts this week. The engine found nothing in these stores that it could tie to an action
-          for today.
-        </EmptyNote>
+        <section
+          aria-label="All clear"
+          className="flex items-start gap-4 rounded-xl border border-good-ink/30 bg-good-bg px-5 py-6 text-good-ink"
+        >
+          <svg aria-hidden="true" viewBox="0 0 20 20" className="mt-0.5 h-8 w-8 shrink-0">
+            <circle cx="10" cy="10" r="9" fill="currentColor" />
+            <path d="M6 10.5l2.5 2.5L14 7.5" fill="none" stroke="var(--good-bg)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <div>
+            <p className="text-xl font-semibold leading-snug">Nothing needs attention this week</p>
+            <p className="mt-1 text-ink">
+              The engine found nothing in these stores that it could tie to an action for today.
+            </p>
+          </div>
+        </section>
       ) : (
         <ol className="space-y-5">
           {alerts.map((alert) => (

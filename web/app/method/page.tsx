@@ -2,23 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { NoEngineRun, PageTitle, SectionTitle } from "@/components/bits";
 import { loadEngineOutput } from "@/lib/data";
+import { countChecks } from "@/lib/count-checks";
 import { formatDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "How the numbers are checked" };
 
 const REPO = "https://github.com/dib-00/store-coach";
 const DOC = (path: string) => `${REPO}/blob/main/${path}`;
-
-/** Every figure in the file is a check: an object with id, kind, params, value and display. */
-function countChecks(node: unknown): number {
-  if (Array.isArray(node)) return node.reduce((n: number, x) => n + countChecks(x), 0);
-  if (node && typeof node === "object") {
-    const o = node as Record<string, unknown>;
-    const self = ["id", "kind", "params", "value", "display"].every((k) => k in o) ? 1 : 0;
-    return self + Object.values(o).reduce((n: number, x) => n + countChecks(x), 0);
-  }
-  return 0;
-}
 
 const linkClass = "font-medium text-ink underline decoration-line decoration-2 hover:decoration-ink";
 
