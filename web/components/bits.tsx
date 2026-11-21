@@ -105,8 +105,10 @@ export function CheckList({ checks }: { checks: Check[] }) {
     <dl className="divide-y divide-line border-y border-line">
       {checks.map((check) => (
         <div key={check.id} className="flex items-baseline justify-between gap-4 py-2">
-          <dt className="text-muted">{check.label}</dt>
-          <dd className="shrink-0 text-right font-semibold tabular-nums">{check.display}</dd>
+          <dt className="min-w-0 text-muted">{check.label}</dt>
+          <dd className="max-w-[55%] text-right font-semibold tabular-nums [overflow-wrap:anywhere]">
+            {check.display}
+          </dd>
         </div>
       ))}
     </dl>

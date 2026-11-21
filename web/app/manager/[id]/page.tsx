@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { AlertCard } from "@/components/alert-card";
 import {
   BackLink,
+  CheckList,
   EmptyNote,
   LeverChip,
   NoEngineRun,
@@ -89,14 +90,9 @@ export default async function ManagerPage({ params }: Props) {
           <p className="mt-2">{note.detail}</p>
           <details className="mt-3">
             <summary className="cursor-pointer text-sm font-medium">Show the numbers</summary>
-            <ul className="mt-2 space-y-1 text-sm">
-              {note.checks.map((check) => (
-                <li key={check.id} className="flex justify-between gap-4">
-                  <span className="text-muted">{check.label}</span>
-                  <span className="font-semibold tabular-nums">{check.display}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-2 text-sm">
+              <CheckList checks={note.checks} />
+            </div>
           </details>
         </section>
       ))}
