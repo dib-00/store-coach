@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of": "2026-10-24",
-  "generated_at": "2026-11-21T09:15:00Z",
+  "generated_at": "2026-11-21T09:25:00Z",
   "windows": {
     "current": {
       "start": "2026-09-27",
@@ -37,7 +37,7 @@
           "cause_code": "salesperson_left",
           "headline": "LKO-02 is converting 9.8% of walk-ins (27 Sep 2026 to 24 Oct 2026), down from 12.3% (16 Jun 2026 to 14 Sep 2026) before Imran C. left.",
           "definition": "Conversion is bills divided by walk-ins at LKO-02, counted only on days with a usable door count (walk-ins above zero and no more bills than walk-ins); the headline compares the last four weeks with the same store's thirteen weeks before Imran C. left, and both windows are dated in the checks.",
-          "cause": "Imran C. last appears on the roster on 14 Sep 2026. Imran C. made 1.23 bills for each day present, against 0.52 for a typical colleague at LKO-02. Since then (15 Sep 2026 to 24 Oct 2026) the store has converted 10.0% of walk-ins. Over the same weeks the other Lucknow stores went from 13.0% to 12.5%, and the rupees below count only the fall beyond them. The part of the fall beyond the rest of the city is not large enough to rule out chance.",
+          "cause": "Imran C. last appears on the roster on 14 Sep 2026. Imran C. made 1.23 bills for each day present, against 0.52 for a typical colleague at LKO-02. Since then (15 Sep 2026 to 24 Oct 2026) the store has converted 10.0% of walk-ins. Over the same weeks the other Lucknow stores went from 13.0% to 12.5%, and the rupees at stake count only the fall beyond them. The part of the fall beyond the rest of the city is not large enough to rule out chance.",
           "action": {
             "who": "Store manager at LKO-02, with Arif A. and Sumit A.",
             "what": "Keep 8 salespeople on the floor, with Arif A. and Sumit A. working",
@@ -1583,7 +1583,7 @@
           "cause_code": "missed_shifts",
           "headline": "BLR-03 is converting 11.1% of walk-ins (27 Sep 2026 to 24 Oct 2026), down from 13.2% (7 Jun 2026 to 5 Sep 2026) before Manjunath K. and Vijay N. began missing shifts.",
           "definition": "Conversion is bills divided by walk-ins at BLR-03, counted only on days with a usable door count (walk-ins above zero and no more bills than walk-ins); the headline compares the last four weeks with the same store's thirteen weeks before the missed shifts began, and both windows are dated in the checks.",
-          "cause": "Of the last 28 days, Manjunath K. was on the floor on 16 and Vijay N. was on the floor on 16, against 22.5 for a typical colleague at BLR-03. Of the 9 weekend and festival days, Manjunath K. worked 0 and Vijay N. worked 1; on those days BLR-03 converted 9.4% of walk-ins, against 12.4% on other days. Over the same weeks the other Bengaluru stores went from 13.4% to 13.5%, and the rupees below count only the fall beyond them.",
+          "cause": "Of the last 28 days, Manjunath K. was on the floor on 16 and Vijay N. was on the floor on 16, against 22.5 for a typical colleague at BLR-03. Of the 9 weekend and festival days, Manjunath K. worked 0 and Vijay N. worked 1; on those days BLR-03 converted 9.4% of walk-ins, against 12.4% on other days. Over the same weeks the other Bengaluru stores went from 13.4% to 13.5%, and the rupees at stake count only the fall beyond them.",
           "action": {
             "who": "Store manager at BLR-03, with Manjunath K. and Vijay N.",
             "what": "Roster Manjunath K. and Vijay N. on the floor on the busy days and move the weekly off to a weekday",

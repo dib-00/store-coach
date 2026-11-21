@@ -286,7 +286,7 @@ class Detector:
         if not c:
             return ""
         text = (f" Over the same weeks the other {c['name']} stores went from {c['bench']['display']} to "
-                f"{c['cur']['display']}, and the rupees below count only the fall beyond them.")
+                f"{c['cur']['display']}, and the rupees at stake count only the fall beyond them.")
         if c["z"]["value"] is None or c["z"]["value"] > Z_CAUSE:
             text += " The part of the fall beyond the rest of the city is not large enough to rule out chance."
         return text
