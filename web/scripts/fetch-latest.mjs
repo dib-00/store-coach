@@ -126,8 +126,11 @@ export async function fetchLatest({ env = process.env, file, fetchImpl = fetch, 
     return { wrote: true, message: `using the published run for this build: ${decision.reason}` };
   } catch (error) {
     const name = error instanceof Error ? error.name : "";
-    const why = name === "TimeoutError" || name === "AbortError" ? `no answer within ${timeoutMs / 1000} s` : String(error instanceof Error ? error.message : error);
-    return keep(why);
+    if (name === "TimeoutError" || name === "AbortError") return keep(`no answer within ${timeoutMs / 1000} s`);
+    const message = error instanceof Error ? error.message : String(error);
+    // Node's fetch says only "fetch failed"; the cause holds the useful part, e.g. ENOTFOUND.
+    const code = error instanceof Error && error.cause && typeof error.cause === "object" ? error.cause.code : undefined;
+    return keep(typeof code === "string" ? `${message} (${code})` : message);
   }
 }
 
