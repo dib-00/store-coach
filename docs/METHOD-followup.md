@@ -146,3 +146,42 @@ LKO-01, PAT-01 and PAT-02.
 
 Nothing else in the 31 Oct 2026 more-bills alerts changed: same two alerts, same
 figures, same rupees, same ranks.
+
+## 4. How the follow-up page shows before and after
+
+Every follow-up shows, read only from its own checks:
+
+- **Before**: the `before` check's figure, the days it measured (its `params.start` to
+  `params.end`, e.g. "27 Sep to 24 Oct 2026") and, for conversion, the bills and walk-ins
+  behind it (`before_numerator`, `before_denominator`).
+- **After**: the `after` check's figure, the 7 days after the alert (its `params`, or
+  raised + 1 day to measured if there is no check) and, for conversion, the bills and
+  walk-ins (`after_numerator`, `after_denominator`).
+
+When `moved` is `not_measurable` the after figure is still shown if the `after` check has
+a value, labelled "(not enough to call a move either way)"; "no value" is shown only when
+there is no `after` check. The JSON fields `after` and `after_display` are unchanged.
+
+## 5. The historical example
+
+`web/public/data/history.json` names one follow-up in a replayed earlier run. The page
+shows it in its own section, "Historical example (replayed from <date>)", labelled as a
+replay and not a live result. If the file is absent the section is not shown.
+
+It was found by running the engine unchanged for every Saturday from 30 May to 31 Oct
+2026, each run reading the run of a week earlier. Over those 23 runs, four follow-ups
+moved past the two-standard-error bar (or two standard deviations of earlier weeks):
+
+| raised → measured | alert | before → after | moved |
+| --- | --- | --- | --- |
+| 11 Jul → 18 Jul | BLR-02 Indo-Western share, Suresh K. | 1.1% → 12.5% | improved |
+| 18 Jul → 25 Jul (and 25 Jul → 1 Aug) | LKO-02 return bills per 100 customers | 0.05 → 0.20 | improved |
+| 5 Sep → 12 Sep | PAT-01 discount rate | 5.6% → 14.0% | worse |
+| 10 Oct → 17 Oct | BLR-03 conversion | 9.5% (106 bills / 1,111 walk-ins) → 13.9% (54 / 388) | improved |
+
+The example is BLR-03, the only conversion alert that moved: its noise bar is
+2 × sqrt(se_before² + se_after²) ≈ 3.9 points and the change is 4.4 points. The roster shows
+neither named salesperson on the floor on the busy days of that week, so the rise is not
+credited to the action. `runs/2026-10-10.json` and `runs/2026-10-17.json` were generated
+with `--dated-only --generated-at 2026-11-21T09:00:00Z`, and `scripts/verify.py --file
+web/public/data/runs/2026-10-17.json` passes.
