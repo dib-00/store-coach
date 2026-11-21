@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of": "2026-10-17",
-  "generated_at": "2026-11-21T09:00:00Z",
+  "generated_at": "2026-11-21T09:15:00Z",
   "windows": {
     "current": {
       "start": "2026-09-20",
@@ -3135,7 +3135,350 @@
         "MYS-02"
       ],
       "max_alerts_per_week": 5,
-      "alerts": [],
+      "alerts": [
+        {
+          "alert_id": "MYS-02:bigger_baskets:low_items_per_bill",
+          "rank": 1,
+          "scope": "store",
+          "store_ids": [
+            "MYS-02"
+          ],
+          "city": "Mysuru",
+          "lever": "bigger_baskets",
+          "cause_code": "low_items_per_bill",
+          "headline": "MYS-02: Santosh B. and Mohan Y. sell 1.39 items a bill; colleagues sell 1.91",
+          "cause": "In the last 180 days Santosh B. averaged 1.40 items a bill and Mohan Y. averaged 1.37 items a bill. Madhu G., the only other salesperson at MYS-02 with enough bills to compare, averaged 1.91.",
+          "action": {
+            "who": "Santosh B. and Mohan Y.",
+            "what": "shadow Madhu G. for the first five customers and show one matching add-on at every trial before the bill is made",
+            "when": "Today",
+            "text": "Today, Santosh B. and Mohan Y. shadow Madhu G. for the first five customers and show one matching add-on at every trial before the bill is made."
+          },
+          "rupees_at_stake_weekly": 13800,
+          "arithmetic": {
+            "formula": "(colleagues' items per bill − their items per bill) × their bills a week × average value of an item at the store",
+            "worked": "(1.91 − 1.39) × 5.9 bills a week × ₹4,487 = ₹13,800 a week",
+            "input_check_ids": [
+              "MYS-02:bigger_baskets:low_items_per_bill:items_per_bill_colleagues",
+              "MYS-02:bigger_baskets:low_items_per_bill:items_per_bill_named",
+              "MYS-02:bigger_baskets:low_items_per_bill:bills_per_week_named",
+              "MYS-02:bigger_baskets:low_items_per_bill:avg_item_value"
+            ]
+          },
+          "benchmark_basis": "Same store, the other salespeople, same 180 days",
+          "salesperson_ids": [
+            "SP1172",
+            "SP1173",
+            "SP1174"
+          ],
+          "checks": [
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:window_days",
+              "label": "Days in the window",
+              "kind": "window_days",
+              "params": {
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 180,
+              "display": "180"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:items_per_bill_named",
+              "label": "Items per bill of the named salespeople",
+              "kind": "items_per_bill",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1172",
+                  "SP1173"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 1.39,
+              "display": "1.39"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:items_per_bill_colleagues",
+              "label": "Items per bill of the other salespeople at the store",
+              "kind": "items_per_bill",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1174"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 1.91,
+              "display": "1.91"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:bills_per_week_named",
+              "label": "Bills a week, the named salespeople",
+              "kind": "product_bills_per_week",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1172",
+                  "SP1173"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 5.9,
+              "display": "5.9"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:avg_item_value",
+              "label": "Average value of an item at MYS-02",
+              "kind": "avg_item_value",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 4486.99,
+              "display": "₹4,487"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:bills_named",
+              "label": "Bills of the named salespeople",
+              "kind": "product_bills",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1172",
+                  "SP1173"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 152,
+              "display": "152"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:bills_colleagues",
+              "label": "Bills of the other salespeople",
+              "kind": "product_bills",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1174"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 69,
+              "display": "69"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:items_per_bill:SP1172",
+              "label": "Santosh B.: items per bill",
+              "kind": "items_per_bill",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1172"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 1.4,
+              "display": "1.40"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:z:SP1172",
+              "label": "Santosh B.: Welch z against the other salespeople at the store",
+              "kind": "items_per_bill_z",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1172"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17",
+                "peer_salesperson_ids": [
+                  "SP1174"
+                ]
+              },
+              "value": -3.6,
+              "display": "-3.60"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:bills:SP1172",
+              "label": "Santosh B.: bills",
+              "kind": "product_bills",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1172"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 98,
+              "display": "98"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:bills_per_week:SP1172",
+              "label": "Santosh B.: bills a week",
+              "kind": "product_bills_per_week",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1172"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 3.8,
+              "display": "3.8"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:items_per_bill:SP1173",
+              "label": "Mohan Y.: items per bill",
+              "kind": "items_per_bill",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1173"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 1.37,
+              "display": "1.37"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:z:SP1173",
+              "label": "Mohan Y.: Welch z against the other salespeople at the store",
+              "kind": "items_per_bill_z",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1173"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17",
+                "peer_salesperson_ids": [
+                  "SP1174"
+                ]
+              },
+              "value": -3.65,
+              "display": "-3.65"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:bills:SP1173",
+              "label": "Mohan Y.: bills",
+              "kind": "product_bills",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1173"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 54,
+              "display": "54"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:bills_per_week:SP1173",
+              "label": "Mohan Y.: bills a week",
+              "kind": "product_bills_per_week",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1173"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 2.1,
+              "display": "2.1"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:items_per_bill:SP1174",
+              "label": "Madhu G.: items per bill",
+              "kind": "items_per_bill",
+              "params": {
+                "store_ids": [
+                  "MYS-02"
+                ],
+                "salesperson_ids": [
+                  "SP1174"
+                ],
+                "start": "2026-04-21",
+                "end": "2026-10-17"
+              },
+              "value": 1.91,
+              "display": "1.91"
+            },
+            {
+              "id": "MYS-02:bigger_baskets:low_items_per_bill:rupees_at_stake",
+              "label": "Rupees at stake a week",
+              "kind": "items_rupees_weekly",
+              "params": {
+                "peer_check_id": "MYS-02:bigger_baskets:low_items_per_bill:items_per_bill_colleagues",
+                "own_check_id": "MYS-02:bigger_baskets:low_items_per_bill:items_per_bill_named",
+                "bills_per_week_check_id": "MYS-02:bigger_baskets:low_items_per_bill:bills_per_week_named",
+                "item_value_check_id": "MYS-02:bigger_baskets:low_items_per_bill:avg_item_value"
+              },
+              "value": 13800,
+              "display": "₹13,800"
+            }
+          ],
+          "follow_up": {
+            "metric_label": "Items per bill of Santosh B. and Mohan Y. at MYS-02",
+            "kind": "items_per_bill",
+            "params": {
+              "store_ids": [
+                "MYS-02"
+              ],
+              "salesperson_ids": [
+                "SP1172",
+                "SP1173"
+              ],
+              "start": "2026-04-21",
+              "end": "2026-10-17"
+            },
+            "baseline_value": 1.39,
+            "target_value": 1.91,
+            "higher_is_better": true
+          },
+          "definition": "Items per bill = sum of qty over product lines (carry bags left out) ÷ number of bills, over the 180 days ending on the run date. The named salespeople are compared with the other salespeople of the same store who are still on the roster, over the same days."
+        }
+      ],
       "held_back": [],
       "market_notes": []
     }
@@ -7367,6 +7710,132 @@
         }
       ],
       "definition": "Weekend and festival days are Saturdays, Sundays and the festival and wedding dates in the state calendar; a day on the floor is a day marked Present on the roster, over the last four weeks, compared only with colleagues at the same store."
+    },
+    {
+      "card_id": "MYS-02:SP1172:bigger_baskets",
+      "store_id": "MYS-02",
+      "salesperson_id": "SP1172",
+      "salesperson_name": "Santosh B.",
+      "lever": "bigger_baskets",
+      "behaviour": "Santosh, your bills averaged 1.40 items in the last 180 days.",
+      "peer": {
+        "salesperson_id": "SP1174",
+        "name": "Madhu G."
+      },
+      "action": "Today, show one matching add-on at every trial before you make the bill.",
+      "text": "Santosh, your bills averaged 1.40 items in the last 180 days. Madhu G. at your store averages 1.91. Today, show one matching add-on at every trial before you make the bill.",
+      "word_count": 31,
+      "checks": [
+        {
+          "id": "card:MYS-02:SP1172:bigger_baskets:window_days",
+          "label": "Days in the window",
+          "kind": "window_days",
+          "params": {
+            "start": "2026-04-21",
+            "end": "2026-10-17"
+          },
+          "value": 180,
+          "display": "180"
+        },
+        {
+          "id": "card:MYS-02:SP1172:bigger_baskets:items_per_bill:SP1172",
+          "label": "Santosh B.: items per bill",
+          "kind": "items_per_bill",
+          "params": {
+            "store_ids": [
+              "MYS-02"
+            ],
+            "salesperson_ids": [
+              "SP1172"
+            ],
+            "start": "2026-04-21",
+            "end": "2026-10-17"
+          },
+          "value": 1.4,
+          "display": "1.40"
+        },
+        {
+          "id": "card:MYS-02:SP1172:bigger_baskets:items_per_bill:SP1174",
+          "label": "Madhu G.: items per bill",
+          "kind": "items_per_bill",
+          "params": {
+            "store_ids": [
+              "MYS-02"
+            ],
+            "salesperson_ids": [
+              "SP1174"
+            ],
+            "start": "2026-04-21",
+            "end": "2026-10-17"
+          },
+          "value": 1.91,
+          "display": "1.91"
+        }
+      ],
+      "definition": "Items per bill = products on your bills ÷ your bills, last 180 days; carry bags are not counted."
+    },
+    {
+      "card_id": "MYS-02:SP1173:bigger_baskets",
+      "store_id": "MYS-02",
+      "salesperson_id": "SP1173",
+      "salesperson_name": "Mohan Y.",
+      "lever": "bigger_baskets",
+      "behaviour": "Mohan, your bills averaged 1.37 items in the last 180 days.",
+      "peer": {
+        "salesperson_id": "SP1174",
+        "name": "Madhu G."
+      },
+      "action": "Today, show one matching add-on at every trial before you make the bill.",
+      "text": "Mohan, your bills averaged 1.37 items in the last 180 days. Madhu G. at your store averages 1.91. Today, show one matching add-on at every trial before you make the bill.",
+      "word_count": 31,
+      "checks": [
+        {
+          "id": "card:MYS-02:SP1173:bigger_baskets:window_days",
+          "label": "Days in the window",
+          "kind": "window_days",
+          "params": {
+            "start": "2026-04-21",
+            "end": "2026-10-17"
+          },
+          "value": 180,
+          "display": "180"
+        },
+        {
+          "id": "card:MYS-02:SP1173:bigger_baskets:items_per_bill:SP1173",
+          "label": "Mohan Y.: items per bill",
+          "kind": "items_per_bill",
+          "params": {
+            "store_ids": [
+              "MYS-02"
+            ],
+            "salesperson_ids": [
+              "SP1173"
+            ],
+            "start": "2026-04-21",
+            "end": "2026-10-17"
+          },
+          "value": 1.37,
+          "display": "1.37"
+        },
+        {
+          "id": "card:MYS-02:SP1173:bigger_baskets:items_per_bill:SP1174",
+          "label": "Madhu G.: items per bill",
+          "kind": "items_per_bill",
+          "params": {
+            "store_ids": [
+              "MYS-02"
+            ],
+            "salesperson_ids": [
+              "SP1174"
+            ],
+            "start": "2026-04-21",
+            "end": "2026-10-17"
+          },
+          "value": 1.91,
+          "display": "1.91"
+        }
+      ],
+      "definition": "Items per bill = products on your bills ÷ your bills, last 180 days; carry bags are not counted."
     }
   ],
   "follow_ups": [
