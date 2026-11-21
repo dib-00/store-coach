@@ -219,6 +219,13 @@ class Data:
 
         self.stores = stores
         self.people = people
+        self.opened_on = dict(zip(stores["store_id"], stores["opened_on"]))
+        # every bill up to as_of, for the repeat recipes: (bill_id, date, store, salesperson, customer)
+        self.bill_rows = list(zip(bills["bill_id"], bills["bill_date"], bills["store_id"],
+                                  bills["salesperson_id"], bills["customer_id"]))
+        self._lines = lines[["bill_id", "sku_id"]]
+        self._skus_of_bill = None
+        self._customers = {}
         self.state_of_store = dict(zip(stores["store_id"], stores["state"]))
         self.store_of_person = dict(zip(people["salesperson_id"], people["store_id"]))
         self.name_of_person = dict(zip(people["salesperson_id"], people["name"]))
@@ -275,6 +282,7 @@ class Data:
 
         # calendar: (date, state) -> busy flag from festival / wedding
         self.calendar = {}
+        self.festival = {}  # (date, state) -> festival name, trimmed ('' when blank)
         for dt, state, fest, wed in zip(calendar["date"], calendar["state"],
                                         calendar["festival"], calendar["is_wedding_date"]):
             try:
@@ -282,6 +290,7 @@ class Data:
             except ValueError:
                 wedding = False
             self.calendar[(dt, state)] = fest.strip() != "" or wedding
+            self.festival[(dt, state)] = fest.strip()
 
     def read(self, name, required=True):
         path = self.folder / f"{name}.csv"
@@ -375,6 +384,41 @@ class Data:
             raise CannotCompute(f"{sp} has no Present day in {start}..{end}")
         made = self.bill_dates_of_person.get(sp, {})
         return Fraction(sum(made.get(dt, 0) for dt in days(start, end)), present)
+
+    # ---- docs/CHECKS-repeat.md
+
+    def customers(self, exclude):
+        key = tuple(sorted(exclude))
+        if key not in self._customers:
+            self._customers[key] = Customers(self, key)
+        return self._customers[key]
+
+    def placeholder_ids(self):
+        """Non-blank customer ids on 25 or more bills, or with bills at 6 or more stores."""
+        n_bills, stores = Counter(), defaultdict(set)
+        for _, _, st, _, cu in self.bill_rows:
+            n_bills[cu] += 1
+            stores[cu].add(st)
+        return sorted(cu for cu in n_bills if cu.strip() != ""
+                      and (n_bills[cu] >= 25 or len(stores[cu]) >= 6))
+
+    def product_categories_of_bill(self, bill_id):
+        """Categories of the non-packaging lines of one bill (items.csv)."""
+        if self._skus_of_bill is None:
+            items = self.read("items")
+            self._category = {sku: (cat, pkg.strip()) for sku, cat, pkg in
+                              zip(items["sku_id"], items["category"], items["is_packaging"])}
+            self._skus_of_bill = defaultdict(list)
+            for bid, sku in zip(self._lines["bill_id"], self._lines["sku_id"]):
+                self._skus_of_bill[bid].append(sku)
+        out = set()
+        for sku in self._skus_of_bill.get(bill_id, ()):
+            if sku not in self._category:
+                raise CannotCompute(f"bill {bill_id} has SKU {sku!r} that is not in items.csv")
+            cat, pkg = self._category[sku]
+            if pkg != "1":
+                out.add(cat)
+        return out
 
     def peers(self, store_id, exclude):
         self.state(store_id)
@@ -506,7 +550,9 @@ def day_count(d, p, ctx):
                for dt in days(p["start"], p["end"]))
 
 
-UPCOMING_DAYS = 7  # docs/CHECKS.md section 2: "start..end is the 7 days after as_of"
+# docs/CHECKS-followup.md section 2 changes the window of docs/CHECKS.md section 2 from 7 to 9:
+# "start = as_of + 1 day, end = as_of + 9 days".
+UPCOMING_DAYS = 9
 
 
 @recipe("upcoming_busy_dates", ("state", "start", "end"), (), fmt_day_list, future_calendar=True)
@@ -514,7 +560,7 @@ def upcoming_busy_dates(d, p, ctx):
     as_of = to_date(d.as_of)
     want = ((as_of + timedelta(1)).isoformat(), (as_of + timedelta(UPCOMING_DAYS)).isoformat())
     if (p["start"], p["end"]) != want:
-        raise CannotCompute(f"docs/CHECKS.md says the window is the {UPCOMING_DAYS} days after as_of, "
+        raise CannotCompute(f"docs/CHECKS-followup.md says the window is the {UPCOMING_DAYS} days after as_of, "
                             f"{want[0]}..{want[1]}; the check asks for {p['start']}..{p['end']}")
     return ", ".join(dt for dt in days(p["start"], p["end"]) if d.is_busy(p["state"], dt))
 
@@ -618,6 +664,316 @@ def rupees_at_stake(d, p, ctx):
     walkins = rhu(ctx.value_of(p["walkins_check_id"], "walkins_per_week"))
     bill = rhu(ctx.value_of(p["avg_bill_check_id"], "avg_bill_value"))
     return int(rhu((bench - current) * walkins * bill / 1000 / 100) * 100)
+
+
+# ---- docs/CHECKS-followup.md section 1: the small additions
+
+@recipe("festival_name", ("state", "date"), (), future_calendar=True)
+def festival_name(d, p, ctx):
+    # May read a calendar row after as_of "like upcoming_busy_dates", to name a date in an
+    # action or on a card. Those dates are the busy dates of the look-ahead, so a later date
+    # than as_of + UPCOMING_DAYS is not something the documents allow.
+    last = (to_date(d.as_of) + timedelta(UPCOMING_DAYS)).isoformat()
+    if to_date(p["date"]).isoformat() > last:
+        raise CannotCompute(f"date {p['date']} is beyond the {UPCOMING_DAYS}-day look-ahead that ends {last}")
+    if (p["date"], p["state"]) not in d.festival:
+        raise CannotCompute(f"calendar.csv has no row for {p['date']} in {p['state']!r}")
+    name = d.festival[(p["date"], p["state"])]
+    if name == "":
+        raise CannotCompute("the festival cell is blank; the check is only written when it is not")
+    return name
+
+
+@recipe("store_opened_on", ("store_id",), (), fmt_day)
+def store_opened_on(d, p, ctx):
+    d.state(p["store_id"])
+    return d.opened_on[p["store_id"]]
+
+
+# ---- docs/CHECKS-repeat.md
+
+_ORDINALS = {}
+
+
+def ordinal(iso):
+    if iso not in _ORDINALS:
+        _ORDINALS[iso] = to_date(iso).toordinal()
+    return _ORDINALS[iso]
+
+
+class Customer:
+    __slots__ = ("first_date", "store", "salesperson", "first_bill", "bills")
+
+    def __init__(self, rows):
+        # rows: (date, bill_id, store, salesperson), sorted by date then bill_id (text order)
+        self.first_date, self.first_bill, self.store, self.salesperson = rows[0]
+        first = ordinal(self.first_date)
+        self.bills = [(dt, ordinal(dt) - first, st, bid) for dt, bid, st, _ in rows]  # (date, gap, store, id)
+
+    def returned(self, lo, hi):
+        return any(lo <= gap <= hi for _, gap, _, _ in self.bills)
+
+    @property
+    def month(self):
+        return self.first_date[:7]
+
+    @property
+    def quarter(self):
+        return f"{self.first_date[:4]}Q{(int(self.first_date[5:7]) - 1) // 3 + 1}"
+
+
+class Customers:
+    """Every customer after the placeholder ids are removed; the first bill decides who they belong to."""
+
+    def __init__(self, d, exclude):
+        drop = set(exclude)
+        rows = defaultdict(list)
+        for bid, dt, st, sp, cu in d.bill_rows:
+            if cu.strip() == "" or cu in drop:
+                continue
+            rows[cu].append((dt, bid, st, sp))
+        self.by_store = defaultdict(list)       # store the customer belongs to -> customers
+        self.bills_at = defaultdict(list)       # store the bill was made at -> (date, gap, bill_id)
+        for cu in sorted(rows):
+            c = Customer(sorted(rows[cu]))
+            self.by_store[c.store].append(c)
+            for dt, gap, st, bid in c.bills:
+                self.bills_at[st].append((dt, gap, bid))
+
+    def group(self, p, prefix=""):
+        stores = p[prefix + "store_ids"]
+        people = p.get(prefix + "salesperson_ids")
+        if not isinstance(stores, list) or not stores:
+            raise CannotCompute(f"{prefix}store_ids must be a non-empty list")
+        if people is not None and not isinstance(people, list):
+            raise CannotCompute(f"{prefix}salesperson_ids must be a list")
+        return [c for st in dict.fromkeys(stores) for c in self.by_store.get(st, ())
+                if people is None or c.salesperson in people]
+
+
+def _repeat(d, p):
+    ids = p["exclude_customer_ids"]
+    if not isinstance(ids, list):
+        raise CannotCompute("exclude_customer_ids must be a list")
+    return d.customers(ids)
+
+
+def _gaps(p):
+    lo, hi = p["min_gap_days"], p["max_gap_days"]
+    if isinstance(lo, bool) or isinstance(hi, bool) or not isinstance(lo, int) or not isinstance(hi, int):
+        raise CannotCompute("min_gap_days and max_gap_days must be whole numbers")
+    return lo, hi
+
+
+def _cohort(p, customers):
+    to_date(p["first_bill_to"])
+    start = p.get("first_bill_from")
+    if start is not None:
+        to_date(start)
+    return [c for c in customers
+            if c.first_date <= p["first_bill_to"] and (start is None or c.first_date >= start)]
+
+
+def _subject_and_peers(d, p):
+    cu = _repeat(d, p)
+    subject, peers = cu.group(p), cu.group(p, "peer_")
+    if {id(c) for c in subject} & {id(c) for c in peers}:
+        raise CannotCompute("the subject group and the peer group overlap")
+    return _cohort(p, subject), _cohort(p, peers)
+
+
+def _tally(customers, key, lo, hi):
+    """key -> [customers, returned]."""
+    out = defaultdict(lambda: [0, 0])
+    for c in customers:
+        cell = out[key(c)]
+        cell[0] += 1
+        cell[1] += c.returned(lo, hi)
+    return out
+
+
+def _by_month(d, p):
+    lo, hi = _gaps(p)
+    subject, peers = _subject_and_peers(d, p)
+    s, q = _tally(subject, lambda c: c.month, lo, hi), _tally(peers, lambda c: c.month, lo, hi)
+    if not s:
+        raise CannotCompute("the subject has no customers in the cohort")
+    empty = sorted(m for m in s if q.get(m, [0, 0])[0] == 0)
+    if empty:
+        raise CannotCompute(f"the peers have no customers first billed in {empty} (the recipe gives null)")
+    return s, q
+
+
+REPEAT_GROUP = ("store_ids", "exclude_customer_ids")
+REPEAT_COHORT = REPEAT_GROUP + ("first_bill_to",)
+REPEAT_GAPS = ("min_gap_days", "max_gap_days")
+REPEAT_VERSUS = REPEAT_COHORT + REPEAT_GAPS + ("peer_store_ids",)
+REPEAT_VERSUS_OPT = ("salesperson_ids", "peer_salesperson_ids", "first_bill_from")
+
+
+@recipe("repeat_customers", REPEAT_COHORT, ("salesperson_ids", "first_bill_from") + REPEAT_GAPS, fmt_whole)
+def repeat_customers(d, p, ctx):
+    return len(_cohort(p, _repeat(d, p).group(p)))
+
+
+@recipe("repeat_returned", REPEAT_COHORT + REPEAT_GAPS, ("salesperson_ids", "first_bill_from"), fmt_whole)
+def repeat_returned(d, p, ctx):
+    lo, hi = _gaps(p)
+    return sum(c.returned(lo, hi) for c in _cohort(p, _repeat(d, p).group(p)))
+
+
+@recipe("repeat_return_rate", REPEAT_COHORT + REPEAT_GAPS, ("salesperson_ids", "first_bill_from"), fmt_percent1)
+def repeat_return_rate(d, p, ctx):
+    lo, hi = _gaps(p)
+    cohort = _cohort(p, _repeat(d, p).group(p))
+    if not cohort:
+        raise CannotCompute("no customers in the group and the cohort (the recipe gives null)")
+    return rhu(Fraction(sum(c.returned(lo, hi) for c in cohort), len(cohort)), 4)
+
+
+@recipe("repeat_fair_rate", REPEAT_VERSUS, REPEAT_VERSUS_OPT, fmt_percent1)
+def repeat_fair_rate(d, p, ctx):
+    s, q = _by_month(d, p)
+    expected = sum(Fraction(n * q[m][1], q[m][0]) for m, (n, _) in s.items())
+    return rhu(expected / sum(n for n, _ in s.values()), 4)
+
+
+@recipe("repeat_z", REPEAT_VERSUS, REPEAT_VERSUS_OPT, fmt_2dp)
+def repeat_z(d, p, ctx):
+    s, q = _by_month(d, p)
+    observed, expected, variance = 0, Fraction(0), Fraction(0)
+    for m, (n_s, r_s) in s.items():
+        n_p, r_p = q[m]
+        total, returned = n_s + n_p, r_s + r_p
+        observed += r_s
+        expected += Fraction(n_s * returned, total)
+        if total > 1:
+            variance += Fraction(n_s * n_p * returned * (total - returned), total * total * (total - 1))
+    if variance == 0:
+        raise CannotCompute("the variance is zero (the recipe gives null)")
+    return rhu(Fraction(float(observed - expected) / math.sqrt(float(variance))), 2)
+
+
+@recipe("repeat_quarters", REPEAT_VERSUS + ("min_customers", "count"), REPEAT_VERSUS_OPT, fmt_whole)
+def repeat_quarters(d, p, ctx):
+    lo, hi = _gaps(p)
+    if p["count"] not in ("compared", "ahead", "behind"):
+        raise CannotCompute(f"unknown count {p['count']!r}")
+    subject, peers = _subject_and_peers(d, p)
+    s, q = _tally(subject, lambda c: c.quarter, lo, hi), _tally(peers, lambda c: c.quarter, lo, hi)
+    counts = Counter()
+    for quarter, (n_s, r_s) in s.items():
+        n_p, r_p = q.get(quarter, (0, 0))
+        if n_s < p["min_customers"] or n_p < p["min_customers"]:
+            continue
+        counts["compared"] += 1
+        counts["ahead"] += r_s * n_p > r_p * n_s
+        counts["behind"] += r_s * n_p < r_p * n_s
+    return counts[p["count"]]
+
+
+@recipe("repeat_new_customers_per_week", REPEAT_GROUP + ("start", "end"), ("salesperson_ids",), fmt_1dp)
+def repeat_new_customers_per_week(d, p, ctx):
+    n_days = len(days(p["start"], p["end"]))
+    new = sum(p["start"] <= c.first_date <= p["end"] for c in _repeat(d, p).group(p))
+    return rhu(Fraction(new * 7, n_days), 1)
+
+
+def _return_bills(d, p):
+    """Bills made AT store_ids in the window whose gap from the customer's first bill is in range."""
+    lo, hi = _gaps(p)
+    days(p["start"], p["end"])
+    cu = _repeat(d, p)
+    if not isinstance(p["store_ids"], list) or not p["store_ids"]:
+        raise CannotCompute("store_ids must be a non-empty list")
+    return [bid for st in dict.fromkeys(p["store_ids"]) for dt, gap, bid in cu.bills_at.get(st, ())
+            if p["start"] <= dt <= p["end"] and lo <= gap <= hi]
+
+
+@recipe("repeat_return_bill_count", REPEAT_GROUP + REPEAT_GAPS + ("start", "end"), (), fmt_whole)
+def repeat_return_bill_count(d, p, ctx):
+    return len(_return_bills(d, p))
+
+
+@recipe("repeat_avg_return_bill_value", REPEAT_GROUP + REPEAT_GAPS + ("start", "end"), (), fmt_rupees)
+def repeat_avg_return_bill_value(d, p, ctx):
+    ids = _return_bills(d, p)
+    if not ids:
+        raise CannotCompute("no return bills in the window (the recipe gives null)")
+    return rhu(Fraction(sum(d.bill_paise.get(b, 0) for b in ids), 100 * len(ids)), 2)
+
+
+@recipe("repeat_call_list", REPEAT_GROUP + ("first_from", "first_to", "no_bill_through"),
+        ("salesperson_ids", "category"), fmt_whole)
+def repeat_call_list(d, p, ctx):
+    days(p["first_from"], p["first_to"])
+    to_date(p["no_bill_through"])
+    category = p.get("category")
+    count = 0
+    for c in _repeat(d, p).group(p):
+        if not p["first_from"] <= c.first_date <= p["first_to"]:
+            continue
+        if sum(dt <= p["no_bill_through"] for dt, _, _, _ in c.bills) != 1:
+            continue
+        if category is not None and category not in d.product_categories_of_bill(c.first_bill):
+            continue
+        count += 1
+    return count
+
+
+@recipe("repeat_weekly_returns_per_100", REPEAT_GROUP + REPEAT_GAPS + ("start", "end"),
+        ("salesperson_ids",), fmt_2dp)
+def repeat_weekly_returns_per_100(d, p, ctx):
+    lo, hi = _gaps(p)
+    n_days = len(days(p["start"], p["end"]))
+    end = to_date(p["end"])
+    first_from, first_to = (end - timedelta(hi)).isoformat(), (end - timedelta(lo)).isoformat()
+    group = _repeat(d, p).group(p)
+    eligible = sum(first_from <= c.first_date <= first_to for c in group)
+    if eligible == 0:
+        raise CannotCompute("no customer of the group is inside the return window on `end` (the recipe gives null)")
+    bills = sum(1 for c in group for dt, gap, _, _ in c.bills
+                if p["start"] <= dt <= p["end"] and lo <= gap <= hi)
+    return rhu(Fraction(bills * 7 * 100, n_days * eligible), 2)
+
+
+@recipe("repeat_date_offset", ("date", "days"), (), fmt_day)
+def repeat_date_offset(d, p, ctx):
+    if isinstance(p["days"], bool) or not isinstance(p["days"], int):
+        raise CannotCompute("days must be a whole number")
+    return (to_date(p["date"]) + timedelta(p["days"])).isoformat()
+
+
+@recipe("repeat_rupees_at_stake", ("fair_rate", "own_rate", "new_customers_per_week", "avg_return_bill_value"),
+        (), fmt_rupees, rupees_step=100)
+def repeat_rupees_at_stake(d, p, ctx):
+    for key, value in p.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise CannotCompute(f"{key} must be a number")
+
+    def tenths(rate):  # (round(x × 10000) + 5) integer-divided by 10
+        return (int(rhu(as_fraction(rate) * 10000)) + 5) // 10
+
+    gap = tenths(p["fair_rate"]) - tenths(p["own_rate"])
+    n10 = int(rhu(as_fraction(p["new_customers_per_week"]) * 10))
+    bill = int(rhu(as_fraction(p["avg_return_bill_value"])))
+    return int(rhu(Fraction(gap * n10 * bill, 10000) / 100) * 100)
+
+
+def _bills_of_customer_id(d, p):
+    if not isinstance(p["customer_id"], str):
+        raise CannotCompute("customer_id must be text")
+    return [row for row in d.bill_rows if row[4] == p["customer_id"]]
+
+
+@recipe("repeat_placeholder_bills", ("customer_id",), (), fmt_whole)
+def repeat_placeholder_bills(d, p, ctx):
+    return len(_bills_of_customer_id(d, p))
+
+
+@recipe("repeat_placeholder_stores", ("customer_id",), (), fmt_whole)
+def repeat_placeholder_stores(d, p, ctx):
+    return len({row[2] for row in _bills_of_customer_id(d, p)})
 
 
 # --------------------------------------------------------------------------- report
@@ -763,6 +1119,33 @@ def verify_checks(out, data, rep):
                  "display " + repr(check["display"]))
 
         verify_no_future(check, data.as_of, rep)
+        if kind == "repeat_rupees_at_stake":
+            verify_repeat_rupees_inputs(check, beside, rep)
+        if isinstance(check["params"].get("exclude_customer_ids"), list):
+            rule_ids = data.placeholder_ids()
+            rep.test("rule    repeat: excluded ids = placeholder rule",
+                     sorted(check["params"]["exclude_customer_ids"]) == rule_ids, cid, kind,
+                     f"exclude_customer_ids {rule_ids} (blank, 25 or more bills, or 6 or more stores, up to as_of)",
+                     str(sorted(check["params"]["exclude_customer_ids"])))
+
+
+def verify_repeat_rupees_inputs(check, beside, rep):
+    """docs/CHECKS-repeat.md: the rupees use the two `_recent` rates, new customers a week and
+    the average return bill value of the same alert or card. The params must be those checks."""
+    group = "rule    repeat rupees built on its own checks"
+    cid = check["id"]
+    stem = cid[:-len("rupees_at_stake")] if cid.endswith("rupees_at_stake") else cid + ":"
+    by_id = {c["id"]: c for c in beside}
+    found = {slug: by_id.get(stem + slug, {}).get("value")
+             for slug in ("fair_rate_recent", "return_rate_recent", "new_customers_per_week",
+                          "avg_return_bill_value")}
+    p = check["params"]
+    want_rates = sorted(str(found[k]) for k in ("fair_rate_recent", "return_rate_recent"))
+    have_rates = sorted(str(p.get(k)) for k in ("fair_rate", "own_rate"))
+    rep.test(group, None not in found.values() and want_rates == have_rates
+             and str(found["new_customers_per_week"]) == str(p.get("new_customers_per_week"))
+             and str(found["avg_return_bill_value"]) == str(p.get("avg_return_bill_value")),
+             cid, check["kind"], f"params equal to the sibling checks {found}", json.dumps(p))
 
 
 def verify_no_future(check, as_of, rep):
@@ -867,10 +1250,13 @@ def verify_alert(alert, data, rep, known_ids):
     group = "rule    alert rupees = its check"
     carriers = [c for c in checks
                 if c["kind"] in RECIPES and RECIPES[c["kind"]].rupees_step is not None]
-    step = RECIPES[carriers[0]["kind"]].rupees_step if carriers else None
+    # Every documented rupee figure is "whole rupees, a multiple of 100"; an alert whose rupee
+    # kind has no recipe is still held to that step when its worked line is multiplied out.
+    step = RECIPES[carriers[0]["kind"]].rupees_step if carriers else 100
     rep.test(group, any(same(rupees, c["value"]) for c in carriers) if isinstance(rupees, (int, float)) else False,
              aid, "rupees_at_stake_weekly",
-             "equal to the alert's rupees-at-stake check " + str([c["value"] for c in carriers]),
+             ("equal to the alert's rupees-at-stake check " + str([c["value"] for c in carriers])) if carriers
+             else "a check of a rupees-at-stake kind that has a documented recipe (none in this alert)",
              show(rupees))
 
     # ... and against its own arithmetic
@@ -976,8 +1362,15 @@ def verify_managers(out, data, rep):
 
 def verify_cards(out, data, rep, known_ids):
     group = "rule    cards: 60 words, peer from same store"
+    per_person = Counter(card.get("salesperson_id") for card in out.get("cards", []))
+    per_id = Counter(card.get("card_id") for card in out.get("cards", []))
     for card in out.get("cards", []):
         cid = card.get("card_id", "?")
+        rep.test("rule    cards: one per salesperson",
+                 per_person[card.get("salesperson_id")] == 1 and per_id[card.get("card_id")] == 1, cid,
+                 "salesperson_id", "one card for this salesperson, and a card_id used once",
+                 f"{per_person[card.get('salesperson_id')]} cards for {card.get('salesperson_id')}, "
+                 f"{per_id[card.get('card_id')]} with this card_id")
         text = card.get("text") or ""
         words = len(text.split())
         store, sp = card.get("store_id"), card.get("salesperson_id")
@@ -1043,6 +1436,192 @@ def verify_data_issues(out, data, rep, known_ids):
                      f"{issue.get('days_affected')!r} is not the value of any of its checks")
 
 
+FOLLOW_UP_DAYS = 7          # docs/METHOD-followup.md: "the run of exactly 7 days earlier"
+EARLIER_WEEKS = 8           # docs/CHECKS-followup.md section 3: earlier_week_1 .. earlier_week_8
+MIN_EARLIER_WEEKS = 4       # section 3.2: "With fewer than 4 earlier weeks the result is not_measurable"
+MAX_INVALID_SHARE = Fraction(20, 100)   # section 3.1: "more than 20% of its store-days are invalid"
+
+
+def find_earlier_run(file, raised, explicit=None):
+    """The run of 7 days earlier: runs/<date>.json beside the file, or <date>.json in its folder."""
+    if explicit:
+        return Path(explicit) if Path(explicit).is_file() else None
+    for candidate in (file.parent / "runs" / f"{raised}.json", file.parent / f"{raised}.json"):
+        if candidate.is_file() and candidate.resolve() != file.resolve():
+            return candidate
+    return None
+
+
+def expected_moved(fu, slug, data, alert_fu, after_window):
+    """`moved` from docs/CHECKS-followup.md sections 3.1 and 3.2, and why. Uses the values of
+    the follow-up's own checks (each of which is recomputed from the CSVs on its own)."""
+    kind, params = alert_fu.get("kind"), alert_fu.get("params") or {}
+    if "before" not in slug:
+        return "not_measurable", "the 'before' check is not written (it no longer recomputes)"
+    if kind == "conversion":
+        for st in params.get("store_ids", []):
+            rows = data.store_days([st], *after_window)
+            bad = sum(r[4] is not None for r in rows)
+            if len(rows) == bad:
+                return "not_measurable", f"{st} has no valid store-day in the week"
+            if Fraction(bad, len(rows)) > MAX_INVALID_SHARE:
+                return "not_measurable", f"{st}: {bad} of {len(rows)} store-days in the week are invalid"
+    if "after" not in slug or isinstance(slug["after"]["value"], (str, bool, type(None))):
+        return "not_measurable", "the recipe gives no value for the week"
+    before, after = as_fraction(slug["before"]["value"]), as_fraction(slug["after"]["value"])
+    change = after - before if alert_fu.get("higher_is_better", True) else before - after
+    if kind == "conversion":
+        if "after_numerator" not in slug or "after_denominator" not in slug:
+            raise CannotCompute("after_numerator and after_denominator checks are needed for conversion")
+        b = as_fraction(slug["after_numerator"]["value"])
+        n = as_fraction(slug["after_denominator"]["value"])
+        if n <= 0:
+            return "not_measurable", "no walk-ins in the week"
+        spread_sq, name = (b / n) * (1 - b / n) / n, "standard error"
+    else:
+        weeks = [as_fraction(slug[f"earlier_week_{k}"]["value"]) for k in range(1, EARLIER_WEEKS + 1)
+                 if f"earlier_week_{k}" in slug
+                 and not isinstance(slug[f"earlier_week_{k}"]["value"], (str, bool, type(None)))]
+        if len(weeks) < MIN_EARLIER_WEEKS:
+            return "not_measurable", f"only {len(weeks)} earlier weeks have a value"
+        mean = sum(weeks) / len(weeks)
+        spread_sq, name = sum((w - mean) ** 2 for w in weeks) / (len(weeks) - 1), "noise of the earlier weeks"
+    why = f"change {float(change):+.4f} against {name} {math.sqrt(float(spread_sq)):.4f}"
+    if change > 0 and change * change >= spread_sq:
+        return "improved", why
+    if change < 0 and change * change >= spread_sq:
+        return "worse", why
+    return "no_change", why
+
+
+def verify_follow_up_rules(out, data, rep, file, earlier_file):
+    """docs/CHECKS-followup.md section 3 and docs/METHOD-followup.md section 1."""
+    group = "rule    follow-up matches the earlier run"
+    as_of = data.as_of
+    raised = (to_date(as_of) - timedelta(FOLLOW_UP_DAYS)).isoformat()
+    after_window = ((to_date(raised) + timedelta(1)).isoformat(), as_of)
+    fus = out.get("follow_ups", [])
+    path = find_earlier_run(Path(file), raised, earlier_file)
+    earlier = {}
+    if path is None:
+        rep.test(group, not fus, "follow_ups", "earlier run", f"no follow-ups when there is no run for {raised}",
+                 f"{len(fus)} follow-ups, and no runs/{raised}.json beside the file (pass --earlier-run)")
+    else:
+        try:
+            prior = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            raise CannotRun(f"cannot read the earlier run {path}: {exc}")
+        rep.test(group, prior.get("as_of") == raised, str(path), "as_of", raised, repr(prior.get("as_of")))
+        for block in prior.get("area_managers", []):
+            for alert in block.get("alerts", []):
+                earlier[alert.get("alert_id")] = (block.get("area_manager_id"), alert)
+        ids = [fu.get("alert_id") for fu in fus]
+        rep.test(group, sorted(map(str, ids)) == sorted(map(str, earlier)), "follow_ups", "alert ids",
+                 f"one follow-up for each alert of {path.name}: {sorted(map(str, earlier))}", str(sorted(map(str, ids))))
+
+    for fu in fus:
+        fid = fu.get("alert_id", "?")
+        prefix = f"followup:{fid}:"
+        slug = {c["id"][len(prefix):]: c for c in fu.get("checks", [])
+                if is_check(c) and c["id"].startswith(prefix)}
+        stray = [c.get("id") for c in fu.get("checks", []) if not (is_check(c) and c["id"].startswith(prefix))]
+        rep.test(group, not stray, fid, "check ids", f"every check id starts with {prefix!r}", str(stray))
+        rep.test(group, fu.get("raised_as_of") == raised and fu.get("measured_as_of") == as_of, fid, "dates",
+                 f"raised {raised}, measured {as_of}", f"raised {fu.get('raised_as_of')!r}, measured {fu.get('measured_as_of')!r}")
+        nm = fu.get("moved") == "not_measurable"
+
+        def field_is_check(field, name):
+            c = slug.get(name)
+            rep.test(group, c is not None and same_or_none(c["value"], fu.get(field))
+                     and fu.get(f"{field}_display") == c["display"], fid, field,
+                     f"{field} and {field}_display are the value and display of check {prefix}{name}"
+                     + (f": {c['value']!r}, {c['display']!r}" if c else " (no such check)"),
+                     f"{fu.get(field)!r}, {fu.get(f'{field}_display')!r}")
+
+        field_is_check("before", "before")
+        field_is_check("target", "target")
+        if nm:
+            rep.test(group, fu.get("after") is None and fu.get("after_display") == "not measurable", fid, "after",
+                     "after null and after_display 'not measurable' when the week cannot be measured",
+                     f"{fu.get('after')!r}, {fu.get('after_display')!r}")
+        else:
+            field_is_check("after", "after")
+
+        if fid not in earlier:
+            if path is not None:
+                rep.fail(group, fid, "alert_id", f"an alert of {path.name}", "no such alert in the earlier run")
+            continue
+        manager, alert = earlier[fid]
+        afu = alert.get("follow_up") or {}
+        for field, want in (("area_manager_id", manager), ("store_ids", alert.get("store_ids")),
+                            ("lever", alert.get("lever")), ("headline", alert.get("headline")),
+                            ("action_text", (alert.get("action") or {}).get("text")),
+                            ("metric_label", afu.get("metric_label")),
+                            ("before", afu.get("baseline_value")), ("target", afu.get("target_value"))):
+            rep.test(group, fu.get(field) == want, fid, field, f"as on the alert of {raised}: {want!r}", repr(fu.get(field)))
+
+        def check_is(name, kind, params, required=True):
+            c = slug.get(name)
+            if c is None:
+                if required:
+                    rep.fail(group, fid, name, f"a check {prefix}{name} of kind {kind}", "no such check")
+                return
+            rep.test(group, c["kind"] == kind and c["params"] == params, fid, name,
+                     f"kind {kind}, params {json.dumps(params, ensure_ascii=False)}",
+                     f"kind {c['kind']}, params {json.dumps(c['params'], ensure_ascii=False)}")
+
+        after_params = dict(afu.get("params") or {}, start=after_window[0], end=after_window[1])
+        check_is("before", afu.get("kind"), afu.get("params"), required=not nm)
+        check_is("after", afu.get("kind"), after_params, required=not nm)
+        first_store = (alert.get("store_ids") or [None])[0]
+        check_is("days", "day_count", {"state": data.state_of_store.get(first_store), "start": after_window[0],
+                                       "end": after_window[1], "day_type": "all"})
+        if "days" in slug:
+            rep.test(group, slug["days"]["value"] == FOLLOW_UP_DAYS, fid, "days", str(FOLLOW_UP_DAYS), repr(slug["days"]["value"]))
+        carriers = [c for c in alert.get("checks", []) if is_check(c)
+                    and not isinstance(c["value"], (str, bool)) and same(afu.get("target_value"), c["value"])]
+        target = slug.get("target")
+        rep.test(group, target is not None and any(c["kind"] == target["kind"] and c["params"] == target["params"]
+                                                   for c in carriers), fid, "target",
+                 f"kind and params of the check of the {raised} alert that carried target_value {afu.get('target_value')!r}",
+                 "no such check on that alert" if target is not None else "no target check")
+        if afu.get("kind") == "conversion":
+            check_is("after_numerator", "bills_count", after_params, required=not nm)
+            check_is("after_denominator", "footfall_sum", after_params, required=not nm)
+        else:
+            for k in range(1, EARLIER_WEEKS + 1):
+                end = to_date(raised) - timedelta(7 * (k - 1))
+                window = dict(afu.get("params") or {}, start=(end - timedelta(6)).isoformat(), end=end.isoformat())
+                name = f"earlier_week_{k}"
+                check_is(name, afu.get("kind"), window, required=False)
+                if name not in slug and afu.get("kind") in RECIPES:   # left out only when it has no value
+                    probe = {"id": prefix + name, "kind": afu.get("kind"), "params": window, "value": None, "display": ""}
+                    try:
+                        value = show(recompute(data, probe, []))
+                        rep.fail(group, fid, name, f"a check, because the week has the value {value}", "left out")
+                    except CannotCompute:
+                        rep.ok(group)
+
+        group_moved = "rule    follow-up verdict follows the rule"
+        try:
+            want, why = expected_moved(fu, slug, data, afu, after_window)
+            rep.test(group_moved, fu.get("moved") == want, fid, "moved", f"{want} ({why})", repr(fu.get("moved")))
+        except (CannotCompute, ValueError, ZeroDivisionError) as exc:
+            rep.fail(group_moved, fid, "moved", f"cannot be worked out: {exc}", repr(fu.get("moved")))
+        said = str(fu.get("verdict", "")).lower()
+        tone = {"improved": "improved" in said, "worse": "worse" in said,
+                "no_change": "no change" in said or "no real change" in said,
+                "not_measurable": "not measurable" in said or "cannot be measured" in said or "could not be measured" in said}
+        rep.test(group_moved, tone.get(fu.get("moved"), False), fid, "verdict",
+                 f"a sentence that says {fu.get('moved')!r}", repr(fu.get("verdict")))
+
+
+def same_or_none(expected, found):
+    if expected is None or found is None:
+        return expected is None and found is None
+    return same(expected, found)
+
+
 def verify_follow_ups(out, data, rep, known_ids):
     group = "rule    follow-up text numbers have a check"
     for fu in out.get("follow_ups", []):
@@ -1072,7 +1651,7 @@ def known_identifiers(data):
     return sorted((i for i in ids if i), key=len, reverse=True)
 
 
-def run(file, data_dir, strict=False, stream=None):
+def run(file, data_dir, strict=False, stream=None, earlier_run=None):
     stream = stream or sys.stdout
     say = lambda *a: print(*a, file=stream)
     file, data_dir = Path(file), Path(data_dir)
@@ -1086,6 +1665,8 @@ def run(file, data_dir, strict=False, stream=None):
     data = Data(data_dir, as_of)
     rep = Report()
     ids = known_identifiers(data)
+    # a placeholder customer id quoted in text (C99999999) is an id, not a number
+    ids = sorted(set(ids) | set(data.placeholder_ids()), key=len, reverse=True)
 
     verify_checks(out, data, rep)
     for block in out.get("area_managers", []):
@@ -1094,6 +1675,7 @@ def run(file, data_dir, strict=False, stream=None):
     verify_managers(out, data, rep)
     verify_cards(out, data, rep, ids)
     verify_follow_ups(out, data, rep, ids)
+    verify_follow_up_rules(out, data, rep, file, earlier_run)
     verify_as_of(out, data, rep)
     verify_data_issues(out, data, rep, ids)
     for note in data.notes:
@@ -1143,9 +1725,12 @@ def main(argv=None):
     parser.add_argument("--data-dir", default=str(ROOT / "data" / "csv"),
                         help="folder with the raw CSVs (default: data/csv)")
     parser.add_argument("--strict", action="store_true", help="treat warnings as failures")
+    parser.add_argument("--earlier-run", default=None,
+                        help="the run of 7 days earlier, for the follow-ups (default: runs/<as_of - 7 days>.json "
+                             "beside the file, or <as_of - 7 days>.json in its folder)")
     args = parser.parse_args(argv)
     try:
-        return run(args.file, args.data_dir, args.strict)
+        return run(args.file, args.data_dir, args.strict, earlier_run=args.earlier_run)
     except CannotRun as why:
         print(f"CANNOT RUN: {why}", file=sys.stderr)
         return 2
