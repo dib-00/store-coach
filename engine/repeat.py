@@ -735,6 +735,10 @@ class Repeat:
                 lists.append(calls)
             if len(coached) == COACHED:
                 break
+        if not coached:
+            self.notes.append(f"{alert_id}: not sent, no colleague on the roster is clearly behind {name} over the same "
+                              "months with customers to call today, so there is nobody to coach")
+            return
         action = money = fu = None
         headline = (f"{c['rate']['display']} of the {c['n']['display']} customers first billed by {name} at {store} came back "
                     f"and billed again, against {c['fair']['display']} for colleagues' customers first billed in the same months.")
@@ -772,45 +776,48 @@ class Repeat:
         return state, f"the other {row['state']} stores"
 
     def store_alert(self, store: str):
+        """A store against the other stores of its city, counting only customers first billed by salespeople
+        who are still on its roster: the team that can act today is not judged on the record of someone who left."""
         m = self.m
         peers, versus = self.store_peers(store)
-        if not peers:
+        team = [x for x in self.sellers.get(store, []) if self.active(x)]
+        if not peers or not team:
             return
-        st = self.stat({"store_ids": [store]}, {"peer_store_ids": sorted(peers)})
+        group = {"store_ids": [store], "salesperson_ids": team}
+        st = self.stat(group, {"peer_store_ids": sorted(peers)})
         if not self.is_low(st, Z_STORE, STORE_LOW_RATIO, MIN_STORE_CUSTOMERS):
             return
         alert_id = f"{store}:{LEVER}:store_customers_not_returning"
         book = CheckBook(m, alert_id)
-        c = self.comparison_checks(book, st, store, versus, "behind")
-        group = {"store_ids": [store]}
-        money = self.money_checks(book, store, group, store, st, store, versus, FORMULA)
-        headline = (f"{c['rate']['display']} of the {c['n']['display']} customers first billed at {store} came back and "
-                    f"billed again, against {c['fair']['display']} at {versus} for customers first billed in the same months.")
+        who = f"the salespeople still on the roster at {store}"
+        c = self.comparison_checks(book, st, who, versus, "behind")
+        money = self.money_checks(book, store, {"store_ids": [store]}, store, st, who, versus, FORMULA)
+        headline = (f"{c['rate']['display']} of the {c['n']['display']} customers first billed at {store} by the salespeople "
+                    f"still on its roster came back and billed again, against {c['fair']['display']} at {versus} for "
+                    "customers first billed in the same months.")
         cause = (f"{store} is behind {versus} in {c['qs']['display']} of the {c['qc']['display']} first-bill quarters "
                  f"compared (z {c['z']['display']}), so this is a pattern and not one slow season. ")
-        flagged = [self.name(sp) for sp, _ in self.low[store]]
+        flagged = [self.name(sp) for sp, _ in self.low[store] if self.active(sp)]
         cause += (f"Part of it sits with {join_names(flagged)}, reported separately." if flagged else
-                  f"No single salesperson at {store} is far enough from the store's own rate to explain it.")
+                  f"No single salesperson at {store} is far enough from colleagues to explain it.")
         if money:
             cause += " " + money["recent"]
-        c_staff = book.add("rostered_staff", f"Salespeople on the roster on {fmt_date(self.as_of)}", "rostered_staff",
-                           {"store_id": store, "date": self.as_of})
         action = None
-        calls = self.call_list(book, group, "", store, MAX_CALLS * c_staff["value"]) if c_staff["value"] else None
+        calls = self.call_list(book, group, "", who, MAX_CALLS * len(team))
         if calls:
             c_from, c_to = self.call_dates(book, calls["back"])
-            text = (f"Today, the store manager at {store} has each of the {c_staff['display']} salespeople on the roster call "
-                    f"their own customers first billed between {c_from['display']} and {c_to['display']} who have not been "
-                    f"back, {calls['n']['display']} customers in all")
+            text = (f"Today, the store manager at {store} has each salesperson on the roster call their own customers first "
+                    f"billed between {c_from['display']} and {c_to['display']} who have not been back, "
+                    f"{calls['n']['display']} customers in all")
             if 1 < calls["sherwani"]["value"] < calls["n"]["value"]:
                 text += f", starting with the {calls['sherwani']['display']} who bought a sherwani"
-            action = {"who": f"Store manager at {store} and the {c_staff['display']} salespeople on the roster",
+            action = {"who": f"Store manager at {store} and every salesperson on the roster",
                       "what": f"Each calls their own first-time customers who have not been back, {calls['n']['display']} in all",
                       "when": "Today", "text": text + "."}
-        fu = self.follow_up(book, follow_label(store), group, {"store_ids": sorted(peers)}, versus)
+        fu = self.follow_up(book, follow_label(who), group, {"store_ids": sorted(peers)}, versus)
         self.finish(alert_id=alert_id, store=store, cause_code="store_customers_not_returning", headline=headline,
                     cause=cause, action=action, money=money, basis=f"{versus[0].upper()}{versus[1:]}, same first-bill months",
-                    people=[], book=book, follow_up=fu, definition=self.definition(store, versus))
+                    people=[], book=book, follow_up=fu, definition=self.definition(who, versus))
 
 
 def _lever(m: Metrics) -> Repeat:
