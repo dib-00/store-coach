@@ -49,6 +49,7 @@ Z_DRIVER = 2.0  # one test per salesperson inside a store already flagged
 MIN_BILLS_PERSON = 30  # bills in the window before a salesperson is compared
 MIN_BILLS_PEERS = 60  # bills of the colleagues they are compared with
 IPB_MIN_GAP = 0.15  # at least 15% fewer items per bill than colleagues
+LONG_DAYS = 180  # small-store fallback: the items-per-bill group test uses the last 180 days
 DISC_MIN_GAP = 0.02  # discount rate at least 2 points of MRP above colleagues
 ATTACH_MIN_MAIN = 100  # main-item bills in the current window and in each benchmark
 ATTACH_MIN_REL_DROP = 0.20  # attach rate at least 20% below the benchmark
@@ -521,9 +522,9 @@ class Baskets:
         return alert
 
     # ------------------------------------------------- 2 and 3. person against same-store colleagues
-    def _pool(self, store: str):
+    def _pool(self, store: str, w: dict | None = None):
         act = self.active(store)
-        f = _sel(self.m, {"store_ids": [store], **self.cur, "salesperson_ids": act})
+        f = _sel(self.m, {"store_ids": [store], **(w or self.cur), "salesperson_ids": act})
         return act, {sp: g for sp, g in f.groupby("salesperson_id", sort=True)}
 
     def high_discount(self, store: str):
@@ -639,6 +640,32 @@ class Baskets:
                 )
         return alert
 
+    def low_group(self, store: str):
+        """Small-store fallback: (window, flagged, colleagues, model) or None.
+
+        Over the last LONG_DAYS days, the active salespeople whose items per bill are at least
+        IPB_MIN_GAP below the store's best seller are tested together, as one group, against the
+        rest of the store (Welch z at Z_PERSON). One test per store, so the bar stays strict.
+        """
+        w = {"start": add_days(self.as_of, -(LONG_DAYS - 1)), "end": self.as_of}
+        act, by = self._pool(store, w)
+        sized = {sp: g for sp, g in by.items() if sp in act and len(g) >= MIN_BILLS_PERSON}
+        if len(sized) < 2:
+            return None
+        mean = {sp: float(g["items"].mean()) for sp, g in sized.items()}
+        best = sorted(sized, key=lambda x: (-mean[x], x))[0]
+        low = sorted(sp for sp in sized if mean[sp] <= (1 - IPB_MIN_GAP) * mean[best])
+        rest = sorted(sp for sp in sized if sp not in low)
+        if not low or not rest:
+            return None
+        a, b = pd.concat([sized[x] for x in low]), pd.concat([sized[x] for x in rest])
+        if len(b) < MIN_BILLS_PEERS:
+            return None
+        z = _welch(a["items"], b["items"])
+        if z is None or z > -Z_PERSON or a["items"].mean() / b["items"].mean() - 1 > -IPB_MIN_GAP:
+            return None
+        return w, low, rest, best
+
     def low_items(self, store: str):
         m, cur = self.m, self.cur
         act, by = self._pool(store)
@@ -657,6 +684,14 @@ class Baskets:
                 flagged.append(sp)
                 used[sp] = others
         peers, model = self.yardstick([x for x in act if x not in flagged and x in by], by, stat, MIN_BILLS_PERSON)
+        n_days = CUR_DAYS
+        if not flagged:
+            group = self.low_group(store)
+            if group is None:
+                return None
+            cur, flagged, peers, model = group
+            used = {sp: peers for sp in flagged}
+            n_days = LONG_DAYS
         if not flagged or not peers or not model:
             return None
         if model in self.subjects:
@@ -701,8 +736,11 @@ class Baskets:
         alert = self.finish(
             alert_id=alert_id, store=store, cause_code="low_items_per_bill",
             headline=f"{store}: {who} {_verb(n, 'sell', 'sells')} {c_own['display']} items a bill; colleagues sell {c_peer['display']}",
-            cause=(f"In the last {days['display']} days {join_names(bits)}. The other salespeople at {store} averaged "
-                   f"{c_peer['display']}{left_out}, and {self.name(model)}, the best of them, {c_model['display']}."),
+            cause=(f"In the last {days['display']} days {join_names(bits)}. "
+                   + (f"{self.name(model)}, the only other salesperson at {store} with enough bills to compare, averaged "
+                      f"{c_model['display']}." if peers == [model] else
+                      f"The other salespeople at {store} averaged {c_peer['display']}{left_out}, and {self.name(model)}, "
+                      f"the best of them, {c_model['display']}.")),
             action={"who": who, "what": what, "when": day[1], "text": f"{day[0]}, {who} {what}."} if day else None,
             rupees=rupees,
             arithmetic={
@@ -711,11 +749,11 @@ class Baskets:
                           f"= {r['display']} a week",
                 "input_check_ids": [c_peer["id"], c_own["id"], c_week["id"], c_val["id"]],
             },
-            basis=f"Same store, the other salespeople{left_out}, same {CUR_DAYS} days", people=flagged + [model], book=book,
+            basis=f"Same store, the other salespeople{left_out}, same {n_days} days", people=flagged + [model], book=book,
             follow_up={"metric_label": f"Items per bill of {who} at {store}", "kind": "items_per_bill", "params": grp,
                        "baseline_value": c_own["value"], "target_value": c_peer["value"], "higher_is_better": True},
             definition=(f"Items per bill = sum of qty over product lines (carry bags left out) ÷ number of bills, over the "
-                        f"{CUR_DAYS} days ending on the run date. The named salespeople are compared with the other salespeople of the same "
+                        f"{n_days} days ending on the run date. The named salespeople are compared with the other salespeople of the same "
                         "store who are still on the roster, over the same days."),
         )
         if alert:
@@ -729,7 +767,7 @@ class Baskets:
                     action="Today, show one matching add-on at every trial before you make the bill.",
                     book_items=[days, ipb, c_model],
                     priority=max(0.0, (c_peer["value"] - ipb["value"]) * wk["value"] * c_val["value"]),
-                    definition=f"Items per bill = products on your bills ÷ your bills, last {CUR_DAYS} days; carry bags are not counted.",
+                    definition=f"Items per bill = products on your bills ÷ your bills, last {n_days} days; carry bags are not counted.",
                 )
         return alert
 
