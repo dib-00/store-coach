@@ -116,7 +116,7 @@ def build_output(data: Data, generated_at: str, runs_dir: Path | None = None) ->
     windows = make_windows(data.as_of)
     candidates = det.run()
     notes = det.notes
-    card_candidates = list(bills_cards.card_candidates(m))
+    card_candidates: list[dict] = []
     issues = find_data_issues(m, windows)
     # The other levers plug in here. Each module returns (alert candidates, notes),
     # card candidates and its own data issues; the cap and the card rule apply to all.
@@ -126,6 +126,9 @@ def build_output(data: Data, generated_at: str, runs_dir: Path | None = None) ->
         notes += lever_notes
         card_candidates += lever.card_candidates(m)
         issues += lever.data_issues(m, windows)
+    # The more-bills cards come last: by now engine.workday.corrected(m) holds everyone the other
+    # levers are correcting today, and none of them is named as the colleague to learn from.
+    card_candidates += bills_cards.card_candidates(m)
     issues.sort(key=lambda i: i["issue_id"])
     output = {
         "schema_version": 1,

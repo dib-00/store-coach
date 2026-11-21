@@ -284,7 +284,7 @@ def test_every_number_in_the_text_is_a_check_and_the_action_names_who_what_when(
     for a in alerts.values():
         texts = [a["headline"], a["cause"], a["action"]["text"], a["arithmetic"]["worked"]]
         assert numbers_not_in_checks(texts, a["checks"]) == []
-        assert has_who_what_when(a["action"]) and a["action"]["when"] == "Today"
+        assert has_who_what_when(a["action"]) and a["action"]["when"] == "Monday"  # 1 Nov is a Sunday: calls wait a day
         assert "30 to 180 days" in a["definition"] and PLACEHOLDER in a["definition"]
         assert "same first-bill months" in a["definition"]
         ids = [c["id"] for c in a["checks"]]
@@ -348,7 +348,7 @@ def test_cards_go_to_people_on_the_roster_with_a_named_same_store_peer(m, cards)
         assert c["peer"]["salesperson_id"] != "SP2004"
         assert word_count(c["text"]) <= MAX_CARD_WORDS
         assert c["text"].startswith(c["salesperson_name"].split()[0] + ",")
-        assert c["peer"]["name"] in c["text"] and "Today" in c["action"]
+        assert c["peer"]["name"] in c["text"] and c["action"].startswith("On Monday, call the ")
         assert numbers_not_in_checks([c["text"]], c["checks"]) == []
         assert "same first-bill months" in c["definition"]
     assert cards["SP2002"]["peer"]["salesperson_id"] == "SP2001"

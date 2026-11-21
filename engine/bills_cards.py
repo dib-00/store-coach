@@ -19,6 +19,7 @@ from .checks import CheckBook, numbers_not_in_checks
 from .cards import MAX_CARD_WORDS, word_count
 from .detect import LEVER, is_new_store, make_windows, upcoming_busy_dates
 from .metrics import WEEKDAYS, Metrics, add_days, d
+from .workday import corrected
 
 ACTIVE_WITHIN_DAYS = 7  # "still on the roster": a roster row in the last 7 days up to as-of
 MIN_PEERS = 3  # colleagues needed for a comparison to mean anything
@@ -82,7 +83,11 @@ def attendance_card(m: Metrics, store: str, state: str, sp: str, cur: dict, abv:
     typical = m.compute("peer_median_present_days", {"store_id": store, "exclude_salesperson_ids": [sp], **busy})
     if not typical or mine > BUSY_MAX_SHARE * typical or typical - mine < BUSY_MIN_GAP:
         return None
-    # the named peer: the colleague on the floor on the most busy days (then most bills per day present, then id)
+    # the named peer: the colleague on the floor on the most busy days (then most bills per day present, then id);
+    # never someone another lever is correcting today
+    peers = [x for x in peers if x not in corrected(m)]
+    if not peers:
+        return None
     peer = sorted(peers, key=lambda x: (-m.present_days(x, **busy), -(m.bills_per_present_day(x, **cur) or 0), x))[0]
 
     book = CheckBook(m, f"card:{store}:{sp}:{LEVER}")
@@ -142,9 +147,9 @@ def rate_card(m: Metrics, store: str, state: str, sp: str, cur: dict, base: dict
     usual_off = lambda x: m.compute("usual_off_weekday", {"salesperson_id": x, **cur})
     if usual_off(sp) == tomorrow:
         return None
-    # the named peer: the colleague with the most bills per day present who is still on the roster
-    # and not usually off tomorrow
-    ranked = sorted((x for x in colleagues if is_active(m, x) and usual_off(x) != tomorrow),
+    # the named peer: the colleague with the most bills per day present who is still on the roster,
+    # not usually off tomorrow, and not being corrected on another lever today
+    ranked = sorted((x for x in colleagues if is_active(m, x) and usual_off(x) != tomorrow and x not in corrected(m)),
                     key=lambda x: (-m.bills_per_present_day(x, **cur), x))
     if not ranked:
         return None

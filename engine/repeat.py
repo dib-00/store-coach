@@ -26,6 +26,7 @@ from .checks import CheckBook, conv_tenths, fmt_date, fmt_inr, fmt_int_in, fmt_n
 from .detect import is_new_store, join_names
 from .metrics import Metrics, add_days, d, rnd, rnd_div
 from .rank import has_who_what_when
+from .workday import action_day, corrected
 
 LEVER = "more_repeat"
 
@@ -33,6 +34,7 @@ MIN_GAP_DAYS = 30  # a bill this many days after the first bill, or later, is a 
 MAX_GAP_DAYS = 180  # ... up to this many days after it
 PLACEHOLDER_MIN_BILLS = 25  # a customer id on this many bills is not one person
 PLACEHOLDER_MIN_STORES = 6  # ... nor is one that billed at this many different stores
+PLACEHOLDER_RULE_WORDS = "twenty-five or more bills, or six or more stores"  # the two limits in words; change together
 
 Z_PERSON = 3.6  # one-sided 0.05 / (2 directions x about 160 salespeople)  -> z 3.6
 Z_STORE = 3.0  # one-sided 0.05 / (2 directions x 19 stores)                -> z 3.0
@@ -322,6 +324,10 @@ def k_placeholder_stores(m, p):
     return int(_placeholder_rows(m, p)["store_id"].nunique())
 
 
+def k_placeholder_days(m, p):
+    return int(_placeholder_rows(m, p)["bill_date"].nunique())
+
+
 _fmt_count = lambda v: fmt_int_in(int(v))
 _KINDS = {
     "repeat_customers": (k_customers, _fmt_count),
@@ -339,6 +345,7 @@ _KINDS = {
     "repeat_rupees_at_stake": (k_rupees, fmt_inr),
     "repeat_placeholder_bills": (k_placeholder_bills, _fmt_count),
     "repeat_placeholder_stores": (k_placeholder_stores, _fmt_count),
+    "repeat_placeholder_days": (k_placeholder_days, _fmt_count),
 }
 for _kind, (_fn, _show) in _KINDS.items():
     metrics.EXTRA_KINDS[_kind] = _fn
@@ -388,6 +395,11 @@ class Repeat:
             return m.sp_bill_count(sp, add_days(self.as_of, -27), self.as_of) > 0
         last = m.last_roster_date(sp)
         return last is not None and (d(self.as_of) - d(last)).days <= 6
+
+    def call_day(self, book: CheckBook, store: str, people: list[str]):
+        """("Today" or "On Monday", when): the first of the next 7 days that is not a busy day (calls wait
+        for a quieter day) and on which nobody named has their usual weekly off. None if there is none."""
+        return action_day(self.m, book, people, self.store_rows[store]["state"], avoid_busy=True)
 
     def definition(self, who: str, versus: str) -> str:
         ids = join_names(self.core.placeholders)
@@ -621,8 +633,10 @@ class Repeat:
     def coach_for(self, store: str, sp: str) -> tuple[str, dict] | None:
         """The named peer: the store's role model, else the active colleague this person is furthest behind."""
         best = None
-        models = [x for x, _ in self.role_models[store] if x != sp and self.active(x)]
-        pool = models or [x for x in self.sellers.get(store, []) if x != sp and self.active(x)]
+        busy_elsewhere = corrected(self.m)  # corrected on another lever today: not a coach here
+        models = [x for x, _ in self.role_models[store] if x != sp and self.active(x) and x not in busy_elsewhere]
+        pool = models or [x for x in self.sellers.get(store, [])
+                          if x != sp and self.active(x) and x not in busy_elsewhere]
         for x in pool:
             pair = self.person(store, sp, [x])
             if pair is None or self.m.compute("repeat_customers", {"store_ids": [store], "salesperson_ids": [x], **self.coh}) < MIN_CUSTOMERS:
@@ -645,10 +659,13 @@ class Repeat:
             return None
         c_from, c_to = self.call_dates(book, calls["back"])
         money = self.money_checks(book, store, group, name, pair, name, peer_name, FORMULA)
+        day = self.call_day(book, store, [sp, peer])
+        if day is None:
+            return None
         me, them = first_name(name), first_name(peer_name)
         behaviour = (f"{me}, {c['rate']['display']} of the customers you first billed came back and billed again. "
                      f"For {peer_name}, same store, same months, it was {c['fair']['display']}.")
-        action = (f"Today, call the {calls['n']['display']} customers you first billed between {c_from['display']} and "
+        action = (f"{day[0]}, call the {calls['n']['display']} customers you first billed between {c_from['display']} and "
                   f"{c_to['display']} who have not been back, and ask {them} to sit in on your first five calls.")
         text = f"{behaviour} {action}"
         if numbers_not_in_checks([text], book.items) or not book.usable():
@@ -670,8 +687,8 @@ class Repeat:
         money = self.money_checks(book, store, group, name, st, name, versus, FORMULA)
         headline = (f"{c['rate']['display']} of the {c['n']['display']} customers first billed by {name} at {store} came "
                     f"back and billed again, against {c['fair']['display']} for colleagues' customers first billed in the same months.")
-        cause = (f"{name} is behind colleagues in {c['qs']['display']} of the {c['qc']['display']} first-bill quarters "
-                 f"compared (z {c['z']['display']}), so this is a pattern and not one slow season or a late joining date. "
+        cause = (f"{name} is behind colleagues in {c['qs']['display']} of the {c['qc']['display']} three-month periods "
+                 f"compared, so this is a pattern and not one slow season or a late joining date. "
                  f"The data does not show what is said at the billing counter.")
         if money:
             cause += " " + money["recent"]
@@ -679,9 +696,10 @@ class Repeat:
         people = [sp]
         calls = self.call_list(book, group, "", name, MAX_CALLS)
         action = None
-        if calls:
+        day = self.call_day(book, store, [sp] + ([coach[0]] if coach else [])) if calls else None
+        if calls and day:
             c_from, c_to = self.call_dates(book, calls["back"])
-            text = (f"Today, {name} calls the {calls['n']['display']} customers first billed between {c_from['display']} "
+            text = (f"{day[0]}, {name} calls the {calls['n']['display']} customers first billed between {c_from['display']} "
                     f"and {c_to['display']} who have not been back")
             if 1 < calls["sherwani"]["value"] < calls["n"]["value"]:
                 text += f", starting with the {calls['sherwani']['display']} who bought a sherwani"
@@ -696,12 +714,13 @@ class Repeat:
                 text += f"; {self.name(peer)} sits in on the first five calls"
                 who = f"{name}, with {self.name(peer)}"
             action = {"who": who, "what": f"Call the {calls['n']['display']} first-time customers who have not been back",
-                      "when": "Today", "text": text + "."}
+                      "when": day[1], "text": text + "."}
         peers = st["params"]["peer_salesperson_ids"]
         fu = self.follow_up(book, follow_label(name), group, {"store_ids": [store], "salesperson_ids": peers}, versus)
         self.finish(alert_id=alert_id, store=store, cause_code="customers_not_returning", headline=headline, cause=cause,
                     action=action, money=money, basis=f"Same store: the other salespeople at {store}, same first-bill months",
                     people=people, book=book, follow_up=fu, definition=self.definition(name, versus))
+        corrected(m).add(sp)
         if coach:
             card = self.card(store, sp, coach)
             if card:
@@ -710,6 +729,9 @@ class Repeat:
     def role_model_alert(self, store: str, sp: str, st: dict, skip: set):
         m, name = self.m, self.name(sp)
         alert_id = f"{store}:{LEVER}:role_model:{sp}"
+        if sp in corrected(m):
+            self.notes.append(f"{alert_id}: not sent, {name} is being corrected on another measure today")
+            return
         book = CheckBook(m, alert_id)
         versus = f"the other salespeople at {store}"
         c = self.comparison_checks(book, st, name, versus, "ahead")
@@ -722,12 +744,6 @@ class Repeat:
             if self.is_low(pair):
                 learners.append((pair["rate"] / pair["fair"], x, pair))
         learners.sort(key=lambda t: (t[0], t[1]))
-        for _, x, pair in learners:
-            if x in skip:
-                continue  # already has a card from their own alert
-            card = self.card(store, x, (sp, pair))
-            if card:
-                self.cards.append(card)
         coached, lists = [], []
         for _, x, _pair in learners:
             calls = self.call_list(book, {"store_ids": [store], "salesperson_ids": [x]}, f":{x}", self.name(x), MAX_CALLS)
@@ -743,20 +759,21 @@ class Repeat:
         action = money = fu = None
         headline = (f"{c['rate']['display']} of the {c['n']['display']} customers first billed by {name} at {store} came back "
                     f"and billed again, against {c['fair']['display']} for colleagues' customers first billed in the same months.")
-        cause = (f"{name} is ahead of colleagues in {c['qs']['display']} of the {c['qc']['display']} first-bill quarters "
-                 f"compared (z {c['z']['display']}), so it is not an early joining date or one good season. "
+        cause = (f"{name} is ahead of colleagues in {c['qs']['display']} of the {c['qc']['display']} three-month periods "
+                 f"compared, so it is not an early joining date or one good season. "
                  f"What {name} does to bring customers back is not yet shared on the floor.")
-        if coached:
+        day = self.call_day(book, store, coached + [sp])
+        if coached and day:
             names = [self.name(x) for x in coached]
             c_from, c_to = self.call_dates(book, lists[0]["back"])
             counts = join_names([l["n"]["display"] for l in lists])
             each = "each call their" if len(coached) > 1 else "calls the"
-            text = (f"Today, {join_names(names)} {each} customers first billed between {c_from['display']} and "
+            text = (f"{day[0]}, {join_names(names)} {each} customers first billed between {c_from['display']} and "
                     f"{c_to['display']} who have not been back ({counts} customers), and {name} sits in on the first five "
                     f"calls{' of each' if len(coached) > 1 else ''}.")
             action = {"who": f"{join_names(names)}, with {name}",
                       "what": "Call their first-time customers who have not been back, with the role model listening in",
-                      "when": "Today", "text": text}
+                      "when": day[1], "text": text}
             group = {"store_ids": [store], "salesperson_ids": sorted(coached)}
             money = self.money_checks(book, store, group, join_names(names), st, name, versus, FORMULA_ROLE,
                                       role_model=True)
@@ -767,6 +784,17 @@ class Repeat:
         self.finish(alert_id=alert_id, store=store, cause_code="role_model", headline=headline, cause=cause, action=action,
                     money=money, basis=f"Same store: the other salespeople at {store}, same first-bill months",
                     people=[sp] + coached, book=book, follow_up=fu, definition=self.definition(name, versus))
+        if not any(a["alert_id"] == alert_id for a in self.alerts):
+            return
+        # A card only for the colleagues the alert names: the role model can sit with two people in a day, not seven.
+        pairs = {x: pair for _, x, pair in learners}
+        for x in coached:
+            corrected(m).add(x)
+            if x in skip:
+                continue  # already has a card from their own alert
+            card = self.card(store, x, (sp, pairs[x]))
+            if card:
+                self.cards.append(card)
 
     def store_peers(self, store: str) -> tuple[list[str], str]:
         row = self.store_rows[store]
@@ -796,8 +824,8 @@ class Repeat:
         headline = (f"{c['rate']['display']} of the {c['n']['display']} customers first billed at {store} by the salespeople "
                     f"still on its roster came back and billed again, against {c['fair']['display']} at {versus} for "
                     "customers first billed in the same months.")
-        cause = (f"{store} is behind {versus} in {c['qs']['display']} of the {c['qc']['display']} first-bill quarters "
-                 f"compared (z {c['z']['display']}), so this is a pattern and not one slow season. ")
+        cause = (f"{store} is behind {versus} in {c['qs']['display']} of the {c['qc']['display']} three-month periods "
+                 f"compared, so this is a pattern and not one slow season. ")
         flagged = [self.name(sp) for sp, _ in self.low[store] if self.active(sp)]
         cause += (f"Part of it sits with {join_names(flagged)}, reported separately." if flagged else
                   f"No single salesperson at {store} is far enough from colleagues to explain it.")
@@ -805,16 +833,17 @@ class Repeat:
             cause += " " + money["recent"]
         action = None
         calls = self.call_list(book, group, "", who, MAX_CALLS * len(team))
-        if calls:
+        day = self.call_day(book, store, []) if calls else None
+        if calls and day:
             c_from, c_to = self.call_dates(book, calls["back"])
-            text = (f"Today, the store manager at {store} has each salesperson on the roster call their own customers first "
+            text = (f"{day[0]}, the store manager at {store} has each salesperson on the roster call their own customers first "
                     f"billed between {c_from['display']} and {c_to['display']} who have not been back, "
                     f"{calls['n']['display']} customers in all")
             if 1 < calls["sherwani"]["value"] < calls["n"]["value"]:
                 text += f", starting with the {calls['sherwani']['display']} who bought a sherwani"
             action = {"who": f"Store manager at {store} and every salesperson on the roster",
                       "what": f"Each calls their own first-time customers who have not been back, {calls['n']['display']} in all",
-                      "when": "Today", "text": text + "."}
+                      "when": day[1], "text": text + "."}
         fu = self.follow_up(book, follow_label(who), group, {"store_ids": sorted(peers)}, versus)
         self.finish(alert_id=alert_id, store=store, cause_code="store_customers_not_returning", headline=headline,
                     cause=cause, action=action, money=money, basis=f"{versus[0].upper()}{versus[1:]}, same first-bill months",
@@ -847,6 +876,7 @@ def data_issues(m: Metrics, windows: dict) -> list[dict]:
         book = CheckBook(m, issue_id)
         n = book.add("bills", f"Bills carrying customer id {cid}", "repeat_placeholder_bills", {"customer_id": cid})
         s = book.add("stores", f"Different stores those bills were made at", "repeat_placeholder_stores", {"customer_id": cid})
+        n_days = book.add("days", "Different dates those bills were made on", "repeat_placeholder_days", {"customer_id": cid})
         first, last = str(rows["bill_date"].min()), str(rows["bill_date"].max())
         out.append({
             "issue_id": issue_id,
@@ -855,11 +885,11 @@ def data_issues(m: Metrics, windows: dict) -> list[dict]:
             "title": f"{cid} is a placeholder mobile number, not a customer",
             "detail": (f"Customer id {cid} is on {n['display']} bills at {s['display']} different stores between "
                        f"{fmt_date(first)} and {fmt_date(last)}. One person cannot bill that often or in that many "
-                       f"stores (the rule: {PLACEHOLDER_MIN_BILLS} or more bills, or {PLACEHOLDER_MIN_STORES} or more "
-                       "stores), so this is a number keyed in when the customer gave none."),
+                       f"stores (the rule: {PLACEHOLDER_RULE_WORDS}), so this is a number keyed in when the customer "
+                       "gave none."),
             "first_date": first,
             "last_date": last,
-            "days_affected": int(rows["bill_date"].nunique()),
+            "days_affected": n_days["value"],
             "handling": ("Those bills still count as bills for conversion and for basket size, but they cannot be followed "
                          "for repeat: the id is left out of every return-rate figure, and no alert is raised from it."),
             "checks": book.items,
