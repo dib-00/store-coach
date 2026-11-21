@@ -31,7 +31,9 @@ class Data:
     salespeople: pd.DataFrame
     roster: pd.DataFrame  # date, store_id, salesperson_id, status
     footfall: pd.DataFrame  # date, store_id, footfall (float, NaN when blank)
-    bills: pd.DataFrame  # bill_id, bill_date, store_id, salesperson_id, value
+    bills: pd.DataFrame  # bill_id, bill_date, store_id, salesperson_id, customer_id, value
+    lines: pd.DataFrame  # bill_id, sku_id, qty_n, mrp_n, price_n, line_value, category, is_packaging
+    items: pd.DataFrame  # sku_id, style_id, style_name, category, size, is_packaging, ...
     calendar: pd.DataFrame  # date, state, festival, is_wedding_date (published in advance)
 
 
@@ -65,7 +67,10 @@ def load(data_dir: Path | str, as_of: str | None = None) -> Data:
     # Bill value = sum(qty x selling_price) over its lines. Packaging lines are Rs 0.
     lines["qty_n"] = pd.to_numeric(lines["qty"])
     lines["price_n"] = pd.to_numeric(lines["selling_price"])
+    lines["mrp_n"] = pd.to_numeric(lines["mrp"])
     lines["line_value"] = lines["qty_n"] * lines["price_n"]
+    items = raw["items"].copy()
+    lines = lines.merge(items[["sku_id", "category", "is_packaging"]], on="sku_id", how="left")
     value = lines.groupby("bill_id")["line_value"].sum()
     bills["value"] = bills["bill_id"].map(value).fillna(0.0).astype(float)
 
@@ -83,5 +88,7 @@ def load(data_dir: Path | str, as_of: str | None = None) -> Data:
         roster=sort(roster, ["date", "store_id", "salesperson_id"]),
         footfall=sort(footfall, ["date", "store_id"]),
         bills=sort(bills, ["bill_id"]),
+        lines=sort(lines, ["bill_id", "sku_id"]),
+        items=sort(items, ["sku_id"]),
         calendar=sort(calendar, ["date", "state"]),
     )

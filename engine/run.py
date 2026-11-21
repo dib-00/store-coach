@@ -14,8 +14,11 @@ import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
 
+from . import baskets, bills_cards, repeat
+from .cards import select_cards
 from .checks import CheckBook, fmt_date
 from .detect import Detector, is_new_store, make_windows
+from .followup import follow_ups
 from .issues import find_data_issues, judgeable
 from .load import Data, last_bill_date, load
 from .metrics import Metrics, add_days, d
@@ -84,11 +87,23 @@ def manager_blocks(data: Data, candidates: list[dict]) -> list[dict]:
     return out
 
 
-def build_output(data: Data, generated_at: str) -> tuple[dict, list[str]]:
+def build_output(data: Data, generated_at: str, runs_dir: Path | None = None) -> tuple[dict, list[str]]:
     m = Metrics(data)
     det = Detector(m)
     windows = make_windows(data.as_of)
     candidates = det.run()
+    notes = det.notes
+    card_candidates = list(bills_cards.card_candidates(m))
+    issues = find_data_issues(m, windows)
+    # The other levers plug in here. Each module returns (alert candidates, notes),
+    # card candidates and its own data issues; the cap and the card rule apply to all.
+    for lever in (baskets, repeat):
+        found, lever_notes = lever.detect(m)
+        candidates += found
+        notes += lever_notes
+        card_candidates += lever.card_candidates(m)
+        issues += lever.data_issues(m, windows)
+    issues.sort(key=lambda i: i["issue_id"])
     output = {
         "schema_version": 1,
         "as_of": data.as_of,
@@ -96,11 +111,11 @@ def build_output(data: Data, generated_at: str) -> tuple[dict, list[str]]:
         "windows": windows,
         "area_managers": manager_blocks(data, candidates),
         "stores": store_blocks(m, data, windows),
-        "cards": [],
-        "follow_ups": [],
-        "data_issues": find_data_issues(m, windows),
+        "cards": select_cards(card_candidates),
+        "follow_ups": follow_ups(m, data, runs_dir) if runs_dir is not None else [],
+        "data_issues": issues,
     }
-    return output, det.notes
+    return output, notes
 
 
 def to_json(output: dict) -> str:
@@ -120,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
     generated_at = args.generated_at or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     data = load(args.data_dir, as_of)
-    output, notes = build_output(data, generated_at)
+    output, notes = build_output(data, generated_at, Path(args.out_dir) / "runs")
     text = to_json(output)
 
     out_dir = Path(args.out_dir)

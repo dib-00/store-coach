@@ -12,6 +12,10 @@ from .load import Data
 
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
+# Check kinds added by the other lever modules: kind -> function(metrics, params) -> value.
+# Each lever registers its own kinds here on import, so this file does not change per lever.
+EXTRA_KINDS: dict = {}
+
 
 def d(s: str) -> date:
     return date.fromisoformat(s)
@@ -174,6 +178,8 @@ class Metrics:
 
     # ---------- the check kinds ----------
     def compute(self, kind: str, p: dict):
+        if kind in EXTRA_KINDS:
+            return EXTRA_KINDS[kind](self, p)
         if kind in ("bills_count", "footfall_sum", "conversion", "avg_bill_value", "valid_days"):
             b, f, v, nv, ni = self.parts(p["store_ids"], p["start"], p["end"], p.get("day_type", "all"))
             if kind == "bills_count":

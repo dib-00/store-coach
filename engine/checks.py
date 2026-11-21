@@ -64,9 +64,15 @@ def fmt_num(v: float, n: int) -> str:
     return f"{v:.{n}f}"
 
 
+# Display formats for kinds added by the other lever modules: kind -> function(value) -> str.
+EXTRA_DISPLAY: dict = {}
+
+
 def display(kind: str, value) -> str:
     if value is None:
         return "not available"
+    if kind in EXTRA_DISPLAY:
+        return EXTRA_DISPLAY[kind](value)
     if kind == "conversion":
         return fmt_pct(value)
     if kind in ("avg_bill_value", "rupees_at_stake"):
