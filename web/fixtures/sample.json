@@ -1,0 +1,372 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-10-31",
+  "generated_at": "2026-11-01T01:30:00Z",
+  "windows": {
+    "current": { "start": "2026-10-25", "end": "2026-10-31" },
+    "baseline": { "start": "2026-07-26", "end": "2026-10-24" }
+  },
+  "area_managers": [
+    {
+      "area_manager_id": "AM-TEST-1",
+      "name": "Sample Manager One",
+      "city": "Testpur",
+      "store_ids": ["TST-01", "TST-02", "TST-03"],
+      "max_alerts_per_week": 5,
+      "alerts": [
+        {
+          "alert_id": "TST-02:bigger_baskets:single_item_bills",
+          "rank": 1,
+          "scope": "store",
+          "store_ids": ["TST-02"],
+          "city": "Testpur",
+          "lever": "bigger_baskets",
+          "cause_code": "single_item_bills",
+          "headline": "TST-02 baskets shrank from 2.4 to 2.1 items per bill",
+          "cause": "Two of the four salespeople billed mostly single items this week. Fixture Person C averaged 1.4 items per bill against 2.6 for Fixture Person D on the same floor.",
+          "action": {
+            "who": "Store manager at TST-02",
+            "what": "Pair Fixture Person C with Fixture Person D for the first three customers and offer a matching accessory before every bill",
+            "when": "Today, from store opening",
+            "text": "Store manager at TST-02: pair Fixture Person C with Fixture Person D for the first three customers today and offer a matching accessory before every bill."
+          },
+          "rupees_at_stake_weekly": 96000,
+          "arithmetic": {
+            "formula": "(fair items per bill − current items per bill) × bills a week × average item value",
+            "worked": "(2.4 − 2.1) × 80 bills a week × ₹4,000 = ₹96,000 a week",
+            "input_check_ids": ["a1-fair", "a1-current", "a1-bills", "a1-item-value"]
+          },
+          "benchmark_basis": "Same store, previous 13 weeks",
+          "salesperson_ids": ["SP-TEST-C", "SP-TEST-D"],
+          "checks": [
+            { "id": "a1-fair", "label": "Items per bill, previous 13 weeks", "kind": "items_per_bill", "params": { "store_id": "TST-02", "start": "2026-07-26", "end": "2026-10-24" }, "value": 2.4, "display": "2.4" },
+            { "id": "a1-current", "label": "Items per bill, this week", "kind": "items_per_bill", "params": { "store_id": "TST-02", "start": "2026-10-25", "end": "2026-10-31" }, "value": 2.1, "display": "2.1" },
+            { "id": "a1-bills", "label": "Bills this week", "kind": "bill_count", "params": { "store_id": "TST-02", "start": "2026-10-25", "end": "2026-10-31" }, "value": 80, "display": "80" },
+            { "id": "a1-item-value", "label": "Average item value this week", "kind": "avg_item_value", "params": { "store_id": "TST-02", "start": "2026-10-25", "end": "2026-10-31" }, "value": 4000, "display": "₹4,000" }
+          ],
+          "follow_up": {
+            "metric_label": "Items per bill at TST-02",
+            "kind": "items_per_bill",
+            "params": { "store_id": "TST-02", "start": "2026-10-25", "end": "2026-10-31" },
+            "baseline_value": 2.1,
+            "target_value": 2.4,
+            "higher_is_better": true
+          }
+        },
+        {
+          "alert_id": "TST-01:more_bills:missed_shifts",
+          "rank": 2,
+          "scope": "store",
+          "store_ids": ["TST-01"],
+          "city": "Testpur",
+          "lever": "more_bills",
+          "cause_code": "missed_shifts",
+          "headline": "TST-01 conversion fell from 12.0% to 10.0%",
+          "cause": "Fixture Person A missed 3 of 6 rostered shifts this week, so the floor ran one person short on the two busiest days.",
+          "action": {
+            "who": "Store manager at TST-01",
+            "what": "Confirm Fixture Person A's shifts for Saturday and Sunday, and move Fixture Person B to the floor from 5 pm to 9 pm on both days",
+            "when": "Before 12 noon today",
+            "text": "Store manager at TST-01: before 12 noon today, confirm Fixture Person A's weekend shifts and move Fixture Person B to the floor from 5 pm to 9 pm on both days."
+          },
+          "rupees_at_stake_weekly": 60000,
+          "arithmetic": {
+            "formula": "(fair conversion − current conversion) × walk-ins a week × average bill value",
+            "worked": "(12.0% − 10.0%) × 300 walk-ins a week × ₹10,000 = ₹60,000 a week",
+            "input_check_ids": ["a2-fair", "a2-current", "a2-walkins", "a2-abv"]
+          },
+          "benchmark_basis": "Same store, previous 13 weeks",
+          "salesperson_ids": ["SP-TEST-A", "SP-TEST-B"],
+          "checks": [
+            { "id": "a2-fair", "label": "Conversion, previous 13 weeks", "kind": "conversion", "params": { "store_id": "TST-01", "start": "2026-07-26", "end": "2026-10-24" }, "value": 0.12, "display": "12.0%" },
+            { "id": "a2-current", "label": "Conversion, this week", "kind": "conversion", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.1, "display": "10.0%" },
+            { "id": "a2-walkins", "label": "Walk-ins this week", "kind": "footfall", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 300, "display": "300" },
+            { "id": "a2-abv", "label": "Average bill value this week", "kind": "avg_bill_value", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 10000, "display": "₹10,000" },
+            { "id": "a2-shifts", "label": "Shifts missed by Fixture Person A this week", "kind": "missed_shifts", "params": { "store_id": "TST-01", "salesperson_id": "SP-TEST-A", "start": "2026-10-25", "end": "2026-10-31" }, "value": 3, "display": "3 of 6" }
+          ],
+          "follow_up": {
+            "metric_label": "Conversion at TST-01",
+            "kind": "conversion",
+            "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" },
+            "baseline_value": 0.1,
+            "target_value": 0.12,
+            "higher_is_better": true
+          }
+        },
+        {
+          "alert_id": "Testpur:more_bills:market_slowdown",
+          "rank": 3,
+          "scope": "city",
+          "store_ids": ["TST-01", "TST-02", "TST-03"],
+          "city": "Testpur",
+          "lever": "more_bills",
+          "cause_code": "market_slowdown",
+          "headline": "Conversion slipped at all 3 Testpur stores in the same week, from 11.0% to 10.0%",
+          "cause": "All three stores moved together, which points to the market and not to one store. It is reported once here and not as three separate alerts.",
+          "action": {
+            "who": "Sample Manager One",
+            "what": "Call the three store managers and agree that every walk-in is greeted within two minutes",
+            "when": "Before stores open today",
+            "text": "Sample Manager One: before stores open today, call the three Testpur store managers and agree that every walk-in is greeted within two minutes."
+          },
+          "rupees_at_stake_weekly": 45000,
+          "arithmetic": {
+            "formula": "(fair conversion − current conversion) × walk-ins a week × average bill value",
+            "worked": "(11.0% − 10.0%) × 900 walk-ins a week × ₹5,000 = ₹45,000 a week",
+            "input_check_ids": ["a3-fair", "a3-current", "a3-walkins", "a3-abv"]
+          },
+          "benchmark_basis": "Same city, previous 13 weeks",
+          "salesperson_ids": [],
+          "checks": [
+            { "id": "a3-fair", "label": "Testpur conversion, previous 13 weeks", "kind": "conversion", "params": { "store_ids": ["TST-01", "TST-02", "TST-03"], "start": "2026-07-26", "end": "2026-10-24" }, "value": 0.11, "display": "11.0%" },
+            { "id": "a3-current", "label": "Testpur conversion, this week", "kind": "conversion", "params": { "store_ids": ["TST-01", "TST-02", "TST-03"], "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.1, "display": "10.0%" },
+            { "id": "a3-walkins", "label": "Testpur walk-ins this week", "kind": "footfall", "params": { "store_ids": ["TST-01", "TST-02", "TST-03"], "start": "2026-10-25", "end": "2026-10-31" }, "value": 900, "display": "900" },
+            { "id": "a3-abv", "label": "Testpur average bill value this week", "kind": "avg_bill_value", "params": { "store_ids": ["TST-01", "TST-02", "TST-03"], "start": "2026-10-25", "end": "2026-10-31" }, "value": 5000, "display": "₹5,000" }
+          ],
+          "follow_up": {
+            "metric_label": "Conversion across Testpur",
+            "kind": "conversion",
+            "params": { "store_ids": ["TST-01", "TST-02", "TST-03"], "start": "2026-10-25", "end": "2026-10-31" },
+            "baseline_value": 0.1,
+            "target_value": 0.11,
+            "higher_is_better": true
+          }
+        }
+      ],
+      "held_back": [
+        {
+          "headline": "TST-03 baskets are 0.2 items below the Testpur average",
+          "lever": "bigger_baskets",
+          "rupees_at_stake_weekly": 8000,
+          "reason": "TST-03 opened under 90 days ago, so it is too new to judge against established stores"
+        }
+      ]
+    },
+    {
+      "area_manager_id": "AM-TEST-2",
+      "name": "Sample Manager Two",
+      "city": "Mockabad",
+      "store_ids": ["TST-04"],
+      "max_alerts_per_week": 5,
+      "alerts": [
+        {
+          "alert_id": "TST-04:more_repeat:no_callback",
+          "rank": 1,
+          "scope": "store",
+          "store_ids": ["TST-04"],
+          "city": "Mockabad",
+          "lever": "more_repeat",
+          "cause_code": "no_callback",
+          "headline": "TST-04 repeat rate fell from 20.0% to 15.0%",
+          "cause": "Fewer first-time customers from early September came back after 30 days than in the 13 weeks before.",
+          "action": {
+            "who": "Store manager at TST-04",
+            "what": "Phone the 10 first-time customers from the week of 20 Sep who have not billed again",
+            "when": "Today between 11 am and 1 pm",
+            "text": "Store manager at TST-04: today between 11 am and 1 pm, phone the 10 first-time customers from the week of 20 Sep who have not billed again."
+          },
+          "rupees_at_stake_weekly": 12000,
+          "arithmetic": {
+            "formula": "(fair repeat rate − current repeat rate) × first-time customers a week × average bill value",
+            "worked": "(20.0% − 15.0%) × 40 first-time customers a week × ₹6,000 = ₹12,000 a week",
+            "input_check_ids": ["a4-fair", "a4-current", "a4-new", "a4-abv"]
+          },
+          "benchmark_basis": "Same store, previous 13 weeks",
+          "salesperson_ids": [],
+          "checks": [
+            { "id": "a4-fair", "label": "Repeat rate, previous 13 weeks", "kind": "repeat_rate", "params": { "store_id": "TST-04", "start": "2026-07-26", "end": "2026-10-24" }, "value": 0.2, "display": "20.0%" },
+            { "id": "a4-current", "label": "Repeat rate, this week", "kind": "repeat_rate", "params": { "store_id": "TST-04", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.15, "display": "15.0%" },
+            { "id": "a4-new", "label": "First-time customers a week", "kind": "first_time_customers", "params": { "store_id": "TST-04", "start": "2026-10-25", "end": "2026-10-31" }, "value": 40, "display": "40" },
+            { "id": "a4-abv", "label": "Average bill value this week", "kind": "avg_bill_value", "params": { "store_id": "TST-04", "start": "2026-10-25", "end": "2026-10-31" }, "value": 6000, "display": "₹6,000" }
+          ],
+          "follow_up": {
+            "metric_label": "Repeat rate at TST-04",
+            "kind": "repeat_rate",
+            "params": { "store_id": "TST-04", "start": "2026-10-25", "end": "2026-10-31" },
+            "baseline_value": 0.15,
+            "target_value": 0.2,
+            "higher_is_better": true
+          }
+        }
+      ],
+      "held_back": []
+    }
+  ],
+  "stores": [
+    {
+      "store_id": "TST-01",
+      "city": "Testpur",
+      "state": "Sampleland",
+      "tier": "Tier 1",
+      "opened_on": "2021-04-12",
+      "area_manager_id": "AM-TEST-1",
+      "is_new_store": false,
+      "salespeople": [
+        { "salesperson_id": "SP-TEST-A", "name": "Fixture Person A", "active": true },
+        { "salesperson_id": "SP-TEST-B", "name": "Fixture Person B", "active": true }
+      ],
+      "summary": [
+        { "id": "s1-conv", "label": "Conversion this week", "kind": "conversion", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.1, "display": "10.0%" },
+        { "id": "s1-ipb", "label": "Items per bill this week", "kind": "items_per_bill", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 2.3, "display": "2.3" },
+        { "id": "s1-walkins", "label": "Walk-ins this week", "kind": "footfall", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 300, "display": "300" }
+      ]
+    },
+    {
+      "store_id": "TST-02",
+      "city": "Testpur",
+      "state": "Sampleland",
+      "tier": "Tier 1",
+      "opened_on": "2019-11-02",
+      "area_manager_id": "AM-TEST-1",
+      "is_new_store": false,
+      "salespeople": [
+        { "salesperson_id": "SP-TEST-C", "name": "Fixture Person C", "active": true },
+        { "salesperson_id": "SP-TEST-D", "name": "Fixture Person D", "active": true },
+        { "salesperson_id": "SP-TEST-E", "name": "Fixture Person E", "active": false }
+      ],
+      "summary": [
+        { "id": "s2-conv", "label": "Conversion this week", "kind": "conversion", "params": { "store_id": "TST-02", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.1, "display": "10.0%" },
+        { "id": "s2-ipb", "label": "Items per bill this week", "kind": "items_per_bill", "params": { "store_id": "TST-02", "start": "2026-10-25", "end": "2026-10-31" }, "value": 2.1, "display": "2.1" }
+      ]
+    },
+    {
+      "store_id": "TST-03",
+      "city": "Testpur",
+      "state": "Sampleland",
+      "tier": "Tier 2",
+      "opened_on": "2026-09-01",
+      "area_manager_id": "AM-TEST-1",
+      "is_new_store": true,
+      "salespeople": [],
+      "summary": []
+    },
+    {
+      "store_id": "TST-04",
+      "city": "Mockabad",
+      "state": "Sampleland",
+      "tier": "Tier 2",
+      "opened_on": "2022-01-20",
+      "area_manager_id": "AM-TEST-2",
+      "is_new_store": false,
+      "salespeople": [{ "salesperson_id": "SP-TEST-F", "name": "Fixture Person F", "active": true }],
+      "summary": [
+        { "id": "s4-repeat", "label": "Repeat rate this week", "kind": "repeat_rate", "params": { "store_id": "TST-04", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.15, "display": "15.0%" }
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "card_id": "TST-01:SP-TEST-A:more_bills",
+      "store_id": "TST-01",
+      "salesperson_id": "SP-TEST-A",
+      "salesperson_name": "Fixture Person A",
+      "lever": "more_bills",
+      "behaviour": "Greets walk-ins late",
+      "peer": { "salesperson_id": "SP-TEST-B", "name": "Fixture Person B" },
+      "action": "Greet every walk-in within two minutes today",
+      "text": "Fixture Person A, 8 of your 100 walk-ins billed this week. Fixture Person B in your store billed 14 of 100. Fixture Person B greets each customer within two minutes. Today, greet every walk-in within two minutes and ask what occasion they are shopping for.",
+      "word_count": 45,
+      "checks": [
+        { "id": "c1-own", "label": "Fixture Person A conversion this week", "kind": "salesperson_conversion", "params": { "store_id": "TST-01", "salesperson_id": "SP-TEST-A", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.08, "display": "8 of 100" },
+        { "id": "c1-peer", "label": "Fixture Person B conversion this week", "kind": "salesperson_conversion", "params": { "store_id": "TST-01", "salesperson_id": "SP-TEST-B", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.14, "display": "14 of 100" }
+      ]
+    },
+    {
+      "card_id": "TST-01:SP-TEST-B:bigger_baskets",
+      "store_id": "TST-01",
+      "salesperson_id": "SP-TEST-B",
+      "salesperson_name": "Fixture Person B",
+      "lever": "bigger_baskets",
+      "behaviour": "Rarely adds an accessory",
+      "peer": { "salesperson_id": "SP-TEST-A", "name": "Fixture Person A" },
+      "action": "Show one accessory with every kurta today",
+      "text": "Fixture Person B, your bills average 1.8 items. Fixture Person A in your store averages 2.5 by showing a stole or mojari with every kurta. Today, show one matching accessory before you walk each customer to the billing counter.",
+      "word_count": 39,
+      "checks": [
+        { "id": "c2-own", "label": "Fixture Person B items per bill this week", "kind": "salesperson_items_per_bill", "params": { "store_id": "TST-01", "salesperson_id": "SP-TEST-B", "start": "2026-10-25", "end": "2026-10-31" }, "value": 1.8, "display": "1.8" },
+        { "id": "c2-peer", "label": "Fixture Person A items per bill this week", "kind": "salesperson_items_per_bill", "params": { "store_id": "TST-01", "salesperson_id": "SP-TEST-A", "start": "2026-10-25", "end": "2026-10-31" }, "value": 2.5, "display": "2.5" }
+      ]
+    },
+    {
+      "card_id": "TST-02:SP-TEST-C:bigger_baskets",
+      "store_id": "TST-02",
+      "salesperson_id": "SP-TEST-C",
+      "salesperson_name": "Fixture Person C",
+      "lever": "bigger_baskets",
+      "behaviour": "Bills single items",
+      "peer": { "salesperson_id": "SP-TEST-D", "name": "Fixture Person D" },
+      "action": "Offer a matching accessory before every bill today",
+      "text": "Fixture Person C, your bills average 1.4 items. Fixture Person D in your store averages 2.6. Fixture Person D offers a matching accessory before billing. Today, do the same with every customer you serve.",
+      "word_count": 34,
+      "checks": [
+        { "id": "c3-own", "label": "Fixture Person C items per bill this week", "kind": "salesperson_items_per_bill", "params": { "store_id": "TST-02", "salesperson_id": "SP-TEST-C", "start": "2026-10-25", "end": "2026-10-31" }, "value": 1.4, "display": "1.4" },
+        { "id": "c3-peer", "label": "Fixture Person D items per bill this week", "kind": "salesperson_items_per_bill", "params": { "store_id": "TST-02", "salesperson_id": "SP-TEST-D", "start": "2026-10-25", "end": "2026-10-31" }, "value": 2.6, "display": "2.6" }
+      ]
+    }
+  ],
+  "follow_ups": [
+    {
+      "alert_id": "TST-01:more_bills:thin_floor_busy_days",
+      "area_manager_id": "AM-TEST-1",
+      "store_ids": ["TST-01"],
+      "lever": "more_bills",
+      "headline": "TST-01 conversion fell from 12.0% to 9.5%",
+      "action_text": "Store manager at TST-01: put a third salesperson on the floor from 5 pm to 9 pm on Saturday and Sunday.",
+      "raised_as_of": "2026-10-24",
+      "measured_as_of": "2026-10-31",
+      "metric_label": "Conversion at TST-01",
+      "before": 0.095,
+      "after": 0.1,
+      "target": 0.12,
+      "before_display": "9.5%",
+      "after_display": "10.0%",
+      "target_display": "12.0%",
+      "moved": "improved",
+      "verdict": "Conversion at TST-01 rose from 9.5% to 10.0%. It is still below the 12.0% target.",
+      "checks": [
+        { "id": "f1-before", "label": "Conversion at TST-01, week to 24 Oct 2026", "kind": "conversion", "params": { "store_id": "TST-01", "start": "2026-10-18", "end": "2026-10-24" }, "value": 0.095, "display": "9.5%" },
+        { "id": "f1-after", "label": "Conversion at TST-01, week to 31 Oct 2026", "kind": "conversion", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.1, "display": "10.0%" }
+      ]
+    },
+    {
+      "alert_id": "TST-04:bigger_baskets:single_item_bills",
+      "area_manager_id": "AM-TEST-2",
+      "store_ids": ["TST-04"],
+      "lever": "bigger_baskets",
+      "headline": "TST-04 baskets shrank from 2.2 to 1.9 items per bill",
+      "action_text": "Store manager at TST-04: have Fixture Person F show one accessory with every kurta this week.",
+      "raised_as_of": "2026-10-24",
+      "measured_as_of": "2026-10-31",
+      "metric_label": "Items per bill at TST-04",
+      "before": 1.9,
+      "after": 1.9,
+      "target": 2.2,
+      "before_display": "1.9",
+      "after_display": "1.9",
+      "target_display": "2.2",
+      "moved": "no_change",
+      "verdict": "Items per bill at TST-04 stayed at 1.9. The number did not move.",
+      "checks": [
+        { "id": "f2-before", "label": "Items per bill at TST-04, week to 24 Oct 2026", "kind": "items_per_bill", "params": { "store_id": "TST-04", "start": "2026-10-18", "end": "2026-10-24" }, "value": 1.9, "display": "1.9" },
+        { "id": "f2-after", "label": "Items per bill at TST-04, week to 31 Oct 2026", "kind": "items_per_bill", "params": { "store_id": "TST-04", "start": "2026-10-25", "end": "2026-10-31" }, "value": 1.9, "display": "1.9" }
+      ]
+    }
+  ],
+  "data_issues": [
+    {
+      "issue_id": "TST-03:footfall_zero_with_bills:2026-10-27",
+      "store_id": "TST-03",
+      "kind": "footfall_zero_with_bills",
+      "title": "TST-03 recorded bills on days with zero walk-ins",
+      "detail": "The footfall counter shows 0 walk-ins on 2 days when the store billed 11 customers. A store cannot bill customers who never walked in.",
+      "first_date": "2026-10-27",
+      "last_date": "2026-10-28",
+      "days_affected": 2,
+      "handling": "These 2 days are left out of the conversion figures for TST-03 and for Testpur.",
+      "checks": [
+        { "id": "d1-days", "label": "Days with bills and zero walk-ins", "kind": "footfall_zero_with_bills_days", "params": { "store_id": "TST-03", "start": "2026-10-25", "end": "2026-10-31" }, "value": 2, "display": "2" },
+        { "id": "d1-bills", "label": "Bills on those days", "kind": "bill_count", "params": { "store_id": "TST-03", "dates": ["2026-10-27", "2026-10-28"] }, "value": 11, "display": "11" }
+      ]
+    }
+  ]
+}
