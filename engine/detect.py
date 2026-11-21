@@ -32,6 +32,8 @@ MISSED_MAX_WEEKS_BACK = 26  # how far back to look for the week the missed shift
 THIN_RATIO = 1.25  # walk-ins per salesperson, busy days vs other days
 CITY_BEYOND = 0.10  # a store in a slow city needs a drop this much deeper than the city
 
+NOT_SENT = "not_sent"  # a cause was found but the alert broke a sending rule; do not try another cause
+
 FORMULA = "(fair conversion − current conversion) × walk-ins a week × average bill value"
 
 
@@ -152,17 +154,17 @@ class Detector:
 
     def finish(self, *, alert_id, scope, stores, city, cause_code, headline, cause, action, core, basis,
                people, book, metric_label):
-        """Assemble an Alert, or return None (with a note) when it breaks a sending rule."""
+        """Assemble an Alert, or return NOT_SENT (with a note) when it breaks a sending rule."""
         if core is None or core["rupees"] <= 0:
             self.notes.append(f"{alert_id}: not sent, no rupees at stake could be worked out")
-            return None
+            return NOT_SENT
         if not has_who_what_when(action):
             self.notes.append(f"{alert_id}: not sent, no action naming who, what and when could be built")
-            return None
+            return NOT_SENT
         stray = numbers_not_in_checks([headline, cause, action["text"], core["arithmetic"]["worked"]], book.items)
         if stray or not book.usable():
             self.notes.append(f"{alert_id}: not sent, figures without a check: {stray}")
-            return None
+            return NOT_SENT
         return {
             "alert_id": alert_id,
             "rank": 0,
@@ -416,7 +418,7 @@ class Detector:
         book = CheckBook(m, alert_id)
         core = self.core_checks(book, [store], base, cur, "previous 13 weeks")
         if core is None:
-            return None
+            return NOT_SENT
         f_cur = book.add("walkins_per_week_benchmark", f"Walk-ins a week, {span(base)}", "walkins_per_week",
                          {"store_ids": [store], **base})
         headline = (f"{store} is converting {core['cur']['display']} of walk-ins, down from "
@@ -491,7 +493,7 @@ class Detector:
         book = CheckBook(m, alert_id)
         core = self.core_checks(book, stores, base, cur, "previous 13 weeks")
         if core is None:
-            return None
+            return NOT_SENT
         for s in stores:
             book.add(f"conv_current:{s}", f"Conversion at {s}, {span(cur)}", "conversion",
                      {"store_ids": [s], **cur, "day_type": "all"})
@@ -541,9 +543,10 @@ class Detector:
         slow: dict[str, float] = {}
         for city in sorted(cities):
             a = self.city_slowdown(city, cities[city])
-            if a:
-                alerts.append(a)
+            if a is not None:  # the city fell, whether or not the alert could be sent
                 slow[city] = self.drop_test(cities[city], cur, base)[1]
+                if a != NOT_SENT:
+                    alerts.append(a)
 
         for s in judged:
             city = self.store_rows[s]["city"]
@@ -551,9 +554,12 @@ class Detector:
             if city in slow and not (scan and scan[1] <= slow[city] - CITY_BEYOND):
                 self.notes.append(f"{s}: covered by the {city} market alert")
                 continue
-            a = self.salesperson_left(s) or self.missed_shifts(s)
+            # first cause that holds; a cause that holds but cannot be sent is not replaced by another
+            a = self.salesperson_left(s)
+            if a is None:
+                a = self.missed_shifts(s)
             if a is None and scan and scan[0] <= Z_SCAN and scan[1] <= -MIN_REL_DROP:
                 a = self.scan_drop(s)
-            if a:
+            if a is not None and a != NOT_SENT:
                 alerts.append(a)
         return alerts
