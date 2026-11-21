@@ -1,0 +1,6 @@
+{
+  "raised_as_of": "2026-10-10",
+  "measured_as_of": "2026-10-17",
+  "alert_id": "BLR-03:more_bills:missed_shifts",
+  "note": "Conversion at BLR-03 rose past the two-standard-error bar in the week after this alert, but the roster shows neither named salesperson on the floor on the busy days, so the rise is not credited to the action."
+}
