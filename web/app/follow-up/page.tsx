@@ -21,12 +21,54 @@ export const metadata: Metadata = { title: "Follow-up" };
 
 // The marker says what happened to the number and nothing more. "Not measurable" is its own
 // outcome, with its own look, so a week that could not be measured is never read as a win or a loss.
-const MOVED: Record<FollowUp["moved"], { label: string; mark: string; className: string }> = {
-  improved: { label: "Improved", mark: "↑", className: "bg-good-bg text-good-ink" },
-  no_change: { label: "No change", mark: "=", className: "bg-flat-bg text-flat-ink" },
-  worse: { label: "Worse", mark: "↓", className: "bg-bad-bg text-bad-ink" },
-  not_measurable: { label: "Not measurable", mark: "?", className: "border border-ink text-ink" },
+const MOVED: Record<FollowUp["moved"], { label: string; badge: string; mark: string; className: string }> = {
+  improved: { label: "Improved", badge: "Moved: improved", mark: "↑", className: "bg-good-bg text-good-ink" },
+  no_change: { label: "No change", badge: "No real change", mark: "=", className: "bg-flat-bg text-flat-ink" },
+  worse: { label: "Worse", badge: "Moved: worse", mark: "↓", className: "bg-bad-bg text-bad-ink" },
+  not_measurable: {
+    label: "Not measurable",
+    badge: "Not measurable yet",
+    mark: "?",
+    className: "border border-ink text-ink",
+  },
 };
+
+/** Before, after and target as three aligned bars, lengths proportional to the engine's values. */
+function MovementBars({ item }: { item: FollowUp }) {
+  const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+  const before = num(item.before);
+  const after = num(item.after);
+  const target = num(item.target);
+  const max = Math.max(...[before, after, target].map((v) => (v === null ? 0 : Math.abs(v))));
+  if (before === null || target === null || !(max > 0)) return null;
+  const rows: { label: string; value: number | null; display: string; cls: string }[] = [
+    { label: "Before", value: before, display: item.before_display, cls: "bg-muted" },
+    { label: "After", value: after, display: item.after_display, cls: "bg-ink" },
+    { label: "Target", value: target, display: item.target_display, cls: "bg-good-ink" },
+  ];
+  return (
+    <div className="mt-3 space-y-2" aria-hidden="true">
+      {rows.map((row) => (
+        <div key={row.label} className="grid grid-cols-[4.5rem_1fr_auto] items-center gap-3 text-sm">
+          <span className="font-semibold">{row.label}</span>
+          {row.value === null ? (
+            <span className="col-span-2 italic text-muted">not measurable yet</span>
+          ) : (
+            <>
+              <span className="block h-3 min-w-0 rounded-full bg-line">
+                <span
+                  className={`block h-3 rounded-full ${row.cls}`}
+                  style={{ width: `${(Math.abs(row.value) / max) * 100}%` }}
+                />
+              </span>
+              <span className="font-semibold tabular-nums">{row.display}</span>
+            </>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function FigureCell({ term, figure }: { term: string; figure: Figure }) {
   return (
@@ -46,11 +88,11 @@ function FollowUpItem({ item, knownStores }: { item: FollowUp; knownStores: Set<
   const moved = MOVED[item.moved];
   const definition = optionalText(item.definition);
   return (
-    <article className="rounded-lg border border-line bg-surface p-4 sm:p-6">
+    <article className="rounded-xl border border-line bg-surface p-4 shadow-sm sm:p-6">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span className={`rounded-full px-3 py-0.5 text-sm font-bold ${moved.className}`}>
+        <span className={`rounded-full px-3 py-1 text-base font-bold ${moved.className}`}>
           <span aria-hidden="true">{moved.mark} </span>
-          {moved.label}
+          {moved.badge}
         </span>
         <LeverBadge lever={item.lever} />
         {item.store_ids.length > 0 ? (
@@ -72,6 +114,7 @@ function FollowUpItem({ item, knownStores }: { item: FollowUp; knownStores: Set<
             <dd className="text-xl font-semibold tabular-nums sm:text-2xl">{item.target_display}</dd>
           </div>
         </dl>
+        <MovementBars item={item} />
         {definition ? <Definition>{definition}</Definition> : null}
         <p className="mt-1 text-sm text-muted">
           Alert raised on data up to {formatDate(item.raised_as_of)}. Measured again on data up to{" "}
@@ -157,7 +200,13 @@ export default function FollowUpPage() {
       )}
 
       {example ? (
-        <section aria-labelledby="fu-history" className="mt-16 border-t-4 border-line pt-8">
+        <section
+          aria-labelledby="fu-history"
+          className="mt-16 rounded-xl border-2 border-dashed border-line bg-paper px-4 pb-6 pt-5 sm:px-6"
+        >
+          <p className="mb-2 inline-block rounded-full bg-warn-bg px-3 py-0.5 text-sm font-bold uppercase tracking-wide text-warn-ink">
+            Replay · not a live result
+          </p>
           <h2 id="fu-history" className="text-2xl font-semibold tracking-tight">
             Historical example (replayed from {formatDate(example.history.raised_as_of)})
           </h2>
