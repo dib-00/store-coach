@@ -11,8 +11,9 @@ import {
   StoreLinks,
   managerHref,
 } from "@/components/bits";
-import { loadEngineOutput } from "@/lib/data";
+import { loadEngineOutput, loadHistoryExample } from "@/lib/data";
 import { formatDate } from "@/lib/format";
+import { afterFigure, beforeFigure, formatDateSpan, type Figure } from "@/lib/followup-view";
 import { followUpsByManager, movedCounts, optionalText, storeIdsWithPages } from "@/lib/rules";
 import type { FollowUp } from "@/lib/types";
 
@@ -26,6 +27,20 @@ const MOVED: Record<FollowUp["moved"], { label: string; mark: string; className:
   worse: { label: "Worse", mark: "↓", className: "bg-bad-bg text-bad-ink" },
   not_measurable: { label: "Not measurable", mark: "?", className: "border border-ink text-ink" },
 };
+
+function FigureCell({ term, figure }: { term: string; figure: Figure }) {
+  return (
+    <div className="px-3 py-3">
+      <dt className="text-sm text-muted">
+        {term}
+        {figure.window ? <>: {formatDateSpan(figure.window.start, figure.window.end)}</> : null}
+      </dt>
+      <dd className="text-xl font-semibold tabular-nums sm:text-2xl">{figure.display}</dd>
+      {figure.note ? <dd className="text-sm text-muted">({figure.note})</dd> : null}
+      {figure.sample ? <dd className="text-sm text-muted">{figure.sample}</dd> : null}
+    </div>
+  );
+}
 
 function FollowUpItem({ item, knownStores }: { item: FollowUp; knownStores: Set<string> }) {
   const moved = MOVED[item.moved];
@@ -49,23 +64,18 @@ function FollowUpItem({ item, knownStores }: { item: FollowUp; knownStores: Set<
 
       <div className="mt-4">
         <p className="text-sm text-muted">{item.metric_label}</p>
-        <dl className="mt-1 grid grid-cols-3 divide-x divide-line rounded-md border border-line text-center">
-          <div className="px-2 py-3">
-            <dt className="text-sm text-muted">Before</dt>
-            <dd className="text-xl font-semibold tabular-nums sm:text-2xl">{item.before_display}</dd>
-          </div>
-          <div className="px-2 py-3">
-            <dt className="text-sm text-muted">After</dt>
-            <dd className="text-xl font-semibold tabular-nums sm:text-2xl">{item.after_display}</dd>
-          </div>
-          <div className="px-2 py-3">
+        <dl className="mt-1 grid grid-cols-1 divide-y divide-line rounded-md border border-line sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <FigureCell term="Before" figure={beforeFigure(item)} />
+          <FigureCell term="After" figure={afterFigure(item)} />
+          <div className="px-3 py-3">
             <dt className="text-sm text-muted">Target</dt>
             <dd className="text-xl font-semibold tabular-nums sm:text-2xl">{item.target_display}</dd>
           </div>
         </dl>
         {definition ? <Definition>{definition}</Definition> : null}
         <p className="mt-1 text-sm text-muted">
-          Before: data up to {formatDate(item.raised_as_of)}. After: data up to {formatDate(item.measured_as_of)}.
+          Alert raised on data up to {formatDate(item.raised_as_of)}. Measured again on data up to{" "}
+          {formatDate(item.measured_as_of)}.
         </p>
       </div>
 
@@ -95,6 +105,7 @@ export default function FollowUpPage() {
 
   const knownStores = storeIdsWithPages(data);
   const groups = followUpsByManager(data);
+  const example = loadHistoryExample();
 
   return (
     <>
@@ -144,6 +155,21 @@ export default function FollowUpPage() {
           ))}
         </div>
       )}
+
+      {example ? (
+        <section aria-labelledby="fu-history" className="mt-16 border-t-4 border-line pt-8">
+          <h2 id="fu-history" className="text-2xl font-semibold tracking-tight">
+            Historical example (replayed from {formatDate(example.history.raised_as_of)})
+          </h2>
+          <p className="mb-2 mt-1 text-muted">
+            Not a live result. This is a replay of the engine on earlier data (up to{" "}
+            {formatDate(example.history.raised_as_of)}, then up to {formatDate(example.history.measured_as_of)}),
+            to show that the follow-up detects real movement.
+          </p>
+          {example.history.note ? <p className="mb-4">{example.history.note}</p> : null}
+          <FollowUpItem item={example.item} knownStores={knownStores} />
+        </section>
+      ) : null}
     </>
   );
 }

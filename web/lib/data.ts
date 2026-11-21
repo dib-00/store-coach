@@ -7,7 +7,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseEngineOutput } from "./parse.ts";
-import type { EngineOutput } from "./types.ts";
+import { parseHistoryNote, type HistoryNote } from "./followup-view.ts";
+import type { EngineOutput, FollowUp } from "./types.ts";
 
 /** Reads and checks one engine output file. Returns null, with the reason logged, if it cannot be used. */
 export function readEngineFile(file: string): EngineOutput | null {
@@ -50,4 +51,26 @@ export function loadEngineOutput(): EngineOutput | null {
 /** True when the pages are showing a development file instead of the published engine run. */
 export function isDevelopmentData(): boolean {
   return developmentOverrideFile() !== null;
+}
+
+/**
+ * The labelled historical example: web/public/data/history.json names one follow-up in an
+ * earlier replayed run (public/data/runs/<measured_as_of>.json). Null, and the page shows no
+ * example, when either file is missing or the follow-up is not in that run.
+ */
+export function loadHistoryExample(): { history: HistoryNote; item: FollowUp } | null {
+  const dir = path.join(process.cwd(), "public", "data");
+  let history: HistoryNote | null = null;
+  try {
+    history = parseHistoryNote(JSON.parse(fs.readFileSync(path.join(dir, "history.json"), "utf8")));
+  } catch {
+    return null;
+  }
+  if (!history) return null;
+  const run = readEngineFile(path.join(dir, "runs", `${history.measured_as_of}.json`));
+  if (!run || run.as_of !== history.measured_as_of) return null;
+  const item = run.follow_ups.find(
+    (f) => f.alert_id === history.alert_id && f.raised_as_of === history.raised_as_of,
+  );
+  return item ? { history, item } : null;
 }
