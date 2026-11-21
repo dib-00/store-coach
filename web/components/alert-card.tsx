@@ -1,5 +1,7 @@
-import { CheckList, LeverChip, ShowTheNumbers, StoreLinks } from "@/components/bits";
+import { CheckList, Definition, LeverChip, ShowTheNumbers, StoreLinks } from "@/components/bits";
+import { DoneTick } from "@/components/done-tick";
 import { formatRupees } from "@/lib/format";
+import { optionalText } from "@/lib/rules";
 import type { Alert } from "@/lib/types";
 
 export function alertAnchor(alert: Pick<Alert, "rank">): string {
@@ -8,25 +10,38 @@ export function alertAnchor(alert: Pick<Alert, "rank">): string {
 
 export function AlertCard({ alert, knownStores }: { alert: Alert; knownStores: Set<string> }) {
   const isMarket = alert.scope === "city";
+  const definition = optionalText(alert.definition);
   return (
     <article
       id={alertAnchor(alert)}
       className="scroll-mt-4 rounded-lg border border-line bg-surface p-4 sm:p-6"
     >
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-ink text-base font-semibold tabular-nums">
-          <span className="sr-only">Rank </span>
-          {alert.rank}
-        </span>
-        <LeverChip lever={alert.lever} />
-        {isMarket ? (
-          <span className="rounded-full border border-ink px-3 py-0.5 text-sm font-semibold">
-            Market issue · {alert.store_ids.length} stores in {alert.city}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-ink text-base font-semibold tabular-nums">
+            <span className="sr-only">Rank </span>
+            {alert.rank}
           </span>
-        ) : null}
+          <LeverChip lever={alert.lever} />
+          {isMarket ? (
+            <span className="rounded-full border border-ink px-3 py-0.5 text-sm font-semibold">
+              Market issue · {alert.store_ids.length} stores in {alert.city}
+            </span>
+          ) : null}
+        </div>
+        <p>
+          <span className="text-2xl font-semibold tabular-nums">{formatRupees(alert.rupees_at_stake_weekly)}</span>{" "}
+          <span className="text-muted">a week at stake</span>
+        </p>
       </div>
 
-      <h2 className="mt-4 text-xl font-semibold leading-snug tracking-tight sm:text-2xl">{alert.headline}</h2>
+      <h2 className="mt-4 text-lg font-semibold leading-snug tracking-tight sm:text-xl">{alert.headline}</h2>
+      {definition ? <Definition>{definition}</Definition> : null}
+
+      <p className="mt-2 text-[0.95rem]">
+        <span className="text-muted">{alert.store_ids.length === 1 ? "Store: " : "Stores: "}</span>
+        <StoreLinks storeIds={alert.store_ids} known={knownStores} />
+      </p>
 
       {isMarket ? (
         <p className="mt-2 text-[0.95rem] text-muted">
@@ -58,25 +73,12 @@ export function AlertCard({ alert, knownStores }: { alert: Alert; knownStores: S
         </dl>
       </section>
 
-      <dl className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
-        <div>
-          <dt className="text-sm text-muted">At stake</dt>
-          <dd>
-            <span className="text-2xl font-semibold tabular-nums">{formatRupees(alert.rupees_at_stake_weekly)}</span>{" "}
-            <span className="text-muted">a week</span>
-          </dd>
-        </div>
-        <div>
-          <dt className="text-sm text-muted">Compared with</dt>
-          <dd className="font-medium">{alert.benchmark_basis}</dd>
-        </div>
-        <div className="sm:col-span-2">
-          <dt className="text-sm text-muted">{alert.store_ids.length === 1 ? "Store" : "Stores"}</dt>
-          <dd>
-            <StoreLinks storeIds={alert.store_ids} known={knownStores} />
-          </dd>
-        </div>
-      </dl>
+      <DoneTick alertId={alert.alert_id} />
+
+      <p className="mt-4 text-[0.95rem]">
+        <span className="text-muted">Compared with: </span>
+        <span className="font-medium">{alert.benchmark_basis}</span>
+      </p>
 
       <ShowTheNumbers>
         <div>

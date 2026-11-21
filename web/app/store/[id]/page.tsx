@@ -5,6 +5,7 @@ import { alertAnchor } from "@/components/alert-card";
 import {
   BackLink,
   CheckList,
+  Definition,
   EmptyNote,
   LeverChip,
   NoEngineRun,
@@ -24,6 +25,8 @@ import {
   dataIssuesForStore,
   findManager,
   findStore,
+  notJudgedReason,
+  optionalText,
   visibleAlerts,
 } from "@/lib/rules";
 import type { Card } from "@/lib/types";
@@ -43,6 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 function SalespersonCard({ card }: { card: Card }) {
   const view = cardView(card);
+  const definition = optionalText(card.definition);
   return (
     <article className="rounded-lg border border-line bg-surface p-4 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
@@ -51,11 +55,16 @@ function SalespersonCard({ card }: { card: Card }) {
       </div>
       {view.status === "show" ? (
         <>
-          <p className="mt-3 text-lg leading-relaxed">{view.text}</p>
-          <p className="mt-3 text-sm text-muted">
-            Peer named: <span className="font-semibold text-ink">{card.peer.name}</span>, same store ·{" "}
-            {view.words} words
+          <div className="mt-3 rounded-md border-l-4 border-ink bg-paper px-4 py-3">
+            <p className="text-lg leading-relaxed">{view.text}</p>
+            <p className="mt-2 text-sm font-medium text-muted">
+              {view.words} of {MAX_CARD_WORDS} words
+            </p>
+          </div>
+          <p className="mt-3 text-[0.95rem] text-muted">
+            Peer named: <span className="font-semibold text-ink">{card.peer.name}</span>, same store
           </p>
+          {definition ? <Definition>{definition}</Definition> : null}
           {card.checks.length > 0 ? (
             <ShowTheNumbers>
               <CheckList checks={card.checks} />
@@ -88,6 +97,7 @@ export default async function StorePage({ params }: Props) {
   const alerts = manager ? visibleAlerts(manager).filter((a) => a.store_ids.includes(store.store_id)) : [];
   const active = store.salespeople.filter((p) => p.active);
   const inactive = store.salespeople.filter((p) => !p.active);
+  const notJudged = notJudgedReason(store);
 
   return (
     <>
@@ -97,13 +107,13 @@ export default async function StorePage({ params }: Props) {
         <BackLink href="/">All area managers</BackLink>
       )}
       <PageTitle title={`Store ${store.store_id}`}>
-        {store.is_new_store ? (
-          <p className="mb-3">
-            <span className="rounded-full bg-warn-bg px-3 py-1 text-sm font-semibold text-warn-ink">
-              New store
-            </span>{" "}
-            <span>Too new to judge against established stores.</span>
-          </p>
+        {notJudged ? (
+          <div className="mb-5 rounded-lg bg-warn-bg px-4 py-3 text-warn-ink">
+            <p className="text-sm font-semibold uppercase tracking-wider">
+              {store.is_new_store ? "New store · not judged this run" : "Not judged this run"}
+            </p>
+            <p className="mt-1 text-lg font-semibold leading-snug">{notJudged}</p>
+          </div>
         ) : null}
         <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
           <div>
@@ -141,6 +151,7 @@ export default async function StorePage({ params }: Props) {
             <li key={alert.alert_id} className="rounded-lg border border-line bg-surface p-4">
               <LeverChip lever={alert.lever} />
               <p className="mt-2 font-semibold">{alert.headline}</p>
+              {optionalText(alert.definition) ? <Definition>{optionalText(alert.definition)}</Definition> : null}
               <p className="mt-1">{alert.action.text}</p>
               {manager ? (
                 <p className="mt-2 text-[0.95rem]">

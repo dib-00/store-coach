@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { EmptyNote, NoEngineRun, PageTitle, managerHref } from "@/components/bits";
 import { loadEngineOutput } from "@/lib/data";
-import { formatDate, formatDateRange, formatRupees } from "@/lib/format";
+import { formatDate, formatDateRange, formatIstDateTime, formatRupees } from "@/lib/format";
 import { rupeesAtStakeShown, visibleAlerts } from "@/lib/rules";
+
+/** Public proof that the engine runs unattended: the history of its scheduled runs. */
+const WORKFLOW_RUNS_URL = "https://github.com/dib-00/store-coach/actions";
 
 export default function Home() {
   const data = loadEngineOutput();
@@ -13,11 +16,32 @@ export default function Home() {
   return (
     <>
       <PageTitle title="Which stores need you today?">
-        <p>
-          Pick your name. Period measured: {formatDateRange(period.start, period.end)}. Data up to{" "}
-          {formatDate(data.as_of)}.
-        </p>
+        <p>Pick your name. Period measured: {formatDateRange(period.start, period.end)}.</p>
       </PageTitle>
+
+      <section aria-label="Engine run" className="mb-8 rounded-lg border border-line bg-surface px-5 py-4">
+        <p className="font-semibold">
+          The engine runs on its own every morning. Nobody has to press a button.
+        </p>
+        <dl className="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-2">
+          <div>
+            <dt className="text-sm text-muted">Last ran</dt>
+            <dd className="font-semibold tabular-nums">{formatIstDateTime(data.generated_at)}</dd>
+          </div>
+          <div>
+            <dt className="text-sm text-muted">Data up to</dt>
+            <dd className="font-semibold tabular-nums">{formatDate(data.as_of)}</dd>
+          </div>
+        </dl>
+        <p className="mt-3 text-[0.95rem]">
+          <a
+            href={WORKFLOW_RUNS_URL}
+            className="font-medium underline decoration-line decoration-2 hover:decoration-ink"
+          >
+            See the record of every run on GitHub Actions
+          </a>
+        </p>
+      </section>
 
       {data.area_managers.length === 0 ? (
         <EmptyNote>The engine run lists no area managers.</EmptyNote>

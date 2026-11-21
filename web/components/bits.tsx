@@ -122,3 +122,60 @@ export function ShowTheNumbers({ children }: { children: React.ReactNode }) {
     </details>
   );
 }
+
+/**
+ * The engine's one-sentence definition of a figure, in small print.
+ * Placed right beside the numbers it defines, and never inside a salesperson card's 60 words.
+ */
+export function Definition({ children, className = "mt-1" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <p className={`${className} text-sm text-muted`}>
+      <span className="font-semibold">Definition: </span>
+      {children}
+    </p>
+  );
+}
+
+/** A store that is not judged this run, and the reason. Never shown without the reason. */
+export function NotJudged({ reason }: { reason: string }) {
+  return (
+    <>
+      <span className="rounded-full bg-warn-bg px-3 py-0.5 text-sm font-semibold text-warn-ink">Not judged</span>{" "}
+      <span>{reason}</span>
+    </>
+  );
+}
+
+/** A manager's stores, one per line, each with its not-judged reason beside it when there is one. */
+export function StoreList({
+  stores,
+}: {
+  stores: { storeId: string; place: string | null; hasPage: boolean; notJudged: string | null }[];
+}) {
+  return (
+    <ul className="divide-y divide-line rounded-lg border border-line bg-surface">
+      {stores.map((store) => (
+        <li key={store.storeId} className="px-4 py-3">
+          <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            {store.hasPage ? (
+              <Link
+                href={storeHref(store.storeId)}
+                className="text-lg font-semibold underline decoration-line decoration-2 hover:decoration-ink"
+              >
+                {store.storeId}
+              </Link>
+            ) : (
+              <span className="text-lg font-semibold">{store.storeId}</span>
+            )}
+            {store.place ? <span className="text-muted">{store.place}</span> : null}
+          </p>
+          {store.notJudged ? (
+            <p className="mt-1 text-[0.95rem]">
+              <NotJudged reason={store.notJudged} />
+            </p>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}

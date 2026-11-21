@@ -8,12 +8,20 @@ import {
   NoEngineRun,
   PageTitle,
   SectionTitle,
-  StoreLinks,
+  StoreList,
 } from "@/components/bits";
 import { loadEngineOutput } from "@/lib/data";
 import { formatDateRange, formatRupees } from "@/lib/format";
 import { NO_RUN_PARAM, routeId, staticIds } from "@/lib/routes";
-import { alertCap, findManager, storeIdsWithPages, visibleAlerts } from "@/lib/rules";
+import {
+  alertCap,
+  findManager,
+  findStore,
+  managerSummaryLine,
+  notJudgedReason,
+  storeIdsWithPages,
+  visibleAlerts,
+} from "@/lib/rules";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -41,6 +49,15 @@ export default async function ManagerPage({ params }: Props) {
   const alerts = visibleAlerts(manager);
   const knownStores = storeIdsWithPages(data);
   const period = data.windows.current;
+  const stores = manager.store_ids.map((storeId) => {
+    const store = findStore(data, storeId);
+    return {
+      storeId,
+      place: store ? store.city : null,
+      hasPage: knownStores.has(storeId),
+      notJudged: store ? notJudgedReason(store) : null,
+    };
+  });
 
   return (
     <>
@@ -54,6 +71,10 @@ export default async function ManagerPage({ params }: Props) {
           compared with.
         </p>
       </PageTitle>
+
+      <p className="mb-8 rounded-lg border border-ink bg-surface px-4 py-3 text-lg font-semibold leading-snug">
+        {managerSummaryLine(manager)}
+      </p>
 
       <h2 className="mb-3 text-xl font-semibold tracking-tight">
         {alerts.length === 0
@@ -115,9 +136,7 @@ export default async function ManagerPage({ params }: Props) {
       {manager.store_ids.length === 0 ? (
         <EmptyNote>No stores are listed for this area manager.</EmptyNote>
       ) : (
-        <p className="text-lg">
-          <StoreLinks storeIds={manager.store_ids} known={knownStores} />
-        </p>
+        <StoreList stores={stores} />
       )}
     </>
   );

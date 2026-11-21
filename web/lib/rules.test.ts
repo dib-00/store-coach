@@ -6,10 +6,15 @@ import {
   alertCap,
   cardView,
   countWords,
+  followUpsByManager,
+  managerSummaryLine,
+  movedCounts,
+  notJudgedReason,
+  optionalText,
   rupeesAtStakeShown,
   visibleAlerts,
 } from "./rules.ts";
-import type { Alert } from "./types.ts";
+import type { Alert, AreaManagerBlock, FollowUp, HeldBackAlert } from "./types.ts";
 
 function alert(rank: number, rupees: number): Alert {
   return {
@@ -110,4 +115,126 @@ test("the 60-word rule uses the text itself, not the word_count the file claims"
   const view = cardView({ text, word_count: 40 } as { text: string });
   assert.equal(view.status, "withheld");
   assert.equal(view.words, 75);
+});
+
+const held: HeldBackAlert = {
+  headline: "Held",
+  lever: "more_bills",
+  rupees_at_stake_weekly: 500,
+  reason: "Below the top 5",
+};
+
+test("the summary line counts alerts shown, rupees at stake and alerts held back", () => {
+  const alerts = [alert(1, 96000), alert(2, 60000), alert(3, 45000)];
+  assert.equal(
+    managerSummaryLine({ alerts, max_alerts_per_week: 5, held_back: [held] }),
+    "3 alerts this week, ₹2,01,000 a week at stake, 1 held back",
+  );
+  assert.equal(
+    managerSummaryLine({ alerts: [alert(1, 96000)], max_alerts_per_week: 5, held_back: [] }),
+    "1 alert this week, ₹96,000 a week at stake, none held back",
+  );
+  assert.equal(
+    managerSummaryLine({ alerts: [], max_alerts_per_week: 5, held_back: [] }),
+    "No alerts this week, none held back",
+  );
+  assert.equal(
+    managerSummaryLine({ alerts: [], max_alerts_per_week: 5, held_back: [held, held] }),
+    "No alerts this week, 2 held back",
+  );
+});
+
+test("the summary line counts only what the cap lets the manager see", () => {
+  const alerts = [1, 2, 3, 4, 5, 6, 7].map((rank) => alert(rank, 1000));
+  assert.equal(
+    managerSummaryLine({ alerts, max_alerts_per_week: 9, held_back: [] }),
+    "5 alerts this week, ₹5,000 a week at stake, none held back",
+  );
+});
+
+test("an optional sentence is shown only if it is non-empty text", () => {
+  assert.equal(optionalText("  Conversion is bills divided by walk-ins.  "), "Conversion is bills divided by walk-ins.");
+  for (const absent of [undefined, null, "", "   ", 0, 12, {}, []]) assert.equal(optionalText(absent), null);
+});
+
+test("a store is not judged when the engine gives a reason, or when it is new", () => {
+  assert.equal(notJudgedReason({ is_new_store: false }), null);
+  assert.equal(notJudgedReason({ is_new_store: false, not_judged_reason: " Closed for refit. " }), "Closed for refit.");
+  assert.equal(notJudgedReason({ is_new_store: true, not_judged_reason: "Opened 1 Sep 2026." }), "Opened 1 Sep 2026.");
+  assert.equal(notJudgedReason({ is_new_store: true }), "Too new to judge against established stores.");
+});
+
+function followUp(alertId: string, managerId: string, moved: FollowUp["moved"]): FollowUp {
+  return {
+    alert_id: alertId,
+    area_manager_id: managerId,
+    store_ids: ["TST-01"],
+    lever: "more_bills",
+    headline: "Headline",
+    action_text: "Action",
+    raised_as_of: "2026-10-24",
+    measured_as_of: "2026-10-31",
+    metric_label: "Conversion",
+    before: 0.1,
+    after: 0.1,
+    target: 0.12,
+    before_display: "10.0%",
+    after_display: "10.0%",
+    target_display: "12.0%",
+    moved,
+    verdict: "Verdict.",
+    checks: [],
+  };
+}
+
+function managerBlock(id: string): AreaManagerBlock {
+  return {
+    area_manager_id: id,
+    name: id,
+    city: "Testpur",
+    store_ids: [],
+    max_alerts_per_week: 5,
+    alerts: [],
+    held_back: [],
+  };
+}
+
+test("follow-ups are grouped by area manager, in manager order, and none is dropped", () => {
+  const groups = followUpsByManager({
+    area_managers: [managerBlock("AM-1"), managerBlock("AM-2"), managerBlock("AM-3")],
+    follow_ups: [
+      followUp("a", "AM-2", "improved"),
+      followUp("b", "AM-GONE", "worse"),
+      followUp("c", "AM-1", "no_change"),
+      followUp("d", "AM-2", "not_measurable"),
+    ],
+  });
+  assert.deepEqual(
+    groups.map((g) => [g.area_manager_id, g.items.map((i) => i.alert_id)]),
+    [
+      ["AM-1", ["c"]],
+      ["AM-2", ["a", "d"]],
+      ["AM-GONE", ["b"]],
+    ],
+  );
+  assert.equal(groups[2].manager, undefined);
+  assert.equal(
+    groups.reduce((sum, g) => sum + g.items.length, 0),
+    4,
+  );
+});
+
+test("the follow-up tally names every outcome that occurred, including the bad ones", () => {
+  const items = [
+    followUp("a", "AM-1", "worse"),
+    followUp("b", "AM-1", "improved"),
+    followUp("c", "AM-1", "worse"),
+    followUp("d", "AM-1", "not_measurable"),
+  ];
+  assert.deepEqual(movedCounts(items), [
+    { moved: "improved", count: 1 },
+    { moved: "worse", count: 2 },
+    { moved: "not_measurable", count: 1 },
+  ]);
+  assert.deepEqual(movedCounts([]), []);
 });
