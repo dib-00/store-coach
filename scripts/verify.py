@@ -563,6 +563,48 @@ def two_proportion_z(d, p, ctx):
     return rhu(Fraction(z), 2)
 
 
+# ---- docs/CHECKS.md section 6: city-adjusted sizing and dated windows
+
+def fmt_date_range(v):
+    a, b = str(v).split("..")
+    return f"{fmt_day(a)} to {fmt_day(b)}"
+
+
+@recipe("date_range", ("start", "end"), (), fmt_date_range)
+def date_range(d, p, ctx):
+    days(p["start"], p["end"])                       # a real window, start on or before end
+    return f"{p['start']}..{p['end']}"
+
+
+@recipe("beyond_city_z", ("store_ids", "other_store_ids", "start", "end", "base_start", "base_end"), (), fmt_2dp)
+def beyond_city_z(d, p, ctx):
+    rates = []
+    for stores in (p["store_ids"], p["other_store_ids"]):
+        for lo, hi in ((p["start"], p["end"]), (p["base_start"], p["base_end"])):
+            b, n = _bills_and_footfall(d, {"store_ids": stores, "start": lo, "end": hi})
+            if n == 0:
+                raise CannotCompute("a window has no walk-ins on valid store-days")
+            rates.append((Fraction(b) / n, n))
+    (p1, _), (p0, _), (q1, _), (q0, _) = rates
+    variance = sum(r * (1 - r) / n for r, n in rates)
+    if variance <= 0:
+        raise CannotCompute("standard error is zero")
+    return rhu(Fraction(float((p1 - p0) - (q1 - q0)) / math.sqrt(float(variance))), 2)
+
+
+@recipe("rupees_at_stake_city",
+        ("benchmark_check_id", "current_check_id", "city_benchmark_check_id", "city_current_check_id",
+         "walkins_check_id", "avg_bill_check_id"),
+        (), fmt_rupees, rupees_step=100)
+def rupees_at_stake_city(d, p, ctx):
+    tenths = lambda key: rhu(ctx.value_of(p[key], "conversion") * 1000)
+    city_drop = max(0, tenths("city_benchmark_check_id") - tenths("city_current_check_id"))
+    gap = tenths("benchmark_check_id") - tenths("current_check_id") - city_drop
+    walkins = rhu(ctx.value_of(p["walkins_check_id"], "walkins_per_week"))
+    bill = rhu(ctx.value_of(p["avg_bill_check_id"], "avg_bill_value"))
+    return int(rhu(gap * walkins * bill / 1000 / 100) * 100)
+
+
 @recipe("quietest_weekday", ("store_id", "start", "end"))
 def quietest_weekday(d, p, ctx):
     by_day = defaultdict(list)

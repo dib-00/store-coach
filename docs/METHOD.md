@@ -1,5 +1,6 @@
 # Method: the "more bills" lever
 
+
 Conversion = bills ÷ walk-ins. This page says how the engine decides that a store has a
 conversion problem, how it names the cause, how it builds the action and how it puts
 rupees on it. The recipes for every figure are in [CHECKS.md](CHECKS.md).
@@ -51,8 +52,35 @@ Same store first, then city, then state. Never the whole country.
   conversion stays in its usual band while footfall swings. The engine alerts on
   conversion, never on footfall.
 
-In this lever every alert is benchmarked on the same store's own earlier weeks, so the
-city and state steps were not needed. A city is only used to recognise a market-wide fall.
+### The benchmark window: one rule for every store
+
+A store's figure is always compared with **the same store over the 91 days before the
+cause began**, cut at 1 May 2026 where the roster starts:
+
+| Cause | The date the cause began | Benchmark window (31 Oct 2026 run) |
+| --- | --- | --- |
+| A strong salesperson left | the day after their last roster day | LKO-02: 16 Jun to 14 Sep 2026 (Imran C. last on 14 Sep) |
+| Salespeople missing shifts | the first week of the unbroken run of short weeks | BLR-03: 7 Jun to 5 Sep 2026 (short weeks from 6 Sep) |
+| No dated cause (scan) | none: the 91 days before the current 28 | 5 Jul to 3 Oct 2026 |
+
+So the rule is the same; the windows differ because the events differ. Every conversion
+figure in an alert's headline and cause carries its own dates, and every window is a
+`date_range` check, so each figure can be recomputed for exactly the days it covers.
+
+### The rest of the city, and the same weeks last year
+
+A store is never charged for a fall the whole city shares (section 7). And once per run,
+each city is compared with **the same weeks last year**: the 28 days ending on as-of
+against the 28 days ending the same number of days after last year's Dussehra in that
+state's calendar (2 Oct 2025, 20 Oct 2026), because the festival season moves by weeks
+between years. Outside the 60 days after Dussehra the comparison is 364 days earlier,
+which keeps the weekday mix. Only calendar rows on or before as-of are used.
+
+A city that is clearly down (z ≤ −2.9, at least 10% lower, and most of its established
+stores lower) gets **one market note** for its area manager. It is shown above the
+alerts and is never ranked as an alert, because no store can fix a market by itself.
+On 31 Oct 2026 Bengaluru is the one such city: 12.5% against 14.3% in the matching weeks
+of 2025. Lucknow, Kanpur, Patna, Muzaffarpur and Mysuru are not.
 
 ## 4. When is a drop real?
 
@@ -181,18 +209,38 @@ or the alert is not sent.
 
 ## 7. Rupees at stake
 
+For a store alert, the store is charged only for what it lost **beyond the other
+established stores of its city over the same two windows**:
+
 ```
-(fair benchmark conversion − current conversion) × walk-ins a week × average bill value
+((store benchmark − store current) − (city benchmark − city current)) × walk-ins a week × average bill value
 ```
 
-- benchmark conversion: the alert's benchmark window (section 4);
-- current conversion, walk-ins a week and average bill value: the current 28 days;
-- all over valid store-days. Bill value is the sum of qty × selling price over the
-  bill's lines.
+- store and city benchmark conversion: the alert's benchmark window (section 3);
+- store and city current conversion, walk-ins a week and average bill value: the current 28 days;
+- the city is the store's other established stores with usable footfall in every window,
+  taken together, all over valid store-days;
+- if the other stores did not fall, nothing is taken off: the figure is never larger than
+  the store's own fall;
+- if nothing is left once the city's fall is taken off, the alert is not sent.
+
+Whether the part beyond the city is statistically real is tested with `beyond_city_z`
+(the store's change minus the city's change, since the cause began against the benchmark).
+When it does not reach z ≤ −2.0 the alert is still sent, sized on that part, and its cause
+says in words that the part beyond the rest of the city is not large enough to rule out
+chance (LKO-02 on 31 Oct 2026: z −1.33). The project owner chose that over dropping it.
+
+| 31 Oct 2026 | Store fall | Other stores' fall | Charged | Rupees a week |
+| --- | --- | --- | --- | --- |
+| BLR-03 | 13.2% → 10.7% | 13.4% → 12.9% | 2.0 points | ₹98,100 |
+| LKO-02 | 12.3% → 10.5% | 13.0% → 12.5% | 1.3 points | ₹61,700 |
+
+A city-wide (market) alert, and a store in a city with no other established store, use
+the plain form: (benchmark − current) × walk-ins a week × average bill value.
 
 The figure is worked out from the inputs as displayed (conversion to 0.1 point,
 walk-ins to a whole number, bill value to a whole rupee) and rounded to the nearest
-₹100, so multiplying the displayed inputs gives the displayed result.
+₹100, so multiplying the displayed inputs in `arithmetic.worked` gives the displayed result.
 
 Walk-ins a week are the current, in-season level, so the rupee figure is higher in
 October than it would be for the same gap in July. That is intended: it is what the

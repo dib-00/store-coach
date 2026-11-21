@@ -130,6 +130,18 @@ To avoid floating-point noise the engine works in tenths of a point:
 | `peer_median_present_days` | 1 decimal, without a trailing `.0` |
 | everything else | the value as it is |
 
+## 5a. City-adjusted sizing and dated windows
+
+| kind | params | recipe | display |
+| --- | --- | --- | --- |
+| `date_range` | start, end | the text `start..end` (start on or before end). It makes the dates quoted beside a figure a check. | `4 Oct 2026 to 31 Oct 2026` |
+| `beyond_city_z` | store_ids, other_store_ids, start, end, base_start, base_end | p1, p0 = conversion of `store_ids` over `start..end` and `base_start..base_end`; q1, q0 = the same for `other_store_ids` (all over valid store-days, section 1). z = ((p1 − p0) − (q1 − q0)) ÷ √(Σ r(1 − r) ÷ n) over the four (rate r, walk-ins n). Unpooled. Negative = the store fell more than the others. 2 decimals, half up. | `-1.33` |
+| `rupees_at_stake_city` | benchmark_check_id, current_check_id, city_benchmark_check_id, city_current_check_id, walkins_check_id, avg_bill_check_id | Each conversion in tenths of a point as displayed (12.3% → 123). city fall = max(0, city benchmark − city current). gap = (benchmark − current) − city fall. Rupees = gap × walk-ins a week (whole) × average bill (whole ₹) ÷ 1000, rounded half up to the nearest ₹100. | `₹61,700` |
+
+A market note (`area_managers[].market_notes[]`) carries only existing kinds: `conversion`,
+`two_proportion_z` (current window against the matching weeks last year), `date_range` and
+`festival_name` for the two Dussehra dates used to align the years.
+
 ## 6. Where checks appear
 
 - `area_managers[].alerts[].checks`: every number quoted in the alert's `headline`,
