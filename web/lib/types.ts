@@ -82,6 +82,17 @@ export interface AreaManagerBlock {
   max_alerts_per_week: number;
   alerts: Alert[]; // length <= max_alerts_per_week, sorted by rank
   held_back: HeldBackAlert[]; // real issues that did not make the cap
+  /** A whole city converting clearly less than in the same weeks last year. Shown, never ranked as an alert. */
+  market_notes?: MarketNote[];
+}
+
+export interface MarketNote {
+  note_id: string; // "<city>:more_bills:market_vs_last_year"
+  city: string;
+  store_ids: string[];
+  headline: string; // with both date ranges
+  detail: string;
+  checks: Check[];
 }
 
 export interface StoreBlock {

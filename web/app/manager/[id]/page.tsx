@@ -76,6 +76,31 @@ export default async function ManagerPage({ params }: Props) {
         {managerSummaryLine(manager)}
       </p>
 
+      {(manager.market_notes ?? []).map((note) => (
+        <section
+          key={note.note_id}
+          className="mb-8 rounded-lg border border-line bg-surface px-4 py-4"
+          aria-label={`Market note for ${note.city}`}
+        >
+          <p className="text-sm font-semibold uppercase tracking-wide text-muted">
+            Market note · {note.city} · not a store alert
+          </p>
+          <p className="mt-2 text-lg font-semibold leading-snug">{note.headline}</p>
+          <p className="mt-2">{note.detail}</p>
+          <details className="mt-3">
+            <summary className="cursor-pointer text-sm font-medium">Show the numbers</summary>
+            <ul className="mt-2 space-y-1 text-sm">
+              {note.checks.map((check) => (
+                <li key={check.id} className="flex justify-between gap-4">
+                  <span className="text-muted">{check.label}</span>
+                  <span className="font-semibold tabular-nums">{check.display}</span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </section>
+      ))}
+
       <h2 className="mb-3 text-xl font-semibold tracking-tight">
         {alerts.length === 0
           ? "Alerts this week"
