@@ -2,12 +2,18 @@
 """Independent verification of the engine's output.
 
 Recomputes every Check in web/public/data/latest.json straight from the raw CSVs and
-checks the rules the output must obey. It is written from docs/CHECKS.md (and
-docs/CHECKS-*.md) alone: it imports nothing from engine/ and shares no code with it.
+checks the rules the output must obey. It is written from docs/CHECKS.md,
+docs/CHECKS-followup.md and docs/CHECKS-repeat.md alone: it imports nothing from engine/
+and shares no code with it.
 
     python -X utf8 scripts/verify.py                      # latest.json against data/csv
     python -X utf8 scripts/verify.py --file F --data-dir D
     python -X utf8 scripts/verify.py --strict             # warnings also fail
+    python -X utf8 scripts/verify.py --earlier-run R      # the run of 7 days earlier, for follow-ups
+
+A kind that no document describes fails (the "bigger baskets" kinds today). For those the
+script also tries its own reading, kept apart in PROVISIONAL, only to say in the mismatch
+line whether the figure can be reproduced. It never makes such a check pass.
 
 Exit code: 0 only when everything matches. 1 on any mismatch, any broken rule, or any
 check kind this script has no recipe for (an unknown kind is a failure, never a skip).
@@ -419,6 +425,31 @@ class Data:
             if pkg != "1":
                 out.add(cat)
         return out
+
+    def baskets(self):
+        """Per bill, over its lines that are not packaging: categories, value at selling price and
+        at MRP (paise), whether any line sold under MRP, and value per category. Built on first use."""
+        if getattr(self, "_baskets", None) is None:
+            self.product_categories_of_bill("")          # loads items.csv into self._category
+            raw = self.read("bill_lines")
+            raw = raw[raw["bill_id"].isin({row[0] for row in self.bill_rows})]
+            out = {}
+            for bid, sku, qty, mrp, price in zip(raw["bill_id"], raw["sku_id"], raw["qty"], raw["mrp"],
+                                                 raw["selling_price"]):
+                if sku not in self._category:
+                    raise CannotCompute(f"bill {bid} has SKU {sku!r} that is not in items.csv")
+                cat, pkg = self._category[sku]
+                if pkg == "1":
+                    continue
+                b = out.setdefault(bid, {"cats": defaultdict(Fraction), "sale": Fraction(0), "mrp": Fraction(0),
+                                         "discounted": False})
+                q, m, sp = Fraction(qty), Fraction(mrp), Fraction(price)
+                b["cats"][cat] += q * sp
+                b["sale"] += q * sp
+                b["mrp"] += q * m
+                b["discounted"] = b["discounted"] or sp < m
+            self._baskets = out
+        return self._baskets
 
     def peers(self, store_id, exclude):
         self.state(store_id)
@@ -976,6 +1007,213 @@ def repeat_placeholder_stores(d, p, ctx):
     return len({row[2] for row in _bills_of_customer_id(d, p)})
 
 
+# --------------------------------------------------------------------------- no documented recipe
+#
+# The "bigger baskets" lever writes 18 check kinds and there is no docs/CHECKS-baskets.md.
+# A kind without a document is a FAILURE here and stays one: these functions are NOT in
+# RECIPES and can never make a check pass. They hold the plainest reading of the alert's
+# own `definition` sentence and the check labels (scripts/README.md lists each reading), so
+# that the mismatch line can also say whether the figure is at least reproducible. When a
+# document exists, check each reading against it and move the function to @recipe.
+
+PROVISIONAL = {}
+
+
+def provisional(kind):
+    def register(fn):
+        PROVISIONAL[kind] = fn
+        return fn
+    return register
+
+
+def _product_bills(d, p, start=None, end=None, people="salesperson_ids"):
+    """Ids of bills made at store_ids in the window, by those salespeople when given, that have
+    at least one line that is not packaging. No valid-store-day rule."""
+    lo, hi = start or p["start"], end or p["end"]
+    days(lo, hi)
+    who = p.get(people)
+    made = d.baskets()
+    return [bid for bid, dt, st, sp, _ in d.bill_rows
+            if st in p["store_ids"] and lo <= dt <= hi and (who is None or sp in who) and bid in made]
+
+
+def _share(part, whole, decimals=4):
+    if whole == 0:
+        raise CannotCompute("no bills to take a share of")
+    return rhu(Fraction(part, whole), decimals)
+
+
+def _z(a1, n1, a0, n0):
+    if n1 == 0 or n0 == 0:
+        raise CannotCompute("one side has no bills")
+    pooled = Fraction(a1 + a0, n1 + n0)
+    variance = pooled * (1 - pooled) * (Fraction(1, n1) + Fraction(1, n0))
+    if variance <= 0:
+        raise CannotCompute("standard error is zero")
+    return rhu(Fraction(float(Fraction(a1, n1) - Fraction(a0, n0)) / math.sqrt(float(variance))), 2)
+
+
+def _has(d, bills, category):
+    made = d.baskets()
+    return [b for b in bills if category in made[b]["cats"]]
+
+
+@provisional("window_days")
+def window_days(d, p, ctx):
+    return len(days(p["start"], p["end"]))
+
+
+@provisional("product_bills")
+def product_bills(d, p, ctx):
+    return len(_product_bills(d, p))
+
+
+@provisional("product_bills_per_week")
+def product_bills_per_week(d, p, ctx):
+    return rhu(Fraction(len(_product_bills(d, p)) * 7, len(days(p["start"], p["end"]))), 1)
+
+
+@provisional("category_bills")
+def category_bills(d, p, ctx):
+    return len(_has(d, _product_bills(d, p), p["category"]))
+
+
+@provisional("category_bills_per_week")
+def category_bills_per_week(d, p, ctx):
+    return rhu(Fraction(len(_has(d, _product_bills(d, p), p["category"])) * 7, len(days(p["start"], p["end"]))), 1)
+
+
+@provisional("category_bill_share")
+def category_bill_share(d, p, ctx):
+    bills = _product_bills(d, p)
+    return _share(len(_has(d, bills, p["category"])), len(bills))
+
+
+@provisional("category_bill_share_z")
+def category_bill_share_z(d, p, ctx):
+    own, others = _product_bills(d, p), _product_bills(d, p, people="peer_salesperson_ids")
+    return _z(len(_has(d, own, p["category"])), len(own), len(_has(d, others, p["category"])), len(others))
+
+
+@provisional("attach_rate")
+def attach_rate(d, p, ctx):
+    main = _has(d, _product_bills(d, p), p["main_category"])
+    return _share(len(_has(d, main, p["addon_category"])), len(main))
+
+
+@provisional("attach_rate_z")
+def attach_rate_z(d, p, ctx):
+    now = _has(d, _product_bills(d, p), p["main_category"])
+    base = _has(d, _product_bills(d, p, p["base_start"], p["base_end"]), p["main_category"])
+    return _z(len(_has(d, now, p["addon_category"])), len(now), len(_has(d, base, p["addon_category"])), len(base))
+
+
+@provisional("avg_addon_value")
+def avg_addon_value(d, p, ctx):
+    both = _has(d, _has(d, _product_bills(d, p), p["main_category"]), p["addon_category"])
+    if not both:
+        raise CannotCompute("no bill has both categories")
+    made = d.baskets()
+    return rhu(sum(made[b]["cats"][p["addon_category"]] for b in both) / len(both), 2)
+
+
+@provisional("avg_bill_value_split")
+def avg_bill_value_split(d, p, ctx):
+    made = d.baskets()
+    bills = [b for b in _product_bills(d, p) if (p["category"] in made[b]["cats"]) == bool(p["with_category"])]
+    if not bills:
+        raise CannotCompute("no such bills")
+    return rhu(sum(made[b]["sale"] for b in bills) / len(bills), 2)
+
+
+@provisional("discount_rate")
+def discount_rate(d, p, ctx):
+    made = d.baskets()
+    bills = _product_bills(d, p)
+    at_mrp = sum(made[b]["mrp"] for b in bills)
+    if at_mrp == 0:
+        raise CannotCompute("nothing sold in the window")
+    return rhu(1 - sum(made[b]["sale"] for b in bills) / at_mrp, 4)
+
+
+@provisional("discounted_bill_share")
+def discounted_bill_share(d, p, ctx):
+    made = d.baskets()
+    bills = _product_bills(d, p)
+    return _share(sum(made[b]["discounted"] for b in bills), len(bills))
+
+
+@provisional("discounted_bill_share_z")
+def discounted_bill_share_z(d, p, ctx):
+    made = d.baskets()
+    own, others = _product_bills(d, p), _product_bills(d, p, people="peer_salesperson_ids")
+    return _z(sum(made[b]["discounted"] for b in own), len(own), sum(made[b]["discounted"] for b in others), len(others))
+
+
+@provisional("mrp_sales_per_week")
+def mrp_sales_per_week(d, p, ctx):
+    made = d.baskets()
+    return rhu(sum(made[b]["mrp"] for b in _product_bills(d, p)) * 7 / len(days(p["start"], p["end"])), 0)
+
+
+def _tenths(ctx, check_id):        # a rate as displayed, in tenths of a percentage point
+    return rhu(ctx.value_of(check_id) * 1000)
+
+
+@provisional("attach_rupees_weekly")
+def attach_rupees_weekly(d, p, ctx):
+    raw = ((_tenths(ctx, p["benchmark_check_id"]) - _tenths(ctx, p["current_check_id"]))
+           * rhu(ctx.value_of(p["bills_per_week_check_id"]), 1) * rhu(ctx.value_of(p["addon_value_check_id"])) / 1000)
+    return int(rhu(raw / 100) * 100)
+
+
+@provisional("discount_given_away_weekly")
+def discount_given_away_weekly(d, p, ctx):
+    raw = ((_tenths(ctx, p["own_check_id"]) - _tenths(ctx, p["norm_check_id"]))
+           * rhu(ctx.value_of(p["mrp_sales_check_id"])) / 1000)
+    return int(rhu(raw / 100) * 100)
+
+
+@provisional("category_rupees_weekly")
+def category_rupees_weekly(d, p, ctx):
+    raw = ((_tenths(ctx, p["peer_check_id"]) - _tenths(ctx, p["own_check_id"]))
+           * rhu(ctx.value_of(p["bills_per_week_check_id"]), 1)
+           * (rhu(ctx.value_of(p["with_check_id"])) - rhu(ctx.value_of(p["without_check_id"]))) / 1000)
+    return int(rhu(raw / 100) * 100)
+
+
+class ProvisionalContext:
+    def __init__(self, data, beside):
+        self.data, self.beside = data, beside
+
+    def value_of(self, check_id):
+        found = [c for c in self.beside if c.get("id") == check_id]
+        if len(found) != 1:
+            raise CannotCompute(f"needs exactly one check {check_id!r} beside it, found {len(found)}")
+        return Fraction(provisional_value(self.data, found[0], self.beside))
+
+
+def provisional_value(data, check, beside):
+    if check["kind"] in RECIPES:
+        return recompute(data, check, beside)
+    return PROVISIONAL[check["kind"]](data, check["params"], ProvisionalContext(data, beside))
+
+
+def undocumented(data, check, beside):
+    """What to print for a kind with no recipe in any docs/CHECKS*.md."""
+    kind = check["kind"]
+    if kind not in PROVISIONAL:
+        return "a recipe in scripts/verify.py (UNKNOWN KIND)"
+    del EXACT_HALVES[:]
+    try:
+        value = provisional_value(data, check, beside)
+        verdict = "the same" if same(value, check["value"]) else "DIFFERENT"
+        note = f"the undocumented reading in scripts/README.md gives {show(value)}, {verdict}"
+    except (CannotCompute, KeyError, TypeError, ValueError, ZeroDivisionError) as why:
+        note = f"the undocumented reading in scripts/README.md cannot compute it: {why}"
+    return f"a recipe in docs/CHECKS*.md (UNKNOWN KIND: no document describes it; {note})"
+
+
 # --------------------------------------------------------------------------- report
 
 class Report:
@@ -1100,7 +1338,7 @@ def verify_checks(out, data, rep):
         try:
             expected = recompute(data, check, beside)
         except KeyError:
-            rep.fail(group, cid, kind, "a recipe in scripts/verify.py (UNKNOWN KIND)", show(check["value"]))
+            rep.fail(group, cid, kind, undocumented(data, check, beside), show(check["value"]))
             continue
         except CannotCompute as why:
             rep.fail(group, cid, kind, f"cannot be computed: {why}", show(check["value"]))

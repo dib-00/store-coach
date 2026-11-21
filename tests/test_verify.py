@@ -384,6 +384,18 @@ def test_unknown_kind_is_a_failure_not_a_skip(tmp_path, csv_pack, capsys):
     assert "id=mystery kind=items_per_bill_from_nowhere" in text and "UNKNOWN KIND" in text
 
 
+def test_a_kind_no_document_describes_fails_even_when_it_can_be_reproduced(tmp_path, csv_pack, capsys):
+    """The basket kinds have no docs/CHECKS page. The script can reproduce them under its own
+    reading and says so, but a figure without a documented recipe never passes."""
+    output = good_output()
+    alert_of(output)["checks"].append(
+        _check("extra:window_days", "window_days", {"start": "2026-10-12", "end": AS_OF}, 7, "7"))
+    code, text = run_verify(tmp_path, csv_pack, output, capsys)
+    assert code == 1
+    assert "id=extra:window_days kind=window_days" in text
+    assert "UNKNOWN KIND: no document describes it" in text and "gives 7, the same" in text
+
+
 def test_undocumented_param_fails(tmp_path, csv_pack, capsys):
     output = good_output()
     check_of(output, ":bills_current")["params"]["only_big_bills"] = True
