@@ -62,10 +62,18 @@ class CannotCompute(Exception):
 
 # --------------------------------------------------------------------------- helpers
 
+EXACT_HALVES = []  # figures that sat exactly on a rounding half while one check was recomputed
+
+
 def rhu(x, n=0):
     """Round half up to n decimals, exactly: floor(x * 10^n + 0.5) / 10^n."""
     scale = Fraction(10) ** n
-    return Fraction(math.floor(Fraction(x) * scale + Fraction(1, 2))) / scale
+    scaled = Fraction(x) * scale
+    if scaled.denominator == 2:
+        EXACT_HALVES.append(f"{float(Fraction(x))!r} is exactly on the half; half up to {n} decimals "
+                            f"is {float(Fraction(math.floor(scaled + Fraction(1, 2))) / scale)!r} "
+                            "(binary floats can land just under it)")
+    return Fraction(math.floor(scaled + Fraction(1, 2))) / scale
 
 
 def to_date(iso):
@@ -725,6 +733,7 @@ def verify_checks(out, data, rep):
             rep.ok("rule    check ids unique")
 
         # the value, from the CSVs
+        del EXACT_HALVES[:]
         try:
             expected = recompute(data, check, beside)
         except KeyError:
@@ -733,7 +742,8 @@ def verify_checks(out, data, rep):
         except CannotCompute as why:
             rep.fail(group, cid, kind, f"cannot be computed: {why}", show(check["value"]))
             continue
-        rep.test(group, same(expected, check["value"]), cid, kind, show(expected), show(check["value"]))
+        hint = f"   [{EXACT_HALVES[-1]}]" if EXACT_HALVES else ""
+        rep.test(group, same(expected, check["value"]), cid, kind, show(expected) + hint, show(check["value"]))
 
         # the display, from the value in the file
         try:
