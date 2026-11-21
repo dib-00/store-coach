@@ -35,22 +35,24 @@
           "city": "Lucknow",
           "lever": "more_bills",
           "cause_code": "salesperson_left",
-          "headline": "LKO-02 is converting 10.0% of walk-ins, down from 12.3% before Imran C. left.",
+          "headline": "LKO-02 is converting 10.0% of walk-ins (20 Sep 2026 to 17 Oct 2026), down from 12.3% (16 Jun 2026 to 14 Sep 2026) before Imran C. left.",
           "definition": "Conversion is bills divided by walk-ins at LKO-02, counted only on days with a usable door count (walk-ins above zero and no more bills than walk-ins); the headline compares the last four weeks with the same store's thirteen weeks before Imran C. left, and both windows are dated in the checks.",
-          "cause": "Imran C. last appears on the roster on 14 Sep 2026. Imran C. made 1.23 bills for each day present, against 0.52 for a typical colleague at LKO-02. Since then the store has converted 10.3% of walk-ins.",
+          "cause": "Imran C. last appears on the roster on 14 Sep 2026. Imran C. made 1.23 bills for each day present, against 0.52 for a typical colleague at LKO-02. Since then (15 Sep 2026 to 17 Oct 2026) the store has converted 10.3% of walk-ins. Over the same weeks the other Lucknow stores went from 13.0% to 12.4%, and the rupees below count only the fall beyond them. The part of the fall beyond the rest of the city is not large enough to rule out chance.",
           "action": {
             "who": "Store manager at LKO-02, with Jitendra G. and Sumit A.",
             "what": "Keep 8 salespeople on the floor, with Jitendra G. and Sumit A. working",
             "when": "Sun 18 Oct, Tue 20 Oct (Dussehra / Dasara), Sat 24 Oct and Sun 25 Oct",
             "text": "On Sun 18 Oct, Tue 20 Oct (Dussehra / Dasara), Sat 24 Oct and Sun 25 Oct, keep all 8 salespeople on the floor at LKO-02, as on busy days before Imran C. left, and make sure Jitendra G. and Sumit A., the strongest on bills per day now, work those days. Move the weekly off of Varun S. from Tuesday to Tuesday. Move the weekly off of Faizan J. from Tuesday to Tuesday."
           },
-          "rupees_at_stake_weekly": 65300,
+          "rupees_at_stake_weekly": 48300,
           "arithmetic": {
-            "formula": "(fair conversion − current conversion) × walk-ins a week × average bill value",
-            "worked": "(12.3% − 10.0%) × 317 walk-ins a week × ₹8,960 = ₹65,300 a week",
+            "formula": "(fall at LKO-02 − fall at the other Lucknow stores over the same weeks) × walk-ins a week × average bill value",
+            "worked": "((12.3% − 10.0%) − (13.0% − 12.4%)) × 317 walk-ins a week × ₹8,960 = ₹48,300 a week",
             "input_check_ids": [
               "LKO-02:more_bills:salesperson_left:SP1018:conv_benchmark",
               "LKO-02:more_bills:salesperson_left:SP1018:conv_current",
+              "LKO-02:more_bills:salesperson_left:SP1018:conv_city_benchmark",
+              "LKO-02:more_bills:salesperson_left:SP1018:conv_city_current",
               "LKO-02:more_bills:salesperson_left:SP1018:walkins_per_week",
               "LKO-02:more_bills:salesperson_left:SP1018:avg_bill_value"
             ]
@@ -211,17 +213,107 @@
               "display": "₹8,960"
             },
             {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:range_current",
+              "label": "Dates of the current window",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-09-20",
+                "end": "2026-10-17"
+              },
+              "value": "2026-09-20..2026-10-17",
+              "display": "20 Sep 2026 to 17 Oct 2026"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:range_benchmark",
+              "label": "Dates of the benchmark window",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-06-16",
+                "end": "2026-09-14"
+              },
+              "value": "2026-06-16..2026-09-14",
+              "display": "16 Jun 2026 to 14 Sep 2026"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:range_since",
+              "label": "Dates since the cause began",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-09-15",
+                "end": "2026-10-17"
+              },
+              "value": "2026-09-15..2026-10-17",
+              "display": "15 Sep 2026 to 17 Oct 2026"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:conv_city_benchmark",
+              "label": "Conversion at the other Lucknow stores (LKO-01, LKO-03 and LKO-04), 16 Jun 2026 to 14 Sep 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "LKO-01",
+                  "LKO-03",
+                  "LKO-04"
+                ],
+                "start": "2026-06-16",
+                "end": "2026-09-14",
+                "day_type": "all"
+              },
+              "value": 0.1297,
+              "display": "13.0%"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:conv_city_current",
+              "label": "Conversion at the other Lucknow stores (LKO-01, LKO-03 and LKO-04), 20 Sep 2026 to 17 Oct 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "LKO-01",
+                  "LKO-03",
+                  "LKO-04"
+                ],
+                "start": "2026-09-20",
+                "end": "2026-10-17",
+                "day_type": "all"
+              },
+              "value": 0.1235,
+              "display": "12.4%"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:z_beyond_city",
+              "label": "z of the fall at LKO-02 beyond the other Lucknow stores, 15 Sep 2026 to 17 Oct 2026 against 16 Jun 2026 to 14 Sep 2026",
+              "kind": "beyond_city_z",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "other_store_ids": [
+                  "LKO-01",
+                  "LKO-03",
+                  "LKO-04"
+                ],
+                "start": "2026-09-15",
+                "end": "2026-10-17",
+                "base_start": "2026-06-16",
+                "base_end": "2026-09-14"
+              },
+              "value": -1.44,
+              "display": "-1.44"
+            },
+            {
               "id": "LKO-02:more_bills:salesperson_left:SP1018:rupees_at_stake",
-              "label": "Rupees at stake a week",
-              "kind": "rupees_at_stake",
+              "label": "Rupees at stake a week, on the fall beyond the rest of the city",
+              "kind": "rupees_at_stake_city",
               "params": {
                 "benchmark_check_id": "LKO-02:more_bills:salesperson_left:SP1018:conv_benchmark",
                 "current_check_id": "LKO-02:more_bills:salesperson_left:SP1018:conv_current",
+                "city_benchmark_check_id": "LKO-02:more_bills:salesperson_left:SP1018:conv_city_benchmark",
+                "city_current_check_id": "LKO-02:more_bills:salesperson_left:SP1018:conv_city_current",
                 "walkins_check_id": "LKO-02:more_bills:salesperson_left:SP1018:walkins_per_week",
                 "avg_bill_check_id": "LKO-02:more_bills:salesperson_left:SP1018:avg_bill_value"
               },
-              "value": 65300,
-              "display": "₹65,300"
+              "value": 48300,
+              "display": "₹48,300"
             },
             {
               "id": "LKO-02:more_bills:salesperson_left:SP1018:last_roster_date",
@@ -387,7 +479,8 @@
           }
         }
       ],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     },
     {
       "area_manager_id": "AM-02",
@@ -400,7 +493,8 @@
       ],
       "max_alerts_per_week": 5,
       "alerts": [],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     },
     {
       "area_manager_id": "AM-03",
@@ -1495,7 +1589,8 @@
           "definition": "A customer belongs to the salesperson and store of their first bill in the data. They returned if they billed again at any store 30 to 180 days after that first bill. Counted over customers whose first bill is on or before 20 Apr 2026 (180 days before 17 Oct 2026), so each has had the full window. Placeholder customer id C99999999 is excluded. Faizan K. is compared with the other salespeople at PAT-01 over the same first-bill months: the fair rate is their month-by-month return rate applied to Faizan K.'s own mix of first-bill months."
         }
       ],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     },
     {
       "area_manager_id": "AM-04",
@@ -1507,7 +1602,8 @@
       ],
       "max_alerts_per_week": 5,
       "alerts": [],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     },
     {
       "area_manager_id": "AM-05",
@@ -1532,22 +1628,24 @@
           "city": "Bengaluru",
           "lever": "more_bills",
           "cause_code": "missed_shifts",
-          "headline": "BLR-03 is converting 10.6% of walk-ins, down from 13.2% before Manjunath K. and Vijay N. began missing shifts.",
+          "headline": "BLR-03 is converting 10.6% of walk-ins (20 Sep 2026 to 17 Oct 2026), down from 13.2% (7 Jun 2026 to 5 Sep 2026) before Manjunath K. and Vijay N. began missing shifts.",
           "definition": "Conversion is bills divided by walk-ins at BLR-03, counted only on days with a usable door count (walk-ins above zero and no more bills than walk-ins); the headline compares the last four weeks with the same store's thirteen weeks before the missed shifts began, and both windows are dated in the checks.",
-          "cause": "Of the last 28 days, Manjunath K. was on the floor on 16 and Vijay N. was on the floor on 16, against 22 for a typical colleague at BLR-03. Of the 8 weekend and festival days, Manjunath K. worked 0 and Vijay N. worked 0; on those days BLR-03 converted 8.3% of walk-ins, against 12.1% on other days.",
+          "cause": "Of the last 28 days, Manjunath K. was on the floor on 16 and Vijay N. was on the floor on 16, against 22 for a typical colleague at BLR-03. Of the 8 weekend and festival days, Manjunath K. worked 0 and Vijay N. worked 0; on those days BLR-03 converted 8.3% of walk-ins, against 12.1% on other days. Over the same weeks the other Bengaluru stores went from 13.4% to 13.3%, and the rupees below count only the fall beyond them.",
           "action": {
             "who": "Store manager at BLR-03, with Manjunath K. and Vijay N.",
             "what": "Roster Manjunath K. and Vijay N. on the floor on the busy days and move the weekly off to a weekday",
             "when": "Sun 18 Oct, Tue 20 Oct (Dussehra / Dasara), Sat 24 Oct and Sun 25 Oct",
             "text": "Put Manjunath K. and Vijay N. on the floor at BLR-03 on Sun 18 Oct, Tue 20 Oct (Dussehra / Dasara), Sat 24 Oct and Sun 25 Oct. Give the weekly off to Manjunath K. on Wednesday and Vijay N. on Wednesday instead, as before the missed shifts began."
           },
-          "rupees_at_stake_weekly": 77300,
+          "rupees_at_stake_weekly": 74300,
           "arithmetic": {
-            "formula": "(fair conversion − current conversion) × walk-ins a week × average bill value",
-            "worked": "(13.2% − 10.6%) × 319 walk-ins a week × ₹9,321 = ₹77,300 a week",
+            "formula": "(fall at BLR-03 − fall at the other Bengaluru stores over the same weeks) × walk-ins a week × average bill value",
+            "worked": "((13.2% − 10.6%) − (13.4% − 13.3%)) × 319 walk-ins a week × ₹9,321 = ₹74,300 a week",
             "input_check_ids": [
               "BLR-03:more_bills:missed_shifts:conv_benchmark",
               "BLR-03:more_bills:missed_shifts:conv_current",
+              "BLR-03:more_bills:missed_shifts:conv_city_benchmark",
+              "BLR-03:more_bills:missed_shifts:conv_city_current",
               "BLR-03:more_bills:missed_shifts:walkins_per_week",
               "BLR-03:more_bills:missed_shifts:avg_bill_value"
             ]
@@ -1709,17 +1807,107 @@
               "display": "₹9,321"
             },
             {
+              "id": "BLR-03:more_bills:missed_shifts:range_current",
+              "label": "Dates of the current window",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-09-20",
+                "end": "2026-10-17"
+              },
+              "value": "2026-09-20..2026-10-17",
+              "display": "20 Sep 2026 to 17 Oct 2026"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:range_benchmark",
+              "label": "Dates of the benchmark window",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-06-07",
+                "end": "2026-09-05"
+              },
+              "value": "2026-06-07..2026-09-05",
+              "display": "7 Jun 2026 to 5 Sep 2026"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:range_since",
+              "label": "Dates since the cause began",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-09-06",
+                "end": "2026-10-17"
+              },
+              "value": "2026-09-06..2026-10-17",
+              "display": "6 Sep 2026 to 17 Oct 2026"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:conv_city_benchmark",
+              "label": "Conversion at the other Bengaluru stores (BLR-01, BLR-02 and BLR-04), 7 Jun 2026 to 5 Sep 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "BLR-01",
+                  "BLR-02",
+                  "BLR-04"
+                ],
+                "start": "2026-06-07",
+                "end": "2026-09-05",
+                "day_type": "all"
+              },
+              "value": 0.1338,
+              "display": "13.4%"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:conv_city_current",
+              "label": "Conversion at the other Bengaluru stores (BLR-01, BLR-02 and BLR-04), 20 Sep 2026 to 17 Oct 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "BLR-01",
+                  "BLR-02",
+                  "BLR-04"
+                ],
+                "start": "2026-09-20",
+                "end": "2026-10-17",
+                "day_type": "all"
+              },
+              "value": 0.1325,
+              "display": "13.3%"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:z_beyond_city",
+              "label": "z of the fall at BLR-03 beyond the other Bengaluru stores, 6 Sep 2026 to 17 Oct 2026 against 7 Jun 2026 to 5 Sep 2026",
+              "kind": "beyond_city_z",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "other_store_ids": [
+                  "BLR-01",
+                  "BLR-02",
+                  "BLR-04"
+                ],
+                "start": "2026-09-06",
+                "end": "2026-10-17",
+                "base_start": "2026-06-07",
+                "base_end": "2026-09-05"
+              },
+              "value": -2.57,
+              "display": "-2.57"
+            },
+            {
               "id": "BLR-03:more_bills:missed_shifts:rupees_at_stake",
-              "label": "Rupees at stake a week",
-              "kind": "rupees_at_stake",
+              "label": "Rupees at stake a week, on the fall beyond the rest of the city",
+              "kind": "rupees_at_stake_city",
               "params": {
                 "benchmark_check_id": "BLR-03:more_bills:missed_shifts:conv_benchmark",
                 "current_check_id": "BLR-03:more_bills:missed_shifts:conv_current",
+                "city_benchmark_check_id": "BLR-03:more_bills:missed_shifts:conv_city_benchmark",
+                "city_current_check_id": "BLR-03:more_bills:missed_shifts:conv_city_current",
                 "walkins_check_id": "BLR-03:more_bills:missed_shifts:walkins_per_week",
                 "avg_bill_check_id": "BLR-03:more_bills:missed_shifts:avg_bill_value"
               },
-              "value": 77300,
-              "display": "₹77,300"
+              "value": 74300,
+              "display": "₹74,300"
             },
             {
               "id": "BLR-03:more_bills:missed_shifts:days_in_window",
@@ -2935,7 +3123,8 @@
           "definition": "A customer belongs to the salesperson and store of their first bill in the data. They returned if they billed again at any store 30 to 180 days after that first bill. Counted over customers whose first bill is on or before 20 Apr 2026 (180 days before 17 Oct 2026), so each has had the full window. Placeholder customer id C99999999 is excluded. Karthik J. is compared with the other salespeople at BLR-01 over the same first-bill months: the fair rate is their month-by-month return rate applied to Karthik J.'s own mix of first-bill months."
         }
       ],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     },
     {
       "area_manager_id": "AM-06",
@@ -2947,7 +3136,8 @@
       ],
       "max_alerts_per_week": 5,
       "alerts": [],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     }
   ],
   "stores": [
@@ -7187,7 +7377,7 @@
         "LKO-02"
       ],
       "lever": "more_bills",
-      "headline": "LKO-02 is converting 10.2% of walk-ins, down from 12.3% before Imran C. left.",
+      "headline": "LKO-02 is converting 10.2% of walk-ins (13 Sep 2026 to 10 Oct 2026), down from 12.3% (16 Jun 2026 to 14 Sep 2026) before Imran C. left.",
       "action_text": "On Sun 11 Oct, Sat 17 Oct and Sun 18 Oct, keep all 7 salespeople on the floor at LKO-02, and make sure Sumit A. and Varun S., the strongest on bills per day now, work those days.",
       "raised_as_of": "2026-10-10",
       "measured_as_of": "2026-10-17",
@@ -7865,7 +8055,7 @@
         "BLR-03"
       ],
       "lever": "more_bills",
-      "headline": "BLR-03 is converting 9.5% of walk-ins, down from 13.2% before Manjunath K. and Vijay N. began missing shifts.",
+      "headline": "BLR-03 is converting 9.5% of walk-ins (13 Sep 2026 to 10 Oct 2026), down from 13.2% (7 Jun 2026 to 5 Sep 2026) before Manjunath K. and Vijay N. began missing shifts.",
       "action_text": "Put Manjunath K. and Vijay N. on the floor at BLR-03 on Sun 11 Oct, Sat 17 Oct and Sun 18 Oct. Give the weekly off to Manjunath K. on Tuesday and Vijay N. on Wednesday instead, as before the missed shifts began.",
       "raised_as_of": "2026-10-10",
       "measured_as_of": "2026-10-17",

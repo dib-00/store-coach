@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of": "2026-10-24",
-  "generated_at": "2026-11-21T08:05:00Z",
+  "generated_at": "2026-11-21T08:50:00Z",
   "windows": {
     "current": {
       "start": "2026-09-27",
@@ -35,22 +35,24 @@
           "city": "Lucknow",
           "lever": "more_bills",
           "cause_code": "salesperson_left",
-          "headline": "LKO-02 is converting 9.8% of walk-ins, down from 12.3% before Imran C. left.",
+          "headline": "LKO-02 is converting 9.8% of walk-ins (27 Sep 2026 to 24 Oct 2026), down from 12.3% (16 Jun 2026 to 14 Sep 2026) before Imran C. left.",
           "definition": "Conversion is bills divided by walk-ins at LKO-02, counted only on days with a usable door count (walk-ins above zero and no more bills than walk-ins); the headline compares the last four weeks with the same store's thirteen weeks before Imran C. left, and both windows are dated in the checks.",
-          "cause": "Imran C. last appears on the roster on 14 Sep 2026. Imran C. made 1.23 bills for each day present, against 0.52 for a typical colleague at LKO-02. Since then the store has converted 10.0% of walk-ins.",
+          "cause": "Imran C. last appears on the roster on 14 Sep 2026. Imran C. made 1.23 bills for each day present, against 0.52 for a typical colleague at LKO-02. Since then (15 Sep 2026 to 24 Oct 2026) the store has converted 10.0% of walk-ins. Over the same weeks the other Lucknow stores went from 13.0% to 12.5%, and the rupees below count only the fall beyond them. The part of the fall beyond the rest of the city is not large enough to rule out chance.",
           "action": {
             "who": "Store manager at LKO-02, with Arif A. and Sumit A.",
             "what": "Keep 8 salespeople on the floor, with Arif A. and Sumit A. working",
             "when": "Sun 25 Oct, Sat 31 Oct and Sun 1 Nov",
             "text": "On Sun 25 Oct, Sat 31 Oct and Sun 1 Nov, keep all 8 salespeople on the floor at LKO-02, as on busy days before Imran C. left, and make sure Arif A. and Sumit A., the strongest on bills per day now, work those days."
           },
-          "rupees_at_stake_weekly": 86700,
+          "rupees_at_stake_weekly": 69400,
           "arithmetic": {
-            "formula": "(fair conversion − current conversion) × walk-ins a week × average bill value",
-            "worked": "(12.3% − 9.8%) × 354 walk-ins a week × ₹9,797 = ₹86,700 a week",
+            "formula": "(fall at LKO-02 − fall at the other Lucknow stores over the same weeks) × walk-ins a week × average bill value",
+            "worked": "((12.3% − 9.8%) − (13.0% − 12.5%)) × 354 walk-ins a week × ₹9,797 = ₹69,400 a week",
             "input_check_ids": [
               "LKO-02:more_bills:salesperson_left:SP1018:conv_benchmark",
               "LKO-02:more_bills:salesperson_left:SP1018:conv_current",
+              "LKO-02:more_bills:salesperson_left:SP1018:conv_city_benchmark",
+              "LKO-02:more_bills:salesperson_left:SP1018:conv_city_current",
               "LKO-02:more_bills:salesperson_left:SP1018:walkins_per_week",
               "LKO-02:more_bills:salesperson_left:SP1018:avg_bill_value"
             ]
@@ -211,17 +213,107 @@
               "display": "₹9,797"
             },
             {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:range_current",
+              "label": "Dates of the current window",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-09-27",
+                "end": "2026-10-24"
+              },
+              "value": "2026-09-27..2026-10-24",
+              "display": "27 Sep 2026 to 24 Oct 2026"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:range_benchmark",
+              "label": "Dates of the benchmark window",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-06-16",
+                "end": "2026-09-14"
+              },
+              "value": "2026-06-16..2026-09-14",
+              "display": "16 Jun 2026 to 14 Sep 2026"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:range_since",
+              "label": "Dates since the cause began",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-09-15",
+                "end": "2026-10-24"
+              },
+              "value": "2026-09-15..2026-10-24",
+              "display": "15 Sep 2026 to 24 Oct 2026"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:conv_city_benchmark",
+              "label": "Conversion at the other Lucknow stores (LKO-01, LKO-03 and LKO-04), 16 Jun 2026 to 14 Sep 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "LKO-01",
+                  "LKO-03",
+                  "LKO-04"
+                ],
+                "start": "2026-06-16",
+                "end": "2026-09-14",
+                "day_type": "all"
+              },
+              "value": 0.1297,
+              "display": "13.0%"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:conv_city_current",
+              "label": "Conversion at the other Lucknow stores (LKO-01, LKO-03 and LKO-04), 27 Sep 2026 to 24 Oct 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "LKO-01",
+                  "LKO-03",
+                  "LKO-04"
+                ],
+                "start": "2026-09-27",
+                "end": "2026-10-24",
+                "day_type": "all"
+              },
+              "value": 0.1245,
+              "display": "12.5%"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:z_beyond_city",
+              "label": "z of the fall at LKO-02 beyond the other Lucknow stores, 15 Sep 2026 to 24 Oct 2026 against 16 Jun 2026 to 14 Sep 2026",
+              "kind": "beyond_city_z",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "other_store_ids": [
+                  "LKO-01",
+                  "LKO-03",
+                  "LKO-04"
+                ],
+                "start": "2026-09-15",
+                "end": "2026-10-24",
+                "base_start": "2026-06-16",
+                "base_end": "2026-09-14"
+              },
+              "value": -1.81,
+              "display": "-1.81"
+            },
+            {
               "id": "LKO-02:more_bills:salesperson_left:SP1018:rupees_at_stake",
-              "label": "Rupees at stake a week",
-              "kind": "rupees_at_stake",
+              "label": "Rupees at stake a week, on the fall beyond the rest of the city",
+              "kind": "rupees_at_stake_city",
               "params": {
                 "benchmark_check_id": "LKO-02:more_bills:salesperson_left:SP1018:conv_benchmark",
                 "current_check_id": "LKO-02:more_bills:salesperson_left:SP1018:conv_current",
+                "city_benchmark_check_id": "LKO-02:more_bills:salesperson_left:SP1018:conv_city_benchmark",
+                "city_current_check_id": "LKO-02:more_bills:salesperson_left:SP1018:conv_city_current",
                 "walkins_check_id": "LKO-02:more_bills:salesperson_left:SP1018:walkins_per_week",
                 "avg_bill_check_id": "LKO-02:more_bills:salesperson_left:SP1018:avg_bill_value"
               },
-              "value": 86700,
-              "display": "₹86,700"
+              "value": 69400,
+              "display": "₹69,400"
             },
             {
               "id": "LKO-02:more_bills:salesperson_left:SP1018:last_roster_date",
@@ -340,7 +432,8 @@
           }
         }
       ],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     },
     {
       "area_manager_id": "AM-02",
@@ -353,7 +446,8 @@
       ],
       "max_alerts_per_week": 5,
       "alerts": [],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     },
     {
       "area_manager_id": "AM-03",
@@ -1448,7 +1542,8 @@
           "definition": "A customer belongs to the salesperson and store of their first bill in the data. They returned if they billed again at any store 30 to 180 days after that first bill. Counted over customers whose first bill is on or before 27 Apr 2026 (180 days before 24 Oct 2026), so each has had the full window. Placeholder customer id C99999999 is excluded. Faizan K. is compared with the other salespeople at PAT-01 over the same first-bill months: the fair rate is their month-by-month return rate applied to Faizan K.'s own mix of first-bill months."
         }
       ],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     },
     {
       "area_manager_id": "AM-04",
@@ -1460,7 +1555,8 @@
       ],
       "max_alerts_per_week": 5,
       "alerts": [],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     },
     {
       "area_manager_id": "AM-05",
@@ -1485,9 +1581,9 @@
           "city": "Bengaluru",
           "lever": "more_bills",
           "cause_code": "missed_shifts",
-          "headline": "BLR-03 is converting 11.1% of walk-ins, down from 13.2% before Manjunath K. and Vijay N. began missing shifts.",
+          "headline": "BLR-03 is converting 11.1% of walk-ins (27 Sep 2026 to 24 Oct 2026), down from 13.2% (7 Jun 2026 to 5 Sep 2026) before Manjunath K. and Vijay N. began missing shifts.",
           "definition": "Conversion is bills divided by walk-ins at BLR-03, counted only on days with a usable door count (walk-ins above zero and no more bills than walk-ins); the headline compares the last four weeks with the same store's thirteen weeks before the missed shifts began, and both windows are dated in the checks.",
-          "cause": "Of the last 28 days, Manjunath K. was on the floor on 16 and Vijay N. was on the floor on 16, against 22.5 for a typical colleague at BLR-03. Of the 9 weekend and festival days, Manjunath K. worked 0 and Vijay N. worked 1; on those days BLR-03 converted 9.4% of walk-ins, against 12.4% on other days.",
+          "cause": "Of the last 28 days, Manjunath K. was on the floor on 16 and Vijay N. was on the floor on 16, against 22.5 for a typical colleague at BLR-03. Of the 9 weekend and festival days, Manjunath K. worked 0 and Vijay N. worked 1; on those days BLR-03 converted 9.4% of walk-ins, against 12.4% on other days. Over the same weeks the other Bengaluru stores went from 13.4% to 13.5%, and the rupees below count only the fall beyond them.",
           "action": {
             "who": "Store manager at BLR-03, with Manjunath K. and Vijay N.",
             "what": "Roster Manjunath K. and Vijay N. on the floor on the busy days and move the weekly off to a weekday",
@@ -1496,7 +1592,7 @@
           },
           "rupees_at_stake_weekly": 77700,
           "arithmetic": {
-            "formula": "(fair conversion − current conversion) × walk-ins a week × average bill value",
+            "formula": "(fall at BLR-03) × walk-ins a week × average bill value; the other Bengaluru stores did not fall over the same weeks, so nothing is taken off for the city",
             "worked": "(13.2% − 11.1%) × 362 walk-ins a week × ₹10,226 = ₹77,700 a week",
             "input_check_ids": [
               "BLR-03:more_bills:missed_shifts:conv_benchmark",
@@ -1662,12 +1758,102 @@
               "display": "₹10,226"
             },
             {
+              "id": "BLR-03:more_bills:missed_shifts:range_current",
+              "label": "Dates of the current window",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-09-27",
+                "end": "2026-10-24"
+              },
+              "value": "2026-09-27..2026-10-24",
+              "display": "27 Sep 2026 to 24 Oct 2026"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:range_benchmark",
+              "label": "Dates of the benchmark window",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-06-07",
+                "end": "2026-09-05"
+              },
+              "value": "2026-06-07..2026-09-05",
+              "display": "7 Jun 2026 to 5 Sep 2026"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:range_since",
+              "label": "Dates since the cause began",
+              "kind": "date_range",
+              "params": {
+                "start": "2026-09-06",
+                "end": "2026-10-24"
+              },
+              "value": "2026-09-06..2026-10-24",
+              "display": "6 Sep 2026 to 24 Oct 2026"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:conv_city_benchmark",
+              "label": "Conversion at the other Bengaluru stores (BLR-01, BLR-02 and BLR-04), 7 Jun 2026 to 5 Sep 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "BLR-01",
+                  "BLR-02",
+                  "BLR-04"
+                ],
+                "start": "2026-06-07",
+                "end": "2026-09-05",
+                "day_type": "all"
+              },
+              "value": 0.1338,
+              "display": "13.4%"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:conv_city_current",
+              "label": "Conversion at the other Bengaluru stores (BLR-01, BLR-02 and BLR-04), 27 Sep 2026 to 24 Oct 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "BLR-01",
+                  "BLR-02",
+                  "BLR-04"
+                ],
+                "start": "2026-09-27",
+                "end": "2026-10-24",
+                "day_type": "all"
+              },
+              "value": 0.1352,
+              "display": "13.5%"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:z_beyond_city",
+              "label": "z of the fall at BLR-03 beyond the other Bengaluru stores, 6 Sep 2026 to 24 Oct 2026 against 7 Jun 2026 to 5 Sep 2026",
+              "kind": "beyond_city_z",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "other_store_ids": [
+                  "BLR-01",
+                  "BLR-02",
+                  "BLR-04"
+                ],
+                "start": "2026-09-06",
+                "end": "2026-10-24",
+                "base_start": "2026-06-07",
+                "base_end": "2026-09-05"
+              },
+              "value": -2.49,
+              "display": "-2.49"
+            },
+            {
               "id": "BLR-03:more_bills:missed_shifts:rupees_at_stake",
-              "label": "Rupees at stake a week",
-              "kind": "rupees_at_stake",
+              "label": "Rupees at stake a week, on the fall beyond the rest of the city",
+              "kind": "rupees_at_stake_city",
               "params": {
                 "benchmark_check_id": "BLR-03:more_bills:missed_shifts:conv_benchmark",
                 "current_check_id": "BLR-03:more_bills:missed_shifts:conv_current",
+                "city_benchmark_check_id": "BLR-03:more_bills:missed_shifts:conv_city_benchmark",
+                "city_current_check_id": "BLR-03:more_bills:missed_shifts:conv_city_current",
                 "walkins_check_id": "BLR-03:more_bills:missed_shifts:walkins_per_week",
                 "avg_bill_check_id": "BLR-03:more_bills:missed_shifts:avg_bill_value"
               },
@@ -2870,7 +3056,8 @@
           "definition": "Share = bills with at least one Indo-Western line ÷ all bills of the salesperson at this store, over the 365 days ending on the run date (a category is a small share of bills, so 90 days is too few to tell). Compared with the other salespeople of the same store who are still on the roster, same days."
         }
       ],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     },
     {
       "area_manager_id": "AM-06",
@@ -2882,7 +3069,8 @@
       ],
       "max_alerts_per_week": 5,
       "alerts": [],
-      "held_back": []
+      "held_back": [],
+      "market_notes": []
     }
   ],
   "stores": [
@@ -7170,7 +7358,1400 @@
       "definition": "Weekend and festival days are Saturdays, Sundays and the festival and wedding dates in the state calendar; a day on the floor is a day marked Present on the roster, over the last four weeks, compared only with colleagues at the same store."
     }
   ],
-  "follow_ups": [],
+  "follow_ups": [
+    {
+      "alert_id": "LKO-02:more_bills:salesperson_left:SP1018",
+      "area_manager_id": "AM-01",
+      "store_ids": [
+        "LKO-02"
+      ],
+      "lever": "more_bills",
+      "headline": "LKO-02 is converting 10.0% of walk-ins (20 Sep 2026 to 17 Oct 2026), down from 12.3% (16 Jun 2026 to 14 Sep 2026) before Imran C. left.",
+      "action_text": "On Sun 18 Oct, Tue 20 Oct (Dussehra / Dasara), Sat 24 Oct and Sun 25 Oct, keep all 8 salespeople on the floor at LKO-02, as on busy days before Imran C. left, and make sure Jitendra G. and Sumit A., the strongest on bills per day now, work those days. Move the weekly off of Varun S. from Tuesday to Tuesday. Move the weekly off of Faizan J. from Tuesday to Tuesday.",
+      "raised_as_of": "2026-10-17",
+      "measured_as_of": "2026-10-24",
+      "metric_label": "Conversion at LKO-02",
+      "before": 0.0995,
+      "after": 0.0902,
+      "target": 0.1233,
+      "before_display": "10.0%",
+      "after_display": "9.0%",
+      "target_display": "12.3%",
+      "moved": "no_change",
+      "verdict": "Conversion at LKO-02 was 10.0% when raised and 9.0% in the 7 days after (34 bills from 377 walk-ins); the target is 12.3%. No real change: the difference is within what one week moves by chance.",
+      "definition": "Conversion is bills divided by walk-ins at LKO-02, counted only on days with a usable door count (walk-ins above zero and no more bills than walk-ins); the headline compares the last four weeks with the same store's thirteen weeks before Imran C. left, and both windows are dated in the checks.",
+      "checks": [
+        {
+          "id": "followup:LKO-02:more_bills:salesperson_left:SP1018:before",
+          "label": "Conversion at LKO-02, when the alert was raised",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-09-20",
+            "end": "2026-10-17",
+            "day_type": "all"
+          },
+          "value": 0.0995,
+          "display": "10.0%"
+        },
+        {
+          "id": "followup:LKO-02:more_bills:salesperson_left:SP1018:target",
+          "label": "Conversion at LKO-02, the target (Conversion, before Imran C. left (16 Jun 2026 to 14 Sep 2026))",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-06-16",
+            "end": "2026-09-14",
+            "day_type": "all"
+          },
+          "value": 0.1233,
+          "display": "12.3%"
+        },
+        {
+          "id": "followup:LKO-02:more_bills:salesperson_left:SP1018:days",
+          "label": "Days measured after the alert was raised",
+          "kind": "day_count",
+          "params": {
+            "state": "Uttar Pradesh",
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 7,
+          "display": "7"
+        },
+        {
+          "id": "followup:LKO-02:more_bills:salesperson_left:SP1018:after",
+          "label": "Conversion at LKO-02, the 7 days after",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 0.0902,
+          "display": "9.0%"
+        },
+        {
+          "id": "followup:LKO-02:more_bills:salesperson_left:SP1018:after_numerator",
+          "label": "Bills in those days",
+          "kind": "bills_count",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 34,
+          "display": "34"
+        },
+        {
+          "id": "followup:LKO-02:more_bills:salesperson_left:SP1018:after_denominator",
+          "label": "Walk-ins in those days",
+          "kind": "footfall_sum",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 377,
+          "display": "377"
+        },
+        {
+          "id": "followup:LKO-02:more_bills:salesperson_left:SP1018:before_numerator",
+          "label": "Bills behind the figure when raised",
+          "kind": "bills_count",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-09-20",
+            "end": "2026-10-17",
+            "day_type": "all"
+          },
+          "value": 126,
+          "display": "126"
+        },
+        {
+          "id": "followup:LKO-02:more_bills:salesperson_left:SP1018:before_denominator",
+          "label": "Walk-ins behind the figure when raised",
+          "kind": "footfall_sum",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-09-20",
+            "end": "2026-10-17",
+            "day_type": "all"
+          },
+          "value": 1266,
+          "display": "1,266"
+        }
+      ]
+    },
+    {
+      "alert_id": "PAT-01:bigger_baskets:high_discount",
+      "area_manager_id": "AM-03",
+      "store_ids": [
+        "PAT-01"
+      ],
+      "lever": "bigger_baskets",
+      "headline": "PAT-01: Manoj N. and Sanjay K. give away 7.4% of MRP in discounts; colleagues give 1.5%",
+      "action_text": "From today, Manoj N. and Sanjay K. quote the full price first and take every discount to the store manager for a yes or no before the bill is made.",
+      "raised_as_of": "2026-10-17",
+      "measured_as_of": "2026-10-24",
+      "metric_label": "Discount rate of Manoj N. and Sanjay K. at PAT-01",
+      "before": 0.0739,
+      "after": 0.0309,
+      "target": 0.015,
+      "before_display": "7.4%",
+      "after_display": "3.1%",
+      "target_display": "1.5%",
+      "moved": "no_change",
+      "verdict": "Discount rate of Manoj N. and Sanjay K. at PAT-01 was 7.4% when raised and 3.1% in the 7 days after; the target is 1.5%. No real change: the difference is within what one week moves by chance.",
+      "definition": "Discount rate = 1 − sum(qty × selling price) ÷ sum(qty × MRP) over product lines (carry bags left out) of bills in the 90 days ending on the run date. The named salespeople are compared with the other salespeople of the same store who are still on the roster, over the same days.",
+      "checks": [
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:before",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, when the alert was raised",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065"
+            ],
+            "start": "2026-07-20",
+            "end": "2026-10-17"
+          },
+          "value": 0.0739,
+          "display": "7.4%"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:target",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, the target (Discount rate of the other salespeople at the store)",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1067",
+              "SP1069",
+              "SP1070",
+              "SP1072",
+              "SP1073",
+              "SP1075",
+              "SP1076",
+              "SP1077",
+              "SP1078",
+              "SP1079"
+            ],
+            "start": "2026-07-20",
+            "end": "2026-10-17"
+          },
+          "value": 0.015,
+          "display": "1.5%"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:days",
+          "label": "Days measured after the alert was raised",
+          "kind": "day_count",
+          "params": {
+            "state": "Bihar",
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 7,
+          "display": "7"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:after",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, the 7 days after",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065"
+            ],
+            "start": "2026-10-18",
+            "end": "2026-10-24"
+          },
+          "value": 0.0309,
+          "display": "3.1%"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:earlier_week_1",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, 2026-10-11 to 2026-10-17",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065"
+            ],
+            "start": "2026-10-11",
+            "end": "2026-10-17"
+          },
+          "value": 0.0392,
+          "display": "3.9%"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:earlier_week_2",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, 2026-10-04 to 2026-10-10",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-10"
+          },
+          "value": 0.0482,
+          "display": "4.8%"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:earlier_week_3",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, 2026-09-27 to 2026-10-03",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065"
+            ],
+            "start": "2026-09-27",
+            "end": "2026-10-03"
+          },
+          "value": 0.0545,
+          "display": "5.5%"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:earlier_week_4",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, 2026-09-20 to 2026-09-26",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065"
+            ],
+            "start": "2026-09-20",
+            "end": "2026-09-26"
+          },
+          "value": 0.1177,
+          "display": "11.8%"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:earlier_week_5",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, 2026-09-13 to 2026-09-19",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065"
+            ],
+            "start": "2026-09-13",
+            "end": "2026-09-19"
+          },
+          "value": 0.0736,
+          "display": "7.4%"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:earlier_week_6",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, 2026-09-06 to 2026-09-12",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065"
+            ],
+            "start": "2026-09-06",
+            "end": "2026-09-12"
+          },
+          "value": 0.1398,
+          "display": "14.0%"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:earlier_week_7",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, 2026-08-30 to 2026-09-05",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065"
+            ],
+            "start": "2026-08-30",
+            "end": "2026-09-05"
+          },
+          "value": 0.0689,
+          "display": "6.9%"
+        },
+        {
+          "id": "followup:PAT-01:bigger_baskets:high_discount:earlier_week_8",
+          "label": "Discount rate of Manoj N. and Sanjay K. at PAT-01, 2026-08-23 to 2026-08-29",
+          "kind": "discount_rate",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065"
+            ],
+            "start": "2026-08-23",
+            "end": "2026-08-29"
+          },
+          "value": 0.0599,
+          "display": "6.0%"
+        }
+      ]
+    },
+    {
+      "alert_id": "PAT-01:more_repeat:customers_not_returning:SP1072",
+      "area_manager_id": "AM-03",
+      "store_ids": [
+        "PAT-01"
+      ],
+      "lever": "more_repeat",
+      "headline": "1.7% of the 726 customers first billed by Faizan K. at PAT-01 came back and billed again, against 5.2% for colleagues' customers first billed in the same months.",
+      "action_text": "On Thursday, Faizan K. calls the 30 customers first billed between 18 Aug 2026 and 17 Sep 2026 who have not been back; Mukesh D. sits in on the first five calls.",
+      "raised_as_of": "2026-10-17",
+      "measured_as_of": "2026-10-24",
+      "metric_label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill",
+      "before": 0.0,
+      "after": null,
+      "target": 0.03,
+      "before_display": "0.00",
+      "after_display": "not measurable",
+      "target_display": "0.03",
+      "moved": "not_measurable",
+      "verdict": "The figure was 0.00 when raised and 0.00 in the 7 days after; the target is 0.03. Whether it moved cannot be measured yet, because the same seven-day figure read the same in every earlier week, so one week is too short to show a change.",
+      "definition": "A customer belongs to the salesperson and store of their first bill in the data. They returned if they billed again at any store 30 to 180 days after that first bill. Counted over customers whose first bill is on or before 20 Apr 2026 (180 days before 17 Oct 2026), so each has had the full window. Placeholder customer id C99999999 is excluded. Faizan K. is compared with the other salespeople at PAT-01 over the same first-bill months: the fair rate is their month-by-month return rate applied to Faizan K.'s own mix of first-bill months.",
+      "checks": [
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:before",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, when the alert was raised",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1072"
+            ],
+            "start": "2026-07-19",
+            "end": "2026-10-17",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:target",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, the target (The same figure for the other salespeople at PAT-01, 19 Jul 2026 to 17 Oct 2026)",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1064",
+              "SP1065",
+              "SP1066",
+              "SP1067",
+              "SP1068",
+              "SP1069",
+              "SP1070",
+              "SP1071",
+              "SP1073",
+              "SP1074",
+              "SP1075",
+              "SP1076",
+              "SP1077",
+              "SP1078",
+              "SP1079"
+            ],
+            "start": "2026-07-19",
+            "end": "2026-10-17",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.03,
+          "display": "0.03"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:days",
+          "label": "Days measured after the alert was raised",
+          "kind": "day_count",
+          "params": {
+            "state": "Bihar",
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 7,
+          "display": "7"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:after",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, the 7 days after",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1072"
+            ],
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:earlier_week_1",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, 2026-10-11 to 2026-10-17",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1072"
+            ],
+            "start": "2026-10-11",
+            "end": "2026-10-17",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:earlier_week_2",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, 2026-10-04 to 2026-10-10",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1072"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-10",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:earlier_week_3",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, 2026-09-27 to 2026-10-03",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1072"
+            ],
+            "start": "2026-09-27",
+            "end": "2026-10-03",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:earlier_week_4",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, 2026-09-20 to 2026-09-26",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1072"
+            ],
+            "start": "2026-09-20",
+            "end": "2026-09-26",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:earlier_week_5",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, 2026-09-13 to 2026-09-19",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1072"
+            ],
+            "start": "2026-09-13",
+            "end": "2026-09-19",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:earlier_week_6",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, 2026-09-06 to 2026-09-12",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1072"
+            ],
+            "start": "2026-09-06",
+            "end": "2026-09-12",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:earlier_week_7",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, 2026-08-30 to 2026-09-05",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1072"
+            ],
+            "start": "2026-08-30",
+            "end": "2026-09-05",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:PAT-01:more_repeat:customers_not_returning:SP1072:earlier_week_8",
+          "label": "Return bills a week, at any store, per 100 customers of Faizan K. who are 30 to 180 days past their first bill, 2026-08-23 to 2026-08-29",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "salesperson_ids": [
+              "SP1072"
+            ],
+            "start": "2026-08-23",
+            "end": "2026-08-29",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        }
+      ]
+    },
+    {
+      "alert_id": "BLR-03:more_bills:missed_shifts",
+      "area_manager_id": "AM-05",
+      "store_ids": [
+        "BLR-03"
+      ],
+      "lever": "more_bills",
+      "headline": "BLR-03 is converting 10.6% of walk-ins (20 Sep 2026 to 17 Oct 2026), down from 13.2% (7 Jun 2026 to 5 Sep 2026) before Manjunath K. and Vijay N. began missing shifts.",
+      "action_text": "Put Manjunath K. and Vijay N. on the floor at BLR-03 on Sun 18 Oct, Tue 20 Oct (Dussehra / Dasara), Sat 24 Oct and Sun 25 Oct. Give the weekly off to Manjunath K. on Wednesday and Vijay N. on Wednesday instead, as before the missed shifts began.",
+      "raised_as_of": "2026-10-17",
+      "measured_as_of": "2026-10-24",
+      "metric_label": "Conversion at BLR-03",
+      "before": 0.1059,
+      "after": 0.1195,
+      "target": 0.1324,
+      "before_display": "10.6%",
+      "after_display": "12.0%",
+      "target_display": "13.2%",
+      "moved": "no_change",
+      "verdict": "Conversion at BLR-03 was 10.6% when raised and 12.0% in the 7 days after (49 bills from 410 walk-ins); the target is 13.2%. No real change: the difference is within what one week moves by chance. Of the 3 weekend and festival days in those days, the roster shows Manjunath K. on 0 and Vijay N. on 1.",
+      "definition": "Conversion is bills divided by walk-ins at BLR-03, counted only on days with a usable door count (walk-ins above zero and no more bills than walk-ins); the headline compares the last four weeks with the same store's thirteen weeks before the missed shifts began, and both windows are dated in the checks.",
+      "checks": [
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:before",
+          "label": "Conversion at BLR-03, when the alert was raised",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-09-20",
+            "end": "2026-10-17",
+            "day_type": "all"
+          },
+          "value": 0.1059,
+          "display": "10.6%"
+        },
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:target",
+          "label": "Conversion at BLR-03, the target (Conversion, before the missed shifts began (7 Jun 2026 to 5 Sep 2026))",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-06-07",
+            "end": "2026-09-05",
+            "day_type": "all"
+          },
+          "value": 0.1324,
+          "display": "13.2%"
+        },
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:days",
+          "label": "Days measured after the alert was raised",
+          "kind": "day_count",
+          "params": {
+            "state": "Karnataka",
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 7,
+          "display": "7"
+        },
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:after",
+          "label": "Conversion at BLR-03, the 7 days after",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 0.1195,
+          "display": "12.0%"
+        },
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:after_numerator",
+          "label": "Bills in those days",
+          "kind": "bills_count",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 49,
+          "display": "49"
+        },
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:after_denominator",
+          "label": "Walk-ins in those days",
+          "kind": "footfall_sum",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 410,
+          "display": "410"
+        },
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:before_numerator",
+          "label": "Bills behind the figure when raised",
+          "kind": "bills_count",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-09-20",
+            "end": "2026-10-17",
+            "day_type": "all"
+          },
+          "value": 135,
+          "display": "135"
+        },
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:before_denominator",
+          "label": "Walk-ins behind the figure when raised",
+          "kind": "footfall_sum",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-09-20",
+            "end": "2026-10-17",
+            "day_type": "all"
+          },
+          "value": 1275,
+          "display": "1,275"
+        },
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:after_busy_days",
+          "label": "Weekend and festival days in those days",
+          "kind": "day_count",
+          "params": {
+            "state": "Karnataka",
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "busy"
+          },
+          "value": 3,
+          "display": "3"
+        },
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:after_present_busy_days:SP1141",
+          "label": "Busy days on the floor in those days, Manjunath K.",
+          "kind": "present_days",
+          "params": {
+            "salesperson_id": "SP1141",
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "busy"
+          },
+          "value": 0,
+          "display": "0"
+        },
+        {
+          "id": "followup:BLR-03:more_bills:missed_shifts:after_present_busy_days:SP1142",
+          "label": "Busy days on the floor in those days, Vijay N.",
+          "kind": "present_days",
+          "params": {
+            "salesperson_id": "SP1142",
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "busy"
+          },
+          "value": 1,
+          "display": "1"
+        }
+      ]
+    },
+    {
+      "alert_id": "BLR-02:bigger_baskets:category_avoided:SP1125",
+      "area_manager_id": "AM-05",
+      "store_ids": [
+        "BLR-02"
+      ],
+      "lever": "bigger_baskets",
+      "headline": "BLR-02: Suresh K. has Indo-Western sets on 1.3% of bills; colleagues 8.2%",
+      "action_text": "Today, Suresh K. shadows Girish V. for the first five customers and shows Indo-Western sets to every customer before the trial ends.",
+      "raised_as_of": "2026-10-17",
+      "measured_as_of": "2026-10-24",
+      "metric_label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02",
+      "before": 0.0,
+      "after": null,
+      "target": 0.0514,
+      "before_display": "0.0%",
+      "after_display": "not measurable",
+      "target_display": "5.1%",
+      "moved": "not_measurable",
+      "verdict": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02 was 0.0% when raised and 0.0% in the 7 days after; the target is 5.1%. Whether it moved cannot be measured yet, because the same seven-day figure read the same in every earlier week, so one week is too short to show a change.",
+      "definition": "Share = bills with at least one Indo-Western line ÷ all bills of the salesperson at this store, over the 365 days ending on the run date (a category is a small share of bills, so 90 days is too few to tell). Compared with the other salespeople of the same store who are still on the roster, same days.",
+      "checks": [
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:before",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, when the alert was raised",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1125"
+            ],
+            "start": "2026-07-20",
+            "end": "2026-10-17"
+          },
+          "value": 0.0,
+          "display": "0.0%"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:target",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, the target (Other salespeople: share of bills with Indo-Western sets, last 90 days)",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1126",
+              "SP1128",
+              "SP1129",
+              "SP1130",
+              "SP1133",
+              "SP1135",
+              "SP1136",
+              "SP1137",
+              "SP1139",
+              "SP1140"
+            ],
+            "start": "2026-07-20",
+            "end": "2026-10-17"
+          },
+          "value": 0.0514,
+          "display": "5.1%"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:days",
+          "label": "Days measured after the alert was raised",
+          "kind": "day_count",
+          "params": {
+            "state": "Karnataka",
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 7,
+          "display": "7"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:after",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, the 7 days after",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1125"
+            ],
+            "start": "2026-10-18",
+            "end": "2026-10-24"
+          },
+          "value": 0.0,
+          "display": "0.0%"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:earlier_week_1",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, 2026-10-11 to 2026-10-17",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1125"
+            ],
+            "start": "2026-10-11",
+            "end": "2026-10-17"
+          },
+          "value": 0.0,
+          "display": "0.0%"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:earlier_week_2",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, 2026-10-04 to 2026-10-10",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1125"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-10"
+          },
+          "value": 0.0,
+          "display": "0.0%"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:earlier_week_3",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, 2026-09-27 to 2026-10-03",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1125"
+            ],
+            "start": "2026-09-27",
+            "end": "2026-10-03"
+          },
+          "value": 0.0,
+          "display": "0.0%"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:earlier_week_4",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, 2026-09-20 to 2026-09-26",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1125"
+            ],
+            "start": "2026-09-20",
+            "end": "2026-09-26"
+          },
+          "value": 0.0,
+          "display": "0.0%"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:earlier_week_5",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, 2026-09-13 to 2026-09-19",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1125"
+            ],
+            "start": "2026-09-13",
+            "end": "2026-09-19"
+          },
+          "value": 0.0,
+          "display": "0.0%"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:earlier_week_6",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, 2026-09-06 to 2026-09-12",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1125"
+            ],
+            "start": "2026-09-06",
+            "end": "2026-09-12"
+          },
+          "value": 0.0,
+          "display": "0.0%"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:earlier_week_7",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, 2026-08-30 to 2026-09-05",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1125"
+            ],
+            "start": "2026-08-30",
+            "end": "2026-09-05"
+          },
+          "value": 0.0,
+          "display": "0.0%"
+        },
+        {
+          "id": "followup:BLR-02:bigger_baskets:category_avoided:SP1125:earlier_week_8",
+          "label": "Share of Suresh K.'s bills with Indo-Western sets at BLR-02, 2026-08-23 to 2026-08-29",
+          "kind": "category_bill_share",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "category": "Indo-Western",
+            "salesperson_ids": [
+              "SP1125"
+            ],
+            "start": "2026-08-23",
+            "end": "2026-08-29"
+          },
+          "value": 0.0,
+          "display": "0.0%"
+        }
+      ]
+    },
+    {
+      "alert_id": "BLR-01:more_repeat:role_model:SP1110",
+      "area_manager_id": "AM-05",
+      "store_ids": [
+        "BLR-01"
+      ],
+      "lever": "more_repeat",
+      "headline": "16.3% of the 584 customers first billed by Karthik J. at BLR-01 came back and billed again, against 5.0% for colleagues' customers first billed in the same months.",
+      "action_text": "On Thursday, Suresh V. and Manjunath C. each call their customers first billed between 18 Aug 2026 and 17 Sep 2026 who have not been back (22 and 22 customers), and Karthik J. sits in on the first five calls of each.",
+      "raised_as_of": "2026-10-17",
+      "measured_as_of": "2026-10-24",
+      "metric_label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill",
+      "before": 0.0,
+      "after": null,
+      "target": 0.18,
+      "before_display": "0.00",
+      "after_display": "not measurable",
+      "target_display": "0.18",
+      "moved": "not_measurable",
+      "verdict": "The figure was 0.00 when raised and 0.00 in the 7 days after; the target is 0.18. Whether it moved cannot be measured yet, because the same seven-day figure read the same in every earlier week, so one week is too short to show a change.",
+      "definition": "A customer belongs to the salesperson and store of their first bill in the data. They returned if they billed again at any store 30 to 180 days after that first bill. Counted over customers whose first bill is on or before 20 Apr 2026 (180 days before 17 Oct 2026), so each has had the full window. Placeholder customer id C99999999 is excluded. Karthik J. is compared with the other salespeople at BLR-01 over the same first-bill months: the fair rate is their month-by-month return rate applied to Karthik J.'s own mix of first-bill months.",
+      "checks": [
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:before",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, when the alert was raised",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1114",
+              "SP1120"
+            ],
+            "start": "2026-07-19",
+            "end": "2026-10-17",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:target",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, the target (The same figure for Karthik J., 19 Jul 2026 to 17 Oct 2026)",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1110"
+            ],
+            "start": "2026-07-19",
+            "end": "2026-10-17",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.18,
+          "display": "0.18"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:days",
+          "label": "Days measured after the alert was raised",
+          "kind": "day_count",
+          "params": {
+            "state": "Karnataka",
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "day_type": "all"
+          },
+          "value": 7,
+          "display": "7"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:after",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, the 7 days after",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1114",
+              "SP1120"
+            ],
+            "start": "2026-10-18",
+            "end": "2026-10-24",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:earlier_week_1",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, 2026-10-11 to 2026-10-17",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1114",
+              "SP1120"
+            ],
+            "start": "2026-10-11",
+            "end": "2026-10-17",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:earlier_week_2",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, 2026-10-04 to 2026-10-10",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1114",
+              "SP1120"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-10",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:earlier_week_3",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, 2026-09-27 to 2026-10-03",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1114",
+              "SP1120"
+            ],
+            "start": "2026-09-27",
+            "end": "2026-10-03",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:earlier_week_4",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, 2026-09-20 to 2026-09-26",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1114",
+              "SP1120"
+            ],
+            "start": "2026-09-20",
+            "end": "2026-09-26",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:earlier_week_5",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, 2026-09-13 to 2026-09-19",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1114",
+              "SP1120"
+            ],
+            "start": "2026-09-13",
+            "end": "2026-09-19",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:earlier_week_6",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, 2026-09-06 to 2026-09-12",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1114",
+              "SP1120"
+            ],
+            "start": "2026-09-06",
+            "end": "2026-09-12",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:earlier_week_7",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, 2026-08-30 to 2026-09-05",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1114",
+              "SP1120"
+            ],
+            "start": "2026-08-30",
+            "end": "2026-09-05",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        },
+        {
+          "id": "followup:BLR-01:more_repeat:role_model:SP1110:earlier_week_8",
+          "label": "Return bills a week, at any store, per 100 customers of Suresh V. and Manjunath C. who are 30 to 180 days past their first bill, 2026-08-23 to 2026-08-29",
+          "kind": "repeat_weekly_returns_per_100",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "salesperson_ids": [
+              "SP1114",
+              "SP1120"
+            ],
+            "start": "2026-08-23",
+            "end": "2026-08-29",
+            "min_gap_days": 30,
+            "max_gap_days": 180,
+            "exclude_customer_ids": [
+              "C99999999"
+            ]
+          },
+          "value": 0.0,
+          "display": "0.00"
+        }
+      ]
+    }
+  ],
   "data_issues": [
     {
       "issue_id": "ALL:placeholder_customer_id:C99999999",
