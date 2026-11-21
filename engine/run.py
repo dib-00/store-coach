@@ -162,7 +162,11 @@ def main(argv: list[str] | None = None) -> int:
 
     as_of = args.as_of or last_bill_date(Path(args.data_dir))
     date.fromisoformat(as_of)  # fail early on a malformed date
-    generated_at = args.generated_at or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    generated_at = args.generated_at or now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    # The stamp says when the run happened: it can be replayed (tests pin it) but never claim a later time.
+    if datetime.fromisoformat(generated_at.replace("Z", "+00:00")) > now:
+        ap.error(f"--generated-at {generated_at} is later than the current time {now:%Y-%m-%dT%H:%M:%SZ}")
 
     data = load(args.data_dir, as_of)
     output, notes = build_output(data, generated_at, Path(args.out_dir) / "runs")
