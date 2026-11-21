@@ -169,19 +169,27 @@ def one_follow_up(m: Metrics, alert: dict, area_manager_id: str, raised_as_of: s
 
     after_display = display(kind, after) if after is not None else NOT_MEASURABLE
     target_clause = f"; the target is {target_display}" if tc is not None else ""
-    if not stable:
-        verdict = f"{label} cannot be compared a week later, because {why_not}; no result is claimed."
-    elif after is None:
-        verdict = (f"{label} was {before_display} when raised{target_clause}. It cannot be measured for the "
-                   f"{days['display']} days after, because {why_not}.")
-    elif moved == "not_measurable":
-        verdict = (f"{label} was {before_display} when raised and {after_display} in the {days['display']} days "
-                   f"after{sample}{target_clause}. No verdict, because {why_not}.")
-    else:
-        verdict = (f"{label} was {before_display} when raised and {after_display} in the {days['display']} days "
-                   f"after{sample}{target_clause}. {ending}")
+    if moved == "no_change" and after == before:
+        ending = "No change in the week after."
+
+    def sentence(subject: str) -> str:
+        if not stable:
+            return f"{subject} cannot be compared a week later, because {why_not}; no result is claimed."
+        if after is None:
+            return (f"{subject} was {before_display} when raised{target_clause}. It cannot be measured for the "
+                    f"{days['display']} days after, because {why_not}.")
+        if moved == "not_measurable":
+            return (f"{subject} was {before_display} when raised and {after_display} in the {days['display']} days "
+                    f"after{sample}{target_clause}. No verdict, because {why_not}.")
+        return (f"{subject} was {before_display} when raised and {after_display} in the {days['display']} days "
+                f"after{sample}{target_clause}. {ending}")
+
+    verdict = sentence(label)
     if numbers_not_in_checks([verdict], book.items):
-        # a figure in the sentence has no check behind it (for example a number inside the label): say less
+        # the label itself quotes a figure no check shows ("per 100 customers"): the label is printed
+        # beside the verdict anyway, so leave it out of the sentence
+        verdict = sentence("The figure")
+    if numbers_not_in_checks([verdict], book.items):
         verdict = ending or f"Not measurable a week later, because {why_not}."
 
     out = {

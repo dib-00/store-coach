@@ -97,7 +97,7 @@ def test_every_alert_of_a_week_earlier_is_followed_up(pack, runs):
     assert by_slug["after_numerator"]["value"] == 83 and by_slug["after_denominator"]["value"] == 800
     assert f["after"] == pytest.approx(83 / 800, abs=0.00006)
     # nothing changed in the made-up store, and the follow-up says so
-    assert f["moved"] == "no_change" and "No real change" in f["verdict"]
+    assert f["moved"] == "no_change" and f["after"] == f["before"] and "No change in the week after." in f["verdict"]
     assert "83 bills from 800 walk-ins" in f["verdict"]
 
 
