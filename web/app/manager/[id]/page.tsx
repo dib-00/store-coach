@@ -40,15 +40,18 @@ export default async function ManagerPage({ params }: Props) {
 
   const alerts = visibleAlerts(manager);
   const knownStores = storeIdsWithPages(data);
-  const week = data.windows.current;
+  const period = data.windows.current;
 
   return (
     <>
       <BackLink href="/">All area managers</BackLink>
       <PageTitle title={manager.name}>
         <p>
-          {manager.city} · {manager.store_ids.length === 1 ? "1 store" : `${manager.store_ids.length} stores`} ·
-          Week of {formatDateRange(week.start, week.end)}
+          {manager.city} · {manager.store_ids.length === 1 ? "1 store" : `${manager.store_ids.length} stores`}
+        </p>
+        <p className="mt-1">
+          Period measured: {formatDateRange(period.start, period.end)}. Each alert states what it is
+          compared with.
         </p>
       </PageTitle>
 

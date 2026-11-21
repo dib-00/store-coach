@@ -8,13 +8,13 @@ export default function Home() {
   const data = loadEngineOutput();
   if (!data) return <NoEngineRun />;
 
-  const week = data.windows.current;
+  const period = data.windows.current;
 
   return (
     <>
       <PageTitle title="Which stores need you today?">
         <p>
-          Pick your name. Week of {formatDateRange(week.start, week.end)}. Data up to{" "}
+          Pick your name. Period measured: {formatDateRange(period.start, period.end)}. Data up to{" "}
           {formatDate(data.as_of)}.
         </p>
       </PageTitle>
@@ -29,7 +29,7 @@ export default function Home() {
               <li key={manager.area_manager_id}>
                 <Link
                   href={managerHref(manager.area_manager_id)}
-                  className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-lg border border-line bg-surface px-5 py-4 no-underline hover:border-ink"
+                  className="flex flex-col gap-x-6 gap-y-2 rounded-lg border border-line bg-surface px-5 py-4 no-underline hover:border-ink sm:flex-row sm:items-center sm:justify-between"
                 >
                   <span>
                     <span className="block text-xl font-semibold tracking-tight">{manager.name}</span>
