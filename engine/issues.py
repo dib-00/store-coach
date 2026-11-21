@@ -5,6 +5,7 @@ from .checks import CheckBook, fmt_date
 from .metrics import Metrics
 
 MAX_INVALID_SHARE = 0.20  # above this share of a window, the store's conversion is not judged
+MAX_INVALID_SHARE_WORDS = "a fifth"  # the same limit in words, for text; change the two together
 
 
 def judgeable(m: Metrics, store: str, start: str, end: str) -> bool:
@@ -48,7 +49,7 @@ def find_data_issues(m: Metrics, windows: dict) -> list[dict]:
             if kind == "footfall_zero_with_bills":
                 title = f"{store}: door counter shows no walk-ins on days with bills"
                 detail = (
-                    f"Footfall is 0 or blank on {n_bad['display']} days between {fmt_date(first)} and "
+                    f"Footfall is zero or blank on {n_bad['display']} days between {fmt_date(first)} and "
                     f"{fmt_date(last)}, and {n_bills['display']} bills were made on those days. "
                     "A bill needs a walk-in, so the footfall count is wrong, not the sales."
                 )
@@ -63,9 +64,10 @@ def find_data_issues(m: Metrics, windows: dict) -> list[dict]:
                 "and no alert is raised from them."
             )
             if not judged:
+                # every figure here is one of the checks above; the limit is written in words
                 handling += (
-                    f" {cur_bad['display']} of the {cur_bad['value'] + cur_ok['value']} days in the current "
-                    f"window are unusable (more than {int(MAX_INVALID_SHARE * 100)}%), so the conversion of "
+                    f" In the current window {cur_bad['display']} days are unusable and {cur_ok['display']} are "
+                    f"usable. That is more than {MAX_INVALID_SHARE_WORDS} of the window, so the conversion of "
                     f"{store} is not judged this week."
                 )
             out.append(
