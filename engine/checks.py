@@ -77,7 +77,7 @@ def display(kind: str, value) -> str:
         return fmt_int_in(int(rnd(value)))
     if kind == "last_roster_date":
         return fmt_date(value)
-    if kind in ("bills_per_present_day", "two_proportion_z"):
+    if kind in ("bills_per_present_day", "peer_median_bills_per_present_day", "two_proportion_z"):
         return fmt_num(value, 2)
     if kind == "footfall_per_present_staff":
         return fmt_num(value, 1)
