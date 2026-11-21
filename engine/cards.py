@@ -11,6 +11,7 @@ A card candidate is a dict with:
     text       the whole card as shown (behaviour, peer, action), 60 words or fewer
     checks     every number quoted in the text, as Check dicts
     priority   rupees a week the behaviour is worth (used only to choose between candidates)
+    definition (optional) how the quoted figure is defined; shown as a footnote, not part of the 60 words
 """
 from __future__ import annotations
 
@@ -62,4 +63,6 @@ def select_cards(candidates: list[dict]) -> list[dict]:
                 "checks": c["checks"],
             }
         )
+        if c.get("definition"):  # how the quoted figure is defined; shown outside the 60 words
+            out[-1]["definition"] = c["definition"]
     return out
