@@ -328,7 +328,7 @@ def test_call_list_is_small_and_counts_customers_who_have_not_been_back(m, folde
 
 
 def test_follow_up_is_measurable_on_the_seven_days_after(folder, alerts):
-    # run a week later: the follow-up replaces start and end with the 7 days after the alert
+    # the follow-up replaces start and end with a 7-day window; the kind must work on one
     later = Metrics(load(folder, AS_OF))
     for a in alerts.values():
         fu = a["follow_up"]
