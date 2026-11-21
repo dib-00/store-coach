@@ -1,26 +1,137 @@
 @import "tailwindcss";
 
+/*
+  One small set of colours, each with a light and a dark value, so nothing on the
+  page can end up as unreadable text on a similar background.
+  The action block ("slab") is always the highest-contrast thing on the page.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --paper: #f6f3ec;
+  --surface: #fffdf8;
+  --ink: #1d1b16;
+  --muted: #5a554a;
+  --line: #dcd6c7;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --slab: #1d1b16;
+  --slab-ink: #fdfbf5;
+  --slab-muted: #cdc6b6;
+  --slab-label: #f2c14e;
+  --slab-line: #4a463c;
+
+  --bills-bg: #d9ede6;
+  --bills-ink: #0c4a3c;
+  --baskets-bg: #f5e4bd;
+  --baskets-ink: #573a00;
+  --repeat-bg: #e6dcf2;
+  --repeat-ink: #45236a;
+
+  --good-bg: #d9efe0;
+  --good-ink: #0b5a31;
+  --bad-bg: #f9dfdb;
+  --bad-ink: #8a1c17;
+  --flat-bg: #e7e2d6;
+  --flat-ink: #47433a;
+  --warn-bg: #f5e4bd;
+  --warn-ink: #573a00;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: #14130f;
+    --surface: #1e1c17;
+    --ink: #f1ede2;
+    --muted: #b3ac9b;
+    --line: #3a362c;
+
+    --slab: #f3eee0;
+    --slab-ink: #1a1814;
+    --slab-muted: #575247;
+    --slab-label: #7a4b00;
+    --slab-line: #cfc8b6;
+
+    --bills-bg: #143a30;
+    --bills-ink: #a9e2d1;
+    --baskets-bg: #40300a;
+    --baskets-ink: #f0d48d;
+    --repeat-bg: #2f2143;
+    --repeat-ink: #d8c1f0;
+
+    --good-bg: #123624;
+    --good-ink: #a5e0bd;
+    --bad-bg: #45181a;
+    --bad-ink: #f3b8b3;
+    --flat-bg: #2c2922;
+    --flat-ink: #c9c2b2;
+    --warn-bg: #40300a;
+    --warn-ink: #f0d48d;
   }
 }
 
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-slab: var(--slab);
+  --color-slab-ink: var(--slab-ink);
+  --color-slab-muted: var(--slab-muted);
+  --color-slab-label: var(--slab-label);
+  --color-slab-line: var(--slab-line);
+  --color-bills-bg: var(--bills-bg);
+  --color-bills-ink: var(--bills-ink);
+  --color-baskets-bg: var(--baskets-bg);
+  --color-baskets-ink: var(--baskets-ink);
+  --color-repeat-bg: var(--repeat-bg);
+  --color-repeat-ink: var(--repeat-ink);
+  --color-good-bg: var(--good-bg);
+  --color-good-ink: var(--good-ink);
+  --color-bad-bg: var(--bad-bg);
+  --color-bad-ink: var(--bad-ink);
+  --color-flat-bg: var(--flat-bg);
+  --color-flat-ink: var(--flat-ink);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-ink: var(--warn-ink);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: light dark;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+a {
+  text-underline-offset: 0.2em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* The "Show the numbers" expander: a plain, large tap target with its own marker. */
+details > summary {
+  cursor: pointer;
+  list-style: none;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+details > summary::before {
+  content: "+";
+  display: inline-block;
+  width: 1.1em;
+  font-weight: 600;
+}
+details[open] > summary::before {
+  content: "−";
 }

@@ -1,16 +1,83 @@
+import Link from "next/link";
+import { EmptyNote, NoEngineRun, PageTitle, managerHref } from "@/components/bits";
+import { loadEngineOutput } from "@/lib/data";
+import { formatDate, formatDateRange, formatRupees } from "@/lib/format";
+import { rupeesAtStakeShown, visibleAlerts } from "@/lib/rules";
+
 export default function Home() {
+  const data = loadEngineOutput();
+  if (!data) return <NoEngineRun />;
+
+  const week = data.windows.current;
+
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-4 px-6 py-16">
-      <p className="text-sm font-medium uppercase tracking-widest text-neutral-500">
-        Manyavar · Store Coach
-      </p>
-      <h1 className="text-4xl font-semibold tracking-tight">
-        Which stores need attention today, why, and what to do about it.
-      </h1>
-      <p className="text-lg text-neutral-600 dark:text-neutral-400">
-        The first engine run has not been published yet. Area manager alerts
-        will appear here.
-      </p>
-    </main>
+    <>
+      <PageTitle title="Which stores need you today?">
+        <p>
+          Pick your name. Week of {formatDateRange(week.start, week.end)}. Data up to{" "}
+          {formatDate(data.as_of)}.
+        </p>
+      </PageTitle>
+
+      {data.area_managers.length === 0 ? (
+        <EmptyNote>The engine run lists no area managers.</EmptyNote>
+      ) : (
+        <ul className="space-y-3">
+          {data.area_managers.map((manager) => {
+            const shown = visibleAlerts(manager).length;
+            return (
+              <li key={manager.area_manager_id}>
+                <Link
+                  href={managerHref(manager.area_manager_id)}
+                  className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-lg border border-line bg-surface px-5 py-4 no-underline hover:border-ink"
+                >
+                  <span>
+                    <span className="block text-xl font-semibold tracking-tight">{manager.name}</span>
+                    <span className="block text-muted">{manager.city}</span>
+                  </span>
+                  <span className="text-left sm:text-right">
+                    <span className="block font-semibold">
+                      {shown === 0 ? "No alerts this week" : shown === 1 ? "1 alert this week" : `${shown} alerts this week`}
+                    </span>
+                    {shown > 0 ? (
+                      <span className="block text-muted">
+                        <span className="font-semibold tabular-nums text-ink">
+                          {formatRupees(rupeesAtStakeShown(manager))}
+                        </span>{" "}
+                        a week at stake
+                      </span>
+                    ) : null}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <section className="mt-12 text-[0.95rem] text-muted">
+        <h2 className="font-semibold text-ink">How to read this</h2>
+        <p className="mt-2">
+          Each area manager gets at most five alerts a week, ranked by rupees at stake. Each alert names
+          one of three levers and one action the store can take today.
+        </p>
+        <ul className="mt-2 list-disc space-y-1 pl-5">
+          <li>
+            <span className="font-medium text-ink">More bills:</span> conversion, bills divided by
+            walk-ins.
+          </li>
+          <li>
+            <span className="font-medium text-ink">Bigger baskets:</span> items per bill.
+          </li>
+          <li>
+            <span className="font-medium text-ink">More repeat:</span> a customer billing again 30 or
+            more days after their first bill.
+          </li>
+        </ul>
+        <p className="mt-2">
+          Rupees at stake for a manager is the sum of the figures on the alerts shown to them.
+        </p>
+      </section>
+    </>
   );
 }
