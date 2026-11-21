@@ -384,5 +384,6 @@ def test_busy_dates_beyond_the_documented_7_days_fail(tmp_path, csv_pack, capsys
 
 
 def test_script_does_not_import_the_engine():
+    import re
     source = SCRIPT.read_text(encoding="utf-8")
-    assert "import engine" not in source and "from engine" not in source
+    assert not re.search(r"^\s*(import|from)\s+engine", source, flags=re.M)
