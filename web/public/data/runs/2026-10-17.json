@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "as_of": "2026-10-17",
-  "generated_at": "2026-11-21T09:25:00Z",
+  "generated_at": "2026-11-21T09:19:55Z",
   "windows": {
     "current": {
       "start": "2026-09-20",
@@ -8243,7 +8243,7 @@
       "after_display": "not measurable",
       "target_display": "0.03",
       "moved": "not_measurable",
-      "verdict": "The figure was 0.00 when raised and 0.00 in the 7 days after; the target is 0.03. Whether it moved cannot be measured yet, because the same seven-day figure read the same in every earlier week, so one week is too short to show a change.",
+      "verdict": "Return bills a week, at any store, per hundred customers of Faizan K. who are thirty to a hundred and eighty days past their first bill was 0.00 when raised and 0.00 in the 7 days after; the target is 0.03. Whether it moved cannot be measured yet, because repeat needs thirty days or more to measure: a customer counts as coming back only when they bill again thirty or more days after their first bill, and this figure was the same in every earlier week, so one week cannot show a change yet.",
       "definition": "A customer belongs to the salesperson and store of their first bill in the data. They returned if they billed again at any store 30 to 180 days after that first bill. Counted over customers whose first bill is on or before 13 Apr 2026 (180 days before 10 Oct 2026), so each has had the full window. Placeholder customer id C99999999 is excluded. Faizan K. is compared with the other salespeople at PAT-01 over the same first-bill months: the fair rate is their month-by-month return rate applied to Faizan K.'s own mix of first-bill months.",
       "checks": [
         {
@@ -8961,7 +8961,7 @@
       "after_display": "not measurable",
       "target_display": "0.25",
       "moved": "not_measurable",
-      "verdict": "The figure was 0.00 when raised and 0.00 in the 7 days after; the target is 0.25. Whether it moved cannot be measured yet, because the same seven-day figure read the same in every earlier week, so one week is too short to show a change.",
+      "verdict": "Return bills a week, at any store, per hundred customers of Manjunath C. and Suresh V. who are thirty to a hundred and eighty days past their first bill was 0.00 when raised and 0.00 in the 7 days after; the target is 0.25. Whether it moved cannot be measured yet, because repeat needs thirty days or more to measure: a customer counts as coming back only when they bill again thirty or more days after their first bill, and this figure was the same in every earlier week, so one week cannot show a change yet.",
       "definition": "A customer belongs to the salesperson and store of their first bill in the data. They returned if they billed again at any store 30 to 180 days after that first bill. Counted over customers whose first bill is on or before 13 Apr 2026 (180 days before 10 Oct 2026), so each has had the full window. Placeholder customer id C99999999 is excluded. Karthik J. is compared with the other salespeople at BLR-01 over the same first-bill months: the fair rate is their month-by-month return rate applied to Karthik J.'s own mix of first-bill months.",
       "checks": [
         {
