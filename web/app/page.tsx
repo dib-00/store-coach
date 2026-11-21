@@ -45,7 +45,7 @@ export default function Home() {
           {tiles.map((tile) => (
             <div key={tile.label} className="flex flex-col-reverse justify-end rounded-xl border border-line bg-surface px-4 py-3">
               <dt className="mt-1 text-sm leading-snug text-muted">{tile.label}</dt>
-              <dd className="text-2xl font-semibold tabular-nums tracking-tight [overflow-wrap:anywhere] sm:text-3xl">
+              <dd className="whitespace-nowrap text-2xl font-semibold tabular-nums tracking-tight sm:text-3xl lg:text-2xl">
                 {tile.value}
               </dd>
             </div>
