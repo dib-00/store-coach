@@ -29,6 +29,7 @@ import {
   visibleAlerts,
 } from "@/lib/rules";
 import type { Card } from "@/lib/types";
+import { CardSearch } from "@/components/card-search";
 import { LeverBadge } from "@/components/lever-badge";
 
 type Props = { params: Promise<{ id: string }> };
@@ -44,25 +45,65 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: store ? `Store ${store.store_id}` : "Store" };
 }
 
+/** The card text with every mention of the peer's name highlighted. */
+function WithPeer({ text, peer }: { text: string; peer: string }) {
+  if (!peer) return <>{text}</>;
+  const parts = text.split(peer);
+  return (
+    <>
+      {parts.map((part, index) => (
+        <span key={index}>
+          {part}
+          {index < parts.length - 1 ? (
+            <mark className="rounded bg-baskets-bg px-1 font-semibold text-baskets-ink">{peer}</mark>
+          ) : null}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function SalespersonCard({ card }: { card: Card }) {
   const view = cardView(card);
   const definition = optionalText(card.definition);
+  const action =
+    view.status === "show" && card.action && view.text.endsWith(card.action) && view.text.length > card.action.length
+      ? card.action
+      : null;
   return (
-    <article className="rounded-lg border border-line bg-surface p-4 sm:p-5">
+    <article className="rounded-xl border border-line bg-surface p-4 shadow-sm sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        <h3 className="text-lg font-semibold tracking-tight">{card.salesperson_name}</h3>
+        <h3 className="text-xl font-semibold tracking-tight">{card.salesperson_name}</h3>
         <LeverBadge lever={card.lever} />
       </div>
       {view.status === "show" ? (
         <>
-          <div className="mt-3 rounded-md border-l-4 border-ink bg-paper px-4 py-3">
-            <p className="text-lg leading-relaxed">{view.text}</p>
+          <div className="mt-3 rounded-lg border-l-4 border-ink bg-paper px-4 py-3">
+            {action ? (
+              <>
+                <p className="text-xl leading-relaxed">
+                  <WithPeer text={view.text.slice(0, view.text.length - action.length)} peer={card.peer.name} />
+                </p>
+                <div className="mt-3 rounded-lg bg-slab px-4 py-3 text-slab-ink">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slab-label">Today</p>
+                  <p className="mt-1 text-xl font-semibold leading-snug">
+                    <WithPeer text={action} peer={card.peer.name} />
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-xl leading-relaxed">
+                <WithPeer text={view.text} peer={card.peer.name} />
+              </p>
+            )}
             <p className="mt-2 text-sm font-medium text-muted">
               {view.words} of {MAX_CARD_WORDS} words
             </p>
           </div>
           <p className="mt-3 text-[0.95rem] text-muted">
-            Peer named: <span className="font-semibold text-ink">{card.peer.name}</span>, same store
+            Peer named:{" "}
+            <mark className="rounded bg-baskets-bg px-1 font-semibold text-baskets-ink">{card.peer.name}</mark>, same
+            store
           </p>
           {definition ? <Definition>{definition}</Definition> : null}
           {card.checks.length > 0 ? (
@@ -172,11 +213,13 @@ export default async function StorePage({ params }: Props) {
       {cards.length === 0 ? (
         <EmptyNote>No salesperson cards for this store yet.</EmptyNote>
       ) : (
-        <div className="space-y-4">
-          {cards.map((card) => (
-            <SalespersonCard key={card.card_id} card={card} />
-          ))}
-        </div>
+        <CardSearch
+          items={cards.map((card) => ({
+            key: card.card_id,
+            name: card.salesperson_name,
+            node: <SalespersonCard card={card} />,
+          }))}
+        />
       )}
 
       {store.salespeople.length > 0 ? (
