@@ -5,9 +5,11 @@ are explained in docs/METHOD.md.
 """
 from __future__ import annotations
 
-from .checks import EXTRA_DISPLAY, CheckBook, fmt_date, fmt_day, numbers_not_in_checks, rupees_at_stake
+import math
+
+from .checks import EXTRA_DISPLAY, CheckBook, conv_tenths, fmt_date, fmt_day, fmt_int_in, fmt_num, numbers_not_in_checks, rupees_at_stake
 from .issues import judgeable
-from .metrics import EXTRA_KINDS, WEEKDAYS, Metrics, add_days, d, z_score
+from .metrics import EXTRA_KINDS, WEEKDAYS, Metrics, add_days, d, rnd, z_score
 from .rank import has_who_what_when
 
 LEVER = "more_bills"
@@ -57,6 +59,58 @@ def _store_opened_on(m: Metrics, p: dict):
 EXTRA_KINDS["festival_name"] = _festival_name
 EXTRA_KINDS["store_opened_on"] = _store_opened_on
 EXTRA_DISPLAY["store_opened_on"] = fmt_date
+
+
+# ---- city-adjusted sizing (recipes in docs/CHECKS.md section 6) ----
+def _date_range(m: Metrics, p: dict):
+    """The window itself, so that the dates quoted beside a figure are a check: "start..end"."""
+    return f"{p['start']}..{p['end']}"
+
+
+def _show_range(v: str) -> str:
+    a, b = v.split("..")
+    return f"{fmt_date(a)} to {fmt_date(b)}"
+
+
+def _beyond_city_z(m: Metrics, p: dict):
+    """z of (change at the store) minus (change at the other city stores), base window to test window.
+
+    Negative = the store fell more than the rest of its city. Unpooled: each of the four
+    conversions adds p(1 - p) / walk-ins to the variance. Rounded half up to 2 decimals.
+    """
+    rates = []
+    for stores in (p["store_ids"], p["other_store_ids"]):
+        for s_, e_ in ((p["start"], p["end"]), (p["base_start"], p["base_end"])):
+            b, f, *_ = m.parts(stores, s_, e_)
+            if not f:
+                return None
+            rates.append((b / f, f))
+    (p1, n1), (p0, n0), (q1, k1), (q0, k0) = rates
+    var = sum(x * (1 - x) / n for x, n in rates)
+    if var <= 0:
+        return None
+    return rnd(((p1 - p0) - (q1 - q0)) / math.sqrt(var), 2)
+
+
+def rupees_beyond_city(bench: float, cur: float, city_bench: float, city_cur: float, walkins: float, abv: float) -> int:
+    """Rupees a week on the drop beyond the city, from the figures as displayed.
+
+    (store drop - city drop) in tenths of a point; the city drop counts only when the other
+    stores fell (it never makes the figure bigger than the store's own drop).
+    """
+    city_drop = max(0, conv_tenths(city_bench) - conv_tenths(city_cur))
+    gap = conv_tenths(bench) - conv_tenths(cur) - city_drop
+    return int(rnd(gap * int(rnd(walkins)) * int(rnd(abv)) / 1000 / 100)) * 100
+
+
+EXTRA_KINDS["date_range"] = _date_range
+EXTRA_DISPLAY["date_range"] = _show_range
+EXTRA_KINDS["beyond_city_z"] = _beyond_city_z
+EXTRA_DISPLAY["beyond_city_z"] = lambda v: fmt_num(v, 2)
+EXTRA_DISPLAY["rupees_at_stake_city"] = lambda v: "₹" + fmt_int_in(int(v))
+
+DUSSEHRA = "Dussehra / Dasara"
+YOY_MAX_DAYS_AFTER_FESTIVAL = 60  # align on Dussehra only in the festival season that follows it
 
 
 def upcoming_busy_dates(m: Metrics, book: CheckBook, state: str) -> tuple[list[str], str]:
@@ -142,8 +196,19 @@ class Detector:
         return store in self.established and all(judgeable(self.m, store, w["start"], w["end"]) for w in wins)
 
     # --------------------------------------------------------- shared pieces
-    def core_checks(self, book: CheckBook, stores: list[str], bench: dict, test: dict, bench_label: str):
-        """The checks every alert carries: conversion now and at the benchmark, the test, and the rupees."""
+    def city_others(self, store: str, *wins: dict) -> list[str]:
+        """The other established stores of the store's city with usable footfall in every window."""
+        city = self.store_rows[store]["city"]
+        return sorted(s for s in self.established if s != store and self.store_rows[s]["city"] == city
+                      and self.judged(s, *wins))
+
+    def core_checks(self, book: CheckBook, stores: list[str], bench: dict, test: dict, bench_label: str,
+                    city_adjust: bool = False):
+        """The checks every alert carries: conversion now and at the benchmark, the test, and the rupees.
+
+        With city_adjust (a single store), the rupees are sized on the drop beyond the other
+        stores of its city over the same two windows (docs/METHOD.md section 4).
+        """
         cur = self.cur
         sid = {"store_ids": sorted(stores)}
         c_cur = book.add("conv_current", f"Conversion, {span(cur)}", "conversion", {**sid, **cur, "day_type": "all"})
@@ -160,20 +225,71 @@ class Detector:
                  {**sid, **test, "base_start": bench["start"], "base_end": bench["end"], "day_type": "all"})
         walk = book.add("walkins_per_week", f"Walk-ins a week, {span(cur)}", "walkins_per_week", {**sid, **cur})
         abv = book.add("avg_bill_value", f"Average bill value, {span(cur)}", "avg_bill_value", {**sid, **cur})
+        r_cur = book.add("range_current", "Dates of the current window", "date_range", dict(cur))
+        r_bench = book.add("range_benchmark", "Dates of the benchmark window", "date_range", dict(bench))
+        r_test = r_cur if test == cur else book.add("range_since", "Dates since the cause began", "date_range", dict(test))
         if any(c["value"] is None for c in (c_cur, c_bench, walk, abv)):
             return None
+        out = {"cur": c_cur, "bench": c_bench, "test": c_test, "walk": walk, "abv": abv,
+               "r_cur": r_cur, "r_bench": r_bench, "r_test": r_test, "city": None}
+        others = self.city_others(stores[0], cur, bench, test) if city_adjust and len(stores) == 1 else []
+        if others:
+            city = self.store_rows[stores[0]]["city"]
+            osid = {"store_ids": others}
+            c_cb = book.add("conv_city_benchmark", f"Conversion at the other {city} stores ({join_names(others)}), {span(bench)}",
+                            "conversion", {**osid, **bench, "day_type": "all"})
+            c_cc = book.add("conv_city_current", f"Conversion at the other {city} stores ({join_names(others)}), {span(cur)}",
+                            "conversion", {**osid, **cur, "day_type": "all"})
+            c_z = book.add("z_beyond_city", f"z of the fall at {stores[0]} beyond the other {city} stores, {span(test)} "
+                           f"against {span(bench)}", "beyond_city_z",
+                           {"store_ids": sorted(stores), "other_store_ids": others, **test,
+                            "base_start": bench["start"], "base_end": bench["end"]})
+            if c_cb["value"] is None or c_cc["value"] is None:
+                return None
+            rupees = rupees_beyond_city(c_bench["value"], c_cur["value"], c_cb["value"], c_cc["value"],
+                                        walk["value"], abv["value"])
+            r = book.add("rupees_at_stake", "Rupees at stake a week, on the fall beyond the rest of the city",
+                         "rupees_at_stake_city", {
+                             "benchmark_check_id": c_bench["id"], "current_check_id": c_cur["id"],
+                             "city_benchmark_check_id": c_cb["id"], "city_current_check_id": c_cc["id"],
+                             "walkins_check_id": walk["id"], "avg_bill_check_id": abv["id"]}, value=rupees)
+            if conv_tenths(c_cb["value"]) > conv_tenths(c_cc["value"]):
+                worked = (f"(({c_bench['display']} − {c_cur['display']}) − ({c_cb['display']} − {c_cc['display']})) × "
+                          f"{walk['display']} walk-ins a week × {abv['display']} = {r['display']} a week")
+                inputs = [c_bench["id"], c_cur["id"], c_cb["id"], c_cc["id"], walk["id"], abv["id"]]
+                formula = (f"(fall at {stores[0]} − fall at the other {city} stores over the same weeks) × walk-ins a week "
+                           f"× average bill value")
+            else:
+                worked = (f"({c_bench['display']} − {c_cur['display']}) × {walk['display']} walk-ins a week × "
+                          f"{abv['display']} = {r['display']} a week")
+                inputs = [c_bench["id"], c_cur["id"], walk["id"], abv["id"]]
+                formula = (f"(fall at {stores[0]}) × walk-ins a week × average bill value; the other {city} stores did not "
+                           f"fall over the same weeks, so nothing is taken off for the city")
+            out.update(rupees=rupees, city={"name": city, "others": others, "bench": c_cb, "cur": c_cc, "z": c_z},
+                       arithmetic={"formula": formula, "worked": worked, "input_check_ids": inputs})
+            return out
         rupees = rupees_at_stake(c_bench["value"], c_cur["value"], walk["value"], abv["value"])
         r = book.add("rupees_at_stake", "Rupees at stake a week", "rupees_at_stake", {
             "benchmark_check_id": c_bench["id"], "current_check_id": c_cur["id"],
             "walkins_check_id": walk["id"], "avg_bill_check_id": abv["id"]}, value=rupees)
-        arithmetic = {
+        out.update(rupees=rupees, arithmetic={
             "formula": FORMULA,
             "worked": f"({c_bench['display']} − {c_cur['display']}) × {walk['display']} walk-ins a week × "
                       f"{abv['display']} = {r['display']} a week",
             "input_check_ids": [c_bench["id"], c_cur["id"], walk["id"], abv["id"]],
-        }
-        return {"cur": c_cur, "bench": c_bench, "test": c_test, "walk": walk, "abv": abv,
-                "rupees": rupees, "arithmetic": arithmetic}
+        })
+        return out
+
+    def city_sentence(self, core) -> str:
+        """What the rest of the city did over the same weeks, and whether the store's extra fall could be chance."""
+        c = core and core.get("city")
+        if not c:
+            return ""
+        text = (f" Over the same weeks the other {c['name']} stores went from {c['bench']['display']} to "
+                f"{c['cur']['display']}, and the rupees below count only the fall beyond them.")
+        if c["z"]["value"] is None or c["z"]["value"] > Z_CAUSE:
+            text += " The part of the fall beyond the rest of the city is not large enough to rule out chance."
+        return text
 
     def upcoming(self, book: CheckBook, state: str) -> tuple[list[str], str]:
         """(busy dates in the days after as-of, the same dates as text with festivals named)."""
@@ -279,7 +395,7 @@ class Detector:
         name = m.sp_name[p]
         alert_id = f"{store}:{LEVER}:salesperson_left:{p}"
         book = CheckBook(m, alert_id)
-        core = self.core_checks(book, [store], before, test, f"before {name} left")
+        core = self.core_checks(book, [store], before, test, f"before {name} left", city_adjust=True)
         c_last = book.add("last_roster_date", f"Last day {name} appears on the roster", "last_roster_date",
                           {"salesperson_id": p, "as_of": as_of})
         c_rate = book.add("leaver_bills_per_present_day", f"Bills per day present, {name}, {span(before)}",
@@ -287,11 +403,12 @@ class Detector:
         c_peer = book.add("peer_bills_per_present_day", f"Bills per day present, typical colleague at {store}, {span(before)}",
                           "peer_median_bills_per_present_day",
                           {"store_id": store, "exclude_salesperson_ids": [p], **before, "min_present_days": MIN_PRESENT_DAYS})
-        headline = (f"{store} is converting {core['cur']['display']} of walk-ins, down from "
-                    f"{core['bench']['display']} before {name} left.") if core else ""
+        headline = (f"{store} is converting {core['cur']['display']} of walk-ins ({core['r_cur']['display']}), down from "
+                    f"{core['bench']['display']} ({core['r_bench']['display']}) before {name} left.") if core else ""
         cause = (f"{name} last appears on the roster on {c_last['display']}. {name} made {c_rate['display']} bills "
                  f"for each day present, against {c_peer['display']} for a typical colleague at {store}. "
-                 f"Since then the store has converted {core['test']['display']} of walk-ins.") if core else ""
+                 f"Since then ({core['r_test']['display']}) the store has converted {core['test']['display']} of walk-ins."
+                 + self.city_sentence(core)) if core else ""
 
         # action: full floor on the coming busy days, strongest sellers present
         state = self.store_rows[store]["state"]
@@ -386,7 +503,7 @@ class Detector:
         who = join_names(names)
         alert_id = f"{store}:{LEVER}:missed_shifts"
         book = CheckBook(m, alert_id)
-        core = self.core_checks(book, [store], bench, test, "before the missed shifts began")
+        core = self.core_checks(book, [store], bench, test, "before the missed shifts began", city_adjust=True)
         state = self.store_rows[store]["state"]
         c_days = book.add("days_in_window", f"Days, {span(cur)}", "day_count", {"state": state, **cur, "day_type": "all"})
         c_busy_days = book.add("busy_days_in_window", f"Weekend and festival days, {span(cur)}", "day_count",
@@ -411,8 +528,8 @@ class Detector:
         book.add("staff_busy_benchmark", f"Salespeople on the floor on a typical busy day, {span(bench)}",
                  "median_staff_present", {"store_id": store, **bench, "day_type": "busy"})
 
-        headline = (f"{store} is converting {core['cur']['display']} of walk-ins, down from "
-                    f"{core['bench']['display']} before {who} began missing shifts.") if core else ""
+        headline = (f"{store} is converting {core['cur']['display']} of walk-ins ({core['r_cur']['display']}), down from "
+                    f"{core['bench']['display']} ({core['r_bench']['display']}) before {who} began missing shifts.") if core else ""
         parts = [f"{n} was on the floor on {c['display']}" for n, c in zip(names, pres)]
         cause = (f"Of the last {c_days['display']} days, {join_names(parts)}, against {c_med['display']} for a "
                  f"typical colleague at {store}.")
@@ -421,6 +538,7 @@ class Detector:
             parts = [f"{n} worked {c['display']}" for n, c in zip(names, pres_busy)]
             cause += (f" Of the {c_busy_days['display']} weekend and festival days, {join_names(parts)}; on those "
                       f"days {store} converted {c_busy['display']} of walk-ins, against {c_norm['display']} on other days.")
+        cause += self.city_sentence(core)
 
         dates, when = self.upcoming(book, state)
         action = None
@@ -469,13 +587,13 @@ class Detector:
         cause_code = "thin_floor_busy_days" if thin else "conversion_falling"
         alert_id = f"{store}:{LEVER}:{cause_code}"
         book = CheckBook(m, alert_id)
-        core = self.core_checks(book, [store], base, cur, "previous 13 weeks")
+        core = self.core_checks(book, [store], base, cur, "previous 13 weeks", city_adjust=True)
         if core is None:
             return NOT_SENT
         f_cur = book.add("walkins_per_week_benchmark", f"Walk-ins a week, {span(base)}", "walkins_per_week",
                          {"store_ids": [store], **base})
-        headline = (f"{store} is converting {core['cur']['display']} of walk-ins, down from "
-                    f"{core['bench']['display']} in the previous weeks.")
+        headline = (f"{store} is converting {core['cur']['display']} of walk-ins ({core['r_cur']['display']}), down from "
+                    f"{core['bench']['display']} ({core['r_bench']['display']}).")
         dates, when = self.upcoming(book, state)
         action = None
         moves = self.offs_on_busy_days(book, store, dates, skip=[]) if dates else []
@@ -501,7 +619,7 @@ class Detector:
                              {"store_id": store, "date": self.as_of})
             cause = (f"On weekends and festival days each salesperson on the floor faced {c_fb['display']} walk-ins, "
                      f"against {c_fo['display']} on other days, and conversion on those busy days fell to "
-                     f"{c_cb['display']} from {c_bb['display']}.")
+                     f"{c_cb['display']} from {c_bb['display']}.") + self.city_sentence(core)
             more = c_was["value"] and c_now["value"] and c_now["value"] < c_was["value"] <= c_act["value"]
             if dates and (more or move_text):
                 bits = []
@@ -519,7 +637,7 @@ class Detector:
         else:
             cause = (f"Walk-ins are {core['walk']['display']} a week now against {f_cur['display']} before, "
                      f"and fewer of them are buying. The roster shows nobody who left or missed shifts, and no thin "
-                     f"floor on busy days.")
+                     f"floor on busy days.") + self.city_sentence(core)
             if dates and move_text:
                 action = {
                     "who": f"Store manager at {store}, with {move_names}",
@@ -584,6 +702,78 @@ class Detector:
                            definition=conversion_definition(
                                f"across the established stores of {city} taken together",
                                "the same stores' previous thirteen weeks"))
+
+    # ------------------------------------- a whole city down against last year
+    def last_year_window(self, state: str) -> tuple[dict, list[str]]:
+        """The 28 days of last year that match the current window, and the festival dates used.
+
+        In the festival season (up to 60 days after this year's Dussehra in the state calendar),
+        the match is the same number of days after last year's Dussehra, because the festival
+        moves by weeks between years (2 Oct 2025, 20 Oct 2026). Otherwise it is 364 days earlier,
+        which keeps the weekday mix. Only calendar rows on or before as-of are used.
+        """
+        cal = self.m.data.calendar
+        fest = sorted(dt for dt, st, f in zip(cal["date"], cal["state"], cal["festival"])
+                      if st == state and f.strip() == DUSSEHRA and dt <= self.as_of)
+        if fest and (d(self.as_of) - d(fest[-1])).days <= YOY_MAX_DAYS_AFTER_FESTIVAL:
+            this = fest[-1]
+            prev = [x for x in fest if 300 <= (d(this) - d(x)).days <= 430]
+            if prev:
+                end = add_days(prev[-1], (d(self.as_of) - d(this)).days)
+                return win(add_days(end, -(CUR_DAYS - 1)), end), [this, prev[-1]]
+        end = add_days(self.as_of, -364)
+        return win(add_days(end, -(CUR_DAYS - 1)), end), []
+
+    def city_vs_last_year(self, city: str, stores: list[str]):
+        """One market note when a whole city converts clearly less than in the same weeks last year."""
+        m, cur = self.m, self.cur
+        state = self.store_rows[stores[0]]["state"]
+        prev, fests = self.last_year_window(state)
+        stores = [s for s in stores if self.judged(s, prev)]
+        if len(stores) < 2:
+            return None
+        res = self.drop_test(stores, cur, prev)
+        if res is None or res[0] > Z_SCAN or res[1] > -MIN_REL_DROP:
+            return None
+        fell = [s for s in stores if (self.drop_test([s], cur, prev) or (0, 0))[1] < 0]
+        if len(fell) * 2 <= len(stores):
+            return None
+        note_id = f"{city}:{LEVER}:market_vs_last_year"
+        book = CheckBook(m, note_id)
+        sid = {"store_ids": stores}
+        c_now = book.add("conv_current", f"Conversion across {city}, {span(cur)}", "conversion", {**sid, **cur, "day_type": "all"})
+        c_prev = book.add("conv_last_year", f"Conversion across {city}, {span(prev)}", "conversion", {**sid, **prev, "day_type": "all"})
+        r_now = book.add("range_current", "Dates of the current window", "date_range", dict(cur))
+        r_prev = book.add("range_last_year", "Dates of the same weeks last year", "date_range", dict(prev))
+        book.add("z", f"Two-proportion z, {span(cur)} against {span(prev)}", "two_proportion_z",
+                 {**sid, **cur, "base_start": prev["start"], "base_end": prev["end"], "day_type": "all"})
+        for s in stores:
+            book.add(f"conv_current:{s}", f"Conversion at {s}, {span(cur)}", "conversion", {"store_ids": [s], **cur, "day_type": "all"})
+            book.add(f"conv_last_year:{s}", f"Conversion at {s}, {span(prev)}", "conversion", {"store_ids": [s], **prev, "day_type": "all"})
+        how = "364 days earlier, the same weekdays"
+        if fests:
+            f_now = book.add(f"festival:{fests[0]}", f"Festival on {fmt_date(fests[0])} in the {state} calendar", "festival_name",
+                             {"state": state, "date": fests[0]})
+            book.add(f"festival:{fests[1]}", f"Festival on {fmt_date(fests[1])} in the {state} calendar", "festival_name",
+                     {"state": state, "date": fests[1]})
+            how = f"the same number of days after {f_now['display']} last year, because the festival moves between years"
+        headline = (f"{city} as a whole converted {c_now['display']} of walk-ins ({r_now['display']}), against "
+                    f"{c_prev['display']} in the same weeks last year ({r_prev['display']}).")
+        detail = (f"{join_names(fell)} all converted less than a year ago, so this is a market change, reported once for "
+                  f"the city and not as a store alert. Each {city} store is judged only on what it lost beyond the other "
+                  f"{city} stores. Same weeks last year means {how}.")
+        if not book.usable() or numbers_not_in_checks([headline, detail], book.items):
+            self.notes.append(f"{note_id}: not shown, a figure has no check")
+            return None
+        return {"note_id": note_id, "city": city, "store_ids": sorted(stores), "headline": headline,
+                "detail": detail, "checks": book.items}
+
+    def market_notes(self) -> list[dict]:
+        cities: dict[str, list[str]] = {}
+        for s in sorted(self.established):
+            if self.judged(s, self.cur):
+                cities.setdefault(self.store_rows[s]["city"], []).append(s)
+        return [n for c in sorted(cities) if (n := self.city_vs_last_year(c, cities[c])) is not None]
 
     # ------------------------------------------------------------- run all
     def run(self) -> list[dict]:

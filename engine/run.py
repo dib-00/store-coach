@@ -88,7 +88,7 @@ def store_blocks(m: Metrics, data: Data, windows: dict) -> list[dict]:
     return out
 
 
-def manager_blocks(data: Data, candidates: list[dict]) -> list[dict]:
+def manager_blocks(data: Data, candidates: list[dict], notes: list[dict] | None = None) -> list[dict]:
     store_manager = dict(zip(data.stores["store_id"], data.stores["area_manager_id"]))
     out = []
     for r in data.managers.to_dict("records"):
@@ -96,6 +96,7 @@ def manager_blocks(data: Data, candidates: list[dict]) -> list[dict]:
         store_ids = sorted(s for s, a in store_manager.items() if a == am)
         mine = [a for a in candidates if store_manager.get(a["store_ids"][0]) == am]
         alerts, held = apply_cap(sendable(mine), int(r["max_alerts_per_week"]))
+        market = [n for n in (notes or []) if store_manager.get(n["store_ids"][0]) == am]
         out.append(
             {
                 "area_manager_id": am,
@@ -105,6 +106,7 @@ def manager_blocks(data: Data, candidates: list[dict]) -> list[dict]:
                 "max_alerts_per_week": int(r["max_alerts_per_week"]),
                 "alerts": alerts,
                 "held_back": held,
+                "market_notes": market,  # a whole city down: shown to the manager, never ranked as an alert
             }
         )
     return out
@@ -135,7 +137,7 @@ def build_output(data: Data, generated_at: str, runs_dir: Path | None = None) ->
         "as_of": data.as_of,
         "generated_at": generated_at,
         "windows": windows,
-        "area_managers": manager_blocks(data, candidates),
+        "area_managers": manager_blocks(data, candidates, det.market_notes()),
         "stores": store_blocks(m, data, windows),
         "cards": select_cards(card_candidates),
         "follow_ups": follow_ups(m, data, runs_dir) if runs_dir is not None else [],
