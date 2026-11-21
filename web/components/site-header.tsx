@@ -18,7 +18,7 @@ export function SiteHeader({
   developmentData: boolean;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-surface/95 shadow-[0_1px_0_var(--line)] backdrop-blur supports-[backdrop-filter]:bg-surface/85">
+    <header className="z-30 border-b border-line bg-surface shadow-[0_1px_0_var(--line)] sm:sticky sm:top-0 sm:bg-surface/95 sm:backdrop-blur sm:supports-[backdrop-filter]:bg-surface/85">
       {developmentData ? (
         <p className="bg-warn-bg px-4 py-2 text-center text-sm font-semibold text-warn-ink">
           Development sample data. These are not real stores or real figures.
