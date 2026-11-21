@@ -5,6 +5,12 @@
 Writes web/public/data/latest.json and web/public/data/runs/<as_of>.json in the shape
 of EngineOutput (web/lib/types.ts). Apart from generated_at, two runs on the same
 inputs produce byte-identical files.
+
+Follow-up reads runs/<as_of minus 7 days>.json, so to show last week's alerts a week
+later, build that run first without touching latest.json:
+
+    python -m engine.run --as-of 2026-10-24 --dated-only
+    python -m engine.run --as-of 2026-10-31
 """
 from __future__ import annotations
 
@@ -49,6 +55,21 @@ def store_blocks(m: Metrics, data: Data, windows: dict) -> list[dict]:
             book.add("avg_bill_value_current", f"Average bill value, {span(cur)}", "avg_bill_value", {**sid, **cur})
         if not new and judgeable(m, s, base["start"], base["end"]):
             book.add("conversion_baseline", f"Conversion, {span(base)}", "conversion", {**sid, **base, "day_type": "all"})
+        # Why the store is not judged this run, if it is not. Every figure in the sentence is a check.
+        reason = None
+        if new:
+            c = book.add("opened_on", "Opened on", "store_opened_on", {"store_id": s})
+            reason = f"Opened {c['display']}; too new to compare with established stores"
+        else:
+            for name, w in (("current", cur), ("baseline", base)):
+                if judgeable(m, s, w["start"], w["end"]):
+                    continue
+                bad = book.add(f"invalid_days_{name}", f"Days with unusable footfall, {span(w)}", "invalid_days",
+                               {**sid, **w, "rule": "any"})
+                ok = book.add(f"valid_days_{name}", f"Days with usable footfall, {span(w)}", "valid_days", {**sid, **w})
+                reason = (f"Footfall is unusable on {bad['display']} days of the {name} window and usable on "
+                          f"{ok['display']}, so conversion is not judged this week (see data issues)")
+                break
         out.append(
             {
                 "store_id": s,
@@ -62,6 +83,8 @@ def store_blocks(m: Metrics, data: Data, windows: dict) -> list[dict]:
                 "summary": [c for c in book.items if c["value"] is not None],
             }
         )
+        if reason:
+            out[-1]["not_judged_reason"] = reason
     return out
 
 
@@ -128,6 +151,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--data-dir", default="data/csv")
     ap.add_argument("--out-dir", default="web/public/data")
     ap.add_argument("--generated-at", help="ISO 8601 UTC timestamp to stamp the file with (default: now)")
+    ap.add_argument("--dated-only", action="store_true",
+                    help="write only runs/<as_of>.json and leave latest.json alone (to rebuild an earlier week's run)")
     args = ap.parse_args(argv)
 
     as_of = args.as_of or last_bill_date(Path(args.data_dir))
@@ -140,15 +165,21 @@ def main(argv: list[str] | None = None) -> int:
 
     out_dir = Path(args.out_dir)
     (out_dir / "runs").mkdir(parents=True, exist_ok=True)
-    for path in (out_dir / "latest.json", out_dir / "runs" / f"{as_of}.json"):
+    dated = out_dir / "runs" / f"{as_of}.json"
+    paths = [dated] if args.dated_only else [out_dir / "latest.json", dated]
+    for path in paths:
         with open(path, "w", encoding="utf-8", newline="\n") as f:
             f.write(text)
 
     n_alerts = sum(len(b["alerts"]) for b in output["area_managers"])
-    print(f"as_of {as_of}: {n_alerts} alerts, {len(output['data_issues'])} data issues -> {out_dir / 'latest.json'}")
+    print(f"as_of {as_of}: {n_alerts} alerts, {len(output['cards'])} cards, {len(output['follow_ups'])} follow-ups, "
+          f"{len(output['data_issues'])} data issues -> {paths[0]}")
     for b in output["area_managers"]:
         for a in b["alerts"]:
             print(f"  {b['area_manager_id']} #{a['rank']} {a['alert_id']}  Rs {a['rupees_at_stake_weekly']} a week")
+    for f in output["follow_ups"]:
+        print(f"  follow-up {f['alert_id']}: {f['moved']}  {f['before_display']} -> {f['after_display']} "
+              f"(target {f['target_display']})")
     for n in notes:
         print(f"  note: {n}")
     return 0

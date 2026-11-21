@@ -5,15 +5,16 @@ are explained in docs/METHOD.md.
 """
 from __future__ import annotations
 
-from .checks import CheckBook, fmt_date, fmt_day, numbers_not_in_checks, rupees_at_stake
+from .checks import EXTRA_DISPLAY, CheckBook, fmt_date, fmt_day, numbers_not_in_checks, rupees_at_stake
 from .issues import judgeable
-from .metrics import WEEKDAYS, Metrics, add_days, d, z_score
+from .metrics import EXTRA_KINDS, WEEKDAYS, Metrics, add_days, d, z_score
 from .rank import has_who_what_when
 
 LEVER = "more_bills"
 CUR_DAYS = 28  # current window
 BASE_DAYS = 91  # benchmark window (13 weeks)
 NEW_STORE_DAYS = 180  # opened less than this before as-of: not judged, not a benchmark
+LOOK_AHEAD_DAYS = 9  # busy dates named in an action: from the day after as-of through the next full weekend
 
 Z_SCAN = -2.9  # undirected scan over every store and city, every run
 Z_CAUSE = -2.0  # one test tied to one dated event
@@ -35,6 +36,56 @@ CITY_BEYOND = 0.10  # a store in a slow city needs a drop this much deeper than 
 NOT_SENT = "not_sent"  # a cause was found but the alert broke a sending rule; do not try another cause
 
 FORMULA = "(fair conversion − current conversion) × walk-ins a week × average bill value"
+
+
+# ---- two small check kinds used to name things (recipes in docs/CHECKS-followup.md) ----
+def _festival_name(m: Metrics, p: dict):
+    """The festival in the calendar for that state and date, or None."""
+    names = getattr(m, "_festival_names", None)
+    if names is None:
+        cal = m.data.calendar
+        names = {(st, dt): f.strip() for dt, st, f in zip(cal["date"], cal["state"], cal["festival"]) if f.strip()}
+        m._festival_names = names
+    return names.get((p["state"], p["date"]))
+
+
+def _store_opened_on(m: Metrics, p: dict):
+    opened = dict(zip(m.data.stores["store_id"], m.data.stores["opened_on"]))
+    return opened.get(p["store_id"])
+
+
+EXTRA_KINDS["festival_name"] = _festival_name
+EXTRA_KINDS["store_opened_on"] = _store_opened_on
+EXTRA_DISPLAY["store_opened_on"] = fmt_date
+
+
+def upcoming_busy_dates(m: Metrics, book: CheckBook, state: str) -> tuple[list[str], str]:
+    """Busy dates in the LOOK_AHEAD_DAYS after as-of, and how to say them: 'Sat 7 Nov and Sun 8 Nov (Diwali)'.
+
+    The only use of calendar rows after as-of. Every date is in the `upcoming_busy_dates`
+    check and every festival named has its own `festival_name` check.
+    """
+    c = book.add("upcoming_busy_dates",
+                 f"Busy days in the next {LOOK_AHEAD_DAYS} days (weekends, festivals, wedding dates)",
+                 "upcoming_busy_dates",
+                 {"state": state, "start": add_days(m.as_of, 1), "end": add_days(m.as_of, LOOK_AHEAD_DAYS)})
+    dates = c["value"].split(", ") if c["value"] else []
+    said = []
+    for dt in dates:
+        text = fmt_day(dt)
+        if _festival_name(m, {"state": state, "date": dt}):
+            f = book.add(f"festival:{dt}", f"Festival on {fmt_date(dt)} in the {state} calendar", "festival_name",
+                         {"state": state, "date": dt})
+            text += f" ({f['display']})"
+        said.append(text)
+    return dates, join_names(said)
+
+
+def conversion_definition(where: str, compared_with: str) -> str:
+    """One sentence, no figures: how conversion is measured and which windows the headline compares."""
+    return (f"Conversion is bills divided by walk-ins {where}, counted only on days with a usable door count "
+            f"(walk-ins above zero and no more bills than walk-ins); the headline compares the last four weeks "
+            f"with {compared_with}, and both windows are dated in the checks.")
 
 
 def make_windows(as_of: str) -> dict:
@@ -124,11 +175,9 @@ class Detector:
         return {"cur": c_cur, "bench": c_bench, "test": c_test, "walk": walk, "abv": abv,
                 "rupees": rupees, "arithmetic": arithmetic}
 
-    def upcoming(self, book: CheckBook, state: str) -> list[str]:
-        """Busy dates in the 7 days after as-of. The only use of future calendar rows."""
-        c = book.add("upcoming_busy_dates", "Busy days in the next 7 days (weekends, festivals, wedding dates)",
-                     "upcoming_busy_dates", {"state": state, "start": add_days(self.as_of, 1), "end": add_days(self.as_of, 7)})
-        return c["value"].split(", ") if c["value"] else []
+    def upcoming(self, book: CheckBook, state: str) -> tuple[list[str], str]:
+        """(busy dates in the days after as-of, the same dates as text with festivals named)."""
+        return upcoming_busy_dates(self.m, book, state)
 
     def active_staff(self, store: str) -> list[str]:
         return [p for p in self.m.store_sps.get(store, []) if self.as_of in self.m.roster.get(p, {})]
@@ -153,7 +202,7 @@ class Detector:
         return found
 
     def finish(self, *, alert_id, scope, stores, city, cause_code, headline, cause, action, core, basis,
-               people, book, metric_label):
+               people, book, metric_label, definition):
         """Assemble an Alert, or return NOT_SENT (with a note) when it breaks a sending rule."""
         if core is None or core["rupees"] <= 0:
             self.notes.append(f"{alert_id}: not sent, no rupees at stake could be worked out")
@@ -174,6 +223,7 @@ class Detector:
             "lever": LEVER,
             "cause_code": cause_code,
             "headline": headline,
+            "definition": definition,
             "cause": cause,
             "action": action,
             "rupees_at_stake_weekly": core["rupees"],
@@ -245,7 +295,7 @@ class Detector:
 
         # action: full floor on the coming busy days, strongest sellers present
         state = self.store_rows[store]["state"]
-        dates = self.upcoming(book, state)
+        dates, when = self.upcoming(book, state)
         action = None
         active = self.active_staff(store)
         if dates and active:
@@ -262,7 +312,6 @@ class Detector:
                          "bills_per_present_day", {"salesperson_id": x, **self.cur})
             if c_n["value"] and top:
                 n = min(c_n["value"], c_act["value"])
-                when = join_names([fmt_day(x) for x in dates])
                 top_names = join_names([m.sp_name[x] for x in top])
                 everyone = "all " if n == c_act["value"] else ""
                 floor = f"keep {everyone}{n} salespeople on the floor at {store}"
@@ -281,10 +330,13 @@ class Detector:
                     "when": when,
                     "text": text,
                 }
-        basis = f"Same store, the {(d(before['end']) - d(before['start'])).days + 1} days before {name} left ({span(before)})"
+        before_days = (d(before["end"]) - d(before["start"])).days + 1
+        basis = f"Same store, the {before_days} days before {name} left ({span(before)})"
+        weeks = "thirteen weeks" if before_days == BASE_DAYS else "weeks"
         return self.finish(alert_id=alert_id, scope="store", stores=[store], city=self.store_rows[store]["city"],
                            cause_code="salesperson_left", headline=headline, cause=cause, action=action, core=core,
-                           basis=basis, people=[p], book=book, metric_label=f"Conversion at {store}")
+                           basis=basis, people=[p], book=book, metric_label=f"Conversion at {store}",
+                           definition=conversion_definition(f"at {store}", f"the same store's {weeks} before {name} left"))
 
     # ------------------------------------------------ cause 2: missed shifts
     def _missing(self, store: str, w: dict) -> list[str]:
@@ -370,7 +422,7 @@ class Detector:
             cause += (f" Of the {c_busy_days['display']} weekend and festival days, {join_names(parts)}; on those "
                       f"days {store} converted {c_busy['display']} of walk-ins, against {c_norm['display']} on other days.")
 
-        dates = self.upcoming(book, state)
+        dates, when = self.upcoming(book, state)
         action = None
         if dates:
             busy_weekdays = {WEEKDAYS[d(x).weekday()] for x in dates}
@@ -386,7 +438,6 @@ class Detector:
                     quiet = quiet or self.quiet_day(book, store)
                     day = quiet
                 offs.append(day)
-            when = join_names([fmt_day(x) for x in dates])
             if all(offs):
                 off_text = join_names([f"{n} on {day}" for n, day in zip(names, offs)])
                 text = (f"Put {who} on the floor at {store} on {when}. Give the weekly off to {off_text} instead, "
@@ -400,7 +451,9 @@ class Detector:
         basis = f"Same store, 13 weeks before the missed shifts began ({span(bench)})"
         return self.finish(alert_id=alert_id, scope="store", stores=[store], city=self.store_rows[store]["city"],
                            cause_code="missed_shifts", headline=headline, cause=cause, action=action, core=core,
-                           basis=basis, people=flagged, book=book, metric_label=f"Conversion at {store}")
+                           basis=basis, people=flagged, book=book, metric_label=f"Conversion at {store}",
+                           definition=conversion_definition(
+                               f"at {store}", "the same store's thirteen weeks before the missed shifts began"))
 
     # ------------------------- causes 3 and 4: a drop found by the store scan
     def scan_drop(self, store: str):
@@ -423,8 +476,7 @@ class Detector:
                          {"store_ids": [store], **base})
         headline = (f"{store} is converting {core['cur']['display']} of walk-ins, down from "
                     f"{core['bench']['display']} in the previous weeks.")
-        dates = self.upcoming(book, state)
-        when = join_names([fmt_day(x) for x in dates])
+        dates, when = self.upcoming(book, state)
         action = None
         moves = self.offs_on_busy_days(book, store, dates, skip=[]) if dates else []
         quiet = self.quiet_day(book, store) if moves else None
@@ -478,7 +530,8 @@ class Detector:
         basis = f"Same store, previous 13 weeks ({span(base)})"
         return self.finish(alert_id=alert_id, scope="store", stores=[store], city=self.store_rows[store]["city"],
                            cause_code=cause_code, headline=headline, cause=cause, action=action, core=core,
-                           basis=basis, people=[x for x, _ in moves], book=book, metric_label=f"Conversion at {store}")
+                           basis=basis, people=[x for x, _ in moves], book=book, metric_label=f"Conversion at {store}",
+                           definition=conversion_definition(f"at {store}", "the same store's previous thirteen weeks"))
 
     # ------------------------------------------------- a whole city slowing
     def city_slowdown(self, city: str, stores: list[str]):
@@ -504,8 +557,7 @@ class Detector:
         cause = (f"The fall is across the city, not one store: {join_names(fell)} all converted less than in the "
                  f"previous weeks. This is one market alert, not one per store.")
         state = self.store_rows[stores[0]]["state"]
-        dates = self.upcoming(book, state)
-        when = join_names([fmt_day(x) for x in dates])
+        dates, when = self.upcoming(book, state)
         moves_txt, people = [], []
         if dates:
             for s in fell:
@@ -528,7 +580,10 @@ class Detector:
         return self.finish(alert_id=alert_id, scope="city", stores=stores, city=city, cause_code="market_slowdown",
                            headline=headline, cause=cause, action=action, core=core,
                            basis=f"Same city, previous 13 weeks ({span(base)})", people=people, book=book,
-                           metric_label=f"Conversion across {city}")
+                           metric_label=f"Conversion across {city}",
+                           definition=conversion_definition(
+                               f"across the established stores of {city} taken together",
+                               "the same stores' previous thirteen weeks"))
 
     # ------------------------------------------------------------- run all
     def run(self) -> list[dict]:
