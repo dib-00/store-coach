@@ -258,6 +258,8 @@ class Metrics:
                     cnt[d(dt).weekday()] += 1
             means = [(tot[i] / cnt[i], i) for i in range(7) if cnt[i]]
             return WEEKDAYS[min(means)[1]] if means else None
+        if kind == "rostered_staff":
+            return sum(1 for x in self.store_sps.get(p["store_id"], []) if p["date"] in self.roster.get(x, {}))
         if kind == "upcoming_busy_dates":
             days = [dt for dt in date_range(p["start"], p["end"]) if self.is_busy(p["state"], dt)]
             return ", ".join(days)
@@ -273,14 +275,3 @@ def z_score(b1, n1, b0, n0):
         return None
     se = math.sqrt(pooled * (1 - pooled) * (1 / n1 + 1 / n0))
     return (b1 / n1 - b0 / n0) / se
-
-
-def rupees_at_stake(bench_conv: float, cur_conv: float, walkins: float, abv: float) -> int:
-    """Uses the figures exactly as displayed, so the worked line multiplies out by hand.
-
-    conversion to 0.1 of a percentage point, walk-ins to a whole number, bill value to
-    a whole rupee; result rounded half up to the nearest Rs 100.
-    """
-    gap_tenths = int(rnd(bench_conv * 1000)) - int(rnd(cur_conv * 1000))
-    raw = gap_tenths * int(rnd(walkins)) * int(rnd(abv)) / 1000
-    return int(rnd(raw / 100) * 100)

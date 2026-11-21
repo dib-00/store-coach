@@ -19,6 +19,17 @@ def fmt_pct(value: float) -> str:
     return f"{t // 10}.{t % 10}%"
 
 
+def rupees_at_stake(bench_conv: float, cur_conv: float, walkins: float, abv: float) -> int:
+    """Rupees a week, from the figures exactly as displayed, so the worked line multiplies out by hand.
+
+    Conversion to 0.1 of a percentage point, walk-ins to a whole number, bill value to a
+    whole rupee; the result is rounded half up to the nearest Rs 100.
+    """
+    gap_tenths = conv_tenths(bench_conv) - conv_tenths(cur_conv)
+    raw = gap_tenths * int(rnd(walkins)) * int(rnd(abv)) / 1000
+    return int(rnd(raw / 100)) * 100
+
+
 def fmt_int_in(n: int) -> str:
     """Indian digit grouping: 138600 -> 1,38,600."""
     s = str(abs(int(n)))
