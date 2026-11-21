@@ -47,6 +47,8 @@ export interface Alert {
   lever: Lever;
   cause_code: string; // e.g. "salesperson_left", "missed_shifts", "thin_floor_busy_days", "market_slowdown"
   headline: string; // what moved, with the numbers
+  /** Optional. One sentence stating exactly how the headline metric is defined. Shown in small print under the headline. */
+  definition?: string;
   cause: string; // why, in one or two sentences, naming people where relevant
   action: Action;
   rupees_at_stake_weekly: number; // whole rupees
@@ -92,6 +94,8 @@ export interface StoreBlock {
   is_new_store: boolean; // too new to judge against established stores
   salespeople: { salesperson_id: string; name: string; active: boolean }[];
   summary: Check[]; // headline figures for the store page, may be empty
+  /** Optional. Why this store is not judged this run, in one plain sentence. Shown on the store page and beside the store in lists. */
+  not_judged_reason?: string;
 }
 
 /** Salesperson card: 60 words or fewer in `text`. */
@@ -107,6 +111,8 @@ export interface Card {
   text: string; // the whole card as shown, <= 60 words
   word_count: number;
   checks: Check[];
+  /** Optional. One sentence stating how the quoted figure is defined. Shown under the card, outside the 60 words. */
+  definition?: string;
 }
 
 export interface FollowUp {
@@ -127,6 +133,8 @@ export interface FollowUp {
   target_display: string;
   moved: "improved" | "no_change" | "worse" | "not_measurable";
   verdict: string; // one plain sentence: did the number move
+  /** Optional. One sentence stating exactly how the metric is defined. Shown beside before and after. */
+  definition?: string;
   checks: Check[];
 }
 

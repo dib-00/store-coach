@@ -14,7 +14,7 @@ test("the sample fixture is accepted", () => {
   assert.ok(data);
   assert.equal(data.area_managers.length, 2);
   assert.equal(data.cards.length, 3);
-  assert.equal(data.follow_ups.length, 2);
+  assert.equal(data.follow_ups.length, 3);
   assert.equal(data.data_issues.length, 1);
 });
 
@@ -74,4 +74,43 @@ test("the development override is honoured locally and ignored on Vercel", () =>
   assert.equal(developmentOverrideFile({ STORE_COACH_DATA_FILE: "  " }), null);
   assert.equal(developmentOverrideFile({ STORE_COACH_DATA_FILE: FIXTURE }), path.resolve(FIXTURE));
   assert.equal(developmentOverrideFile({ STORE_COACH_DATA_FILE: FIXTURE, VERCEL: "1" }), null);
+});
+
+test("the sample fixture shows a manager at the cap of five, with all three levers", () => {
+  const data = readEngineFile(FIXTURE);
+  assert.ok(data);
+  const shown = visibleAlerts(data.area_managers[0]);
+  assert.equal(shown.length, 5);
+  assert.deepEqual([...new Set(shown.map((a) => a.lever))].sort(), ["bigger_baskets", "more_bills", "more_repeat"]);
+  // Ranked by rupees at stake, biggest first.
+  const rupees = shown.map((a) => a.rupees_at_stake_weekly);
+  assert.deepEqual(rupees, [...rupees].sort((a, b) => b - a));
+});
+
+test("the sample fixture uses the optional fields, and states no hour of day", () => {
+  const data = readEngineFile(FIXTURE);
+  assert.ok(data);
+  for (const manager of data.area_managers) {
+    for (const alert of manager.alerts) assert.equal(typeof alert.definition, "string", alert.alert_id);
+  }
+  for (const card of data.cards) assert.equal(typeof card.definition, "string", card.card_id);
+  for (const item of data.follow_ups) assert.equal(typeof item.definition, "string", item.alert_id);
+  assert.equal(data.stores.filter((s) => typeof s.not_judged_reason === "string").length, 1);
+  assert.doesNotMatch(fixtureText, /\b\d{1,2}(:\d{2})?\s?(am|pm)\b|\bnoon\b/i);
+});
+
+test("a file without the optional fields is still accepted", () => {
+  const stripped = JSON.parse(fixtureText);
+  for (const manager of stripped.area_managers) for (const alert of manager.alerts) delete alert.definition;
+  for (const card of stripped.cards) delete card.definition;
+  for (const item of stripped.follow_ups) delete item.definition;
+  for (const store of stripped.stores) delete store.not_judged_reason;
+  assert.equal(parseEngineOutput(JSON.stringify(stripped)).ok, true);
+});
+
+test("an optional field sent as null does not reject the whole file", () => {
+  const odd = JSON.parse(fixtureText);
+  odd.area_managers[0].alerts[0].definition = null;
+  odd.stores[0].not_judged_reason = null;
+  assert.equal(parseEngineOutput(JSON.stringify(odd)).ok, true);
 });

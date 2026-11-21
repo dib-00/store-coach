@@ -23,6 +23,7 @@
           "lever": "bigger_baskets",
           "cause_code": "single_item_bills",
           "headline": "TST-02 baskets shrank from 2.4 to 2.1 items per bill",
+          "definition": "Items per bill is items sold divided by the number of bills, over the same days.",
           "cause": "Two of the four salespeople billed mostly single items this week. Fixture Person C averaged 1.4 items per bill against 2.6 for Fixture Person D on the same floor.",
           "action": {
             "who": "Store manager at TST-02",
@@ -62,12 +63,13 @@
           "lever": "more_bills",
           "cause_code": "missed_shifts",
           "headline": "TST-01 conversion fell from 12.0% to 10.0%",
+          "definition": "Conversion is bills divided by walk-ins counted at the door, over the same days.",
           "cause": "Fixture Person A missed 3 of 6 rostered shifts this week, so the floor ran one person short on the two busiest days.",
           "action": {
             "who": "Store manager at TST-01",
-            "what": "Confirm Fixture Person A's shifts for Saturday and Sunday, and move Fixture Person B to the floor from 5 pm to 9 pm on both days",
-            "when": "Before 12 noon today",
-            "text": "Store manager at TST-01: before 12 noon today, confirm Fixture Person A's weekend shifts and move Fixture Person B to the floor from 5 pm to 9 pm on both days."
+            "what": "Confirm Fixture Person A's shifts for Saturday and Sunday, and put Fixture Person B on the floor on both days",
+            "when": "Today, before the store opens",
+            "text": "Store manager at TST-01: today, before the store opens, confirm Fixture Person A's weekend shifts and put Fixture Person B on the floor on both days."
           },
           "rupees_at_stake_weekly": 60000,
           "arithmetic": {
@@ -102,6 +104,7 @@
           "lever": "more_bills",
           "cause_code": "market_slowdown",
           "headline": "Conversion slipped at all 3 Testpur stores in the same week, from 11.0% to 10.0%",
+          "definition": "Conversion is bills divided by walk-ins counted at the door, over the same days.",
           "cause": "All three stores moved together, which points to the market and not to one store. It is reported once here and not as three separate alerts.",
           "action": {
             "who": "Sample Manager One",
@@ -131,6 +134,86 @@
             "target_value": 0.11,
             "higher_is_better": true
           }
+        },
+        {
+          "alert_id": "TST-02:more_repeat:no_callback",
+          "rank": 4,
+          "scope": "store",
+          "store_ids": ["TST-02"],
+          "city": "Testpur",
+          "lever": "more_repeat",
+          "cause_code": "no_callback",
+          "headline": "TST-02 repeat rate fell from 18.0% to 15.0%",
+          "definition": "Repeat rate is the share of first-time customers who billed again 30 or more days after their first bill.",
+          "cause": "Fewer first-time customers came back after 30 days than in the 13 weeks before.",
+          "action": {
+            "who": "Store manager at TST-02",
+            "what": "Phone the 8 first-time customers from the week of 20 Sep who have not billed again",
+            "when": "Today",
+            "text": "Store manager at TST-02: today, phone the 8 first-time customers from the week of 20 Sep who have not billed again."
+          },
+          "rupees_at_stake_weekly": 12000,
+          "arithmetic": {
+            "formula": "(fair repeat rate − current repeat rate) × first-time customers a week × average bill value",
+            "worked": "(18.0% − 15.0%) × 50 first-time customers a week × ₹8,000 = ₹12,000 a week",
+            "input_check_ids": ["a5-fair", "a5-current", "a5-new", "a5-abv"]
+          },
+          "benchmark_basis": "Same store, previous 13 weeks",
+          "salesperson_ids": [],
+          "checks": [
+            { "id": "a5-fair", "label": "Repeat rate, previous 13 weeks", "kind": "repeat_rate", "params": { "store_id": "TST-02", "start": "2026-07-26", "end": "2026-10-24" }, "value": 0.18, "display": "18.0%" },
+            { "id": "a5-current", "label": "Repeat rate, this week", "kind": "repeat_rate", "params": { "store_id": "TST-02", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.15, "display": "15.0%" },
+            { "id": "a5-new", "label": "First-time customers a week", "kind": "first_time_customers", "params": { "store_id": "TST-02", "start": "2026-10-25", "end": "2026-10-31" }, "value": 50, "display": "50" },
+            { "id": "a5-abv", "label": "Average bill value this week", "kind": "avg_bill_value", "params": { "store_id": "TST-02", "start": "2026-10-25", "end": "2026-10-31" }, "value": 8000, "display": "₹8,000" }
+          ],
+          "follow_up": {
+            "metric_label": "Repeat rate at TST-02",
+            "kind": "repeat_rate",
+            "params": { "store_id": "TST-02", "start": "2026-10-25", "end": "2026-10-31" },
+            "baseline_value": 0.15,
+            "target_value": 0.18,
+            "higher_is_better": true
+          }
+        },
+        {
+          "alert_id": "TST-01:bigger_baskets:single_item_bills",
+          "rank": 5,
+          "scope": "store",
+          "store_ids": ["TST-01"],
+          "city": "Testpur",
+          "lever": "bigger_baskets",
+          "cause_code": "single_item_bills",
+          "headline": "TST-01 baskets shrank from 2.5 to 2.3 items per bill",
+          "definition": "Items per bill is items sold divided by the number of bills, over the same days.",
+          "cause": "Fixture Person B averaged 1.8 items per bill this week against 2.5 for Fixture Person A on the same floor.",
+          "action": {
+            "who": "Fixture Person B at TST-01",
+            "what": "Show one matching accessory with every kurta trial",
+            "when": "Today, with every customer",
+            "text": "Fixture Person B at TST-01: show one matching accessory with every kurta trial today."
+          },
+          "rupees_at_stake_weekly": 9000,
+          "arithmetic": {
+            "formula": "(fair items per bill − current items per bill) × bills a week × average item value",
+            "worked": "(2.5 − 2.3) × 30 bills a week × ₹1,500 = ₹9,000 a week",
+            "input_check_ids": ["a6-fair", "a6-current", "a6-bills", "a6-item-value"]
+          },
+          "benchmark_basis": "Same store, previous 13 weeks",
+          "salesperson_ids": ["SP-TEST-A", "SP-TEST-B"],
+          "checks": [
+            { "id": "a6-fair", "label": "Items per bill, previous 13 weeks", "kind": "items_per_bill", "params": { "store_id": "TST-01", "start": "2026-07-26", "end": "2026-10-24" }, "value": 2.5, "display": "2.5" },
+            { "id": "a6-current", "label": "Items per bill, this week", "kind": "items_per_bill", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 2.3, "display": "2.3" },
+            { "id": "a6-bills", "label": "Bills this week", "kind": "bill_count", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 30, "display": "30" },
+            { "id": "a6-item-value", "label": "Average item value this week", "kind": "avg_item_value", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 1500, "display": "₹1,500" }
+          ],
+          "follow_up": {
+            "metric_label": "Items per bill at TST-01",
+            "kind": "items_per_bill",
+            "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" },
+            "baseline_value": 2.3,
+            "target_value": 2.5,
+            "higher_is_better": true
+          }
         }
       ],
       "held_back": [
@@ -158,12 +241,13 @@
           "lever": "more_repeat",
           "cause_code": "no_callback",
           "headline": "TST-04 repeat rate fell from 20.0% to 15.0%",
+          "definition": "Repeat rate is the share of first-time customers who billed again 30 or more days after their first bill.",
           "cause": "Fewer first-time customers from early September came back after 30 days than in the 13 weeks before.",
           "action": {
             "who": "Store manager at TST-04",
             "what": "Phone the 10 first-time customers from the week of 20 Sep who have not billed again",
-            "when": "Today between 11 am and 1 pm",
-            "text": "Store manager at TST-04: today between 11 am and 1 pm, phone the 10 first-time customers from the week of 20 Sep who have not billed again."
+            "when": "Today",
+            "text": "Store manager at TST-04: today, phone the 10 first-time customers from the week of 20 Sep who have not billed again."
           },
           "rupees_at_stake_weekly": 12000,
           "arithmetic": {
@@ -238,7 +322,8 @@
       "area_manager_id": "AM-TEST-1",
       "is_new_store": true,
       "salespeople": [],
-      "summary": []
+      "summary": [],
+      "not_judged_reason": "TST-03 opened on 1 Sep 2026, under 90 days before this run, so it is not compared with established stores yet."
     },
     {
       "store_id": "TST-04",
@@ -269,7 +354,8 @@
       "checks": [
         { "id": "c1-own", "label": "Fixture Person A conversion this week", "kind": "salesperson_conversion", "params": { "store_id": "TST-01", "salesperson_id": "SP-TEST-A", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.08, "display": "8 of 100" },
         { "id": "c1-peer", "label": "Fixture Person B conversion this week", "kind": "salesperson_conversion", "params": { "store_id": "TST-01", "salesperson_id": "SP-TEST-B", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.14, "display": "14 of 100" }
-      ]
+      ],
+      "definition": "Your conversion is your bills divided by the walk-ins on the days you worked."
     },
     {
       "card_id": "TST-01:SP-TEST-B:bigger_baskets",
@@ -285,7 +371,8 @@
       "checks": [
         { "id": "c2-own", "label": "Fixture Person B items per bill this week", "kind": "salesperson_items_per_bill", "params": { "store_id": "TST-01", "salesperson_id": "SP-TEST-B", "start": "2026-10-25", "end": "2026-10-31" }, "value": 1.8, "display": "1.8" },
         { "id": "c2-peer", "label": "Fixture Person A items per bill this week", "kind": "salesperson_items_per_bill", "params": { "store_id": "TST-01", "salesperson_id": "SP-TEST-A", "start": "2026-10-25", "end": "2026-10-31" }, "value": 2.5, "display": "2.5" }
-      ]
+      ],
+      "definition": "Your items per bill is the items on your bills divided by the number of your bills."
     },
     {
       "card_id": "TST-02:SP-TEST-C:bigger_baskets",
@@ -301,7 +388,8 @@
       "checks": [
         { "id": "c3-own", "label": "Fixture Person C items per bill this week", "kind": "salesperson_items_per_bill", "params": { "store_id": "TST-02", "salesperson_id": "SP-TEST-C", "start": "2026-10-25", "end": "2026-10-31" }, "value": 1.4, "display": "1.4" },
         { "id": "c3-peer", "label": "Fixture Person D items per bill this week", "kind": "salesperson_items_per_bill", "params": { "store_id": "TST-02", "salesperson_id": "SP-TEST-D", "start": "2026-10-25", "end": "2026-10-31" }, "value": 2.6, "display": "2.6" }
-      ]
+      ],
+      "definition": "Your items per bill is the items on your bills divided by the number of your bills."
     }
   ],
   "follow_ups": [
@@ -311,7 +399,7 @@
       "store_ids": ["TST-01"],
       "lever": "more_bills",
       "headline": "TST-01 conversion fell from 12.0% to 9.5%",
-      "action_text": "Store manager at TST-01: put a third salesperson on the floor from 5 pm to 9 pm on Saturday and Sunday.",
+      "action_text": "Store manager at TST-01: put a third salesperson on the floor on Saturday and Sunday.",
       "raised_as_of": "2026-10-24",
       "measured_as_of": "2026-10-31",
       "metric_label": "Conversion at TST-01",
@@ -323,9 +411,34 @@
       "target_display": "12.0%",
       "moved": "improved",
       "verdict": "Conversion at TST-01 rose from 9.5% to 10.0%. It is still below the 12.0% target.",
+      "definition": "Conversion is bills divided by walk-ins counted at the door, over the same days.",
       "checks": [
         { "id": "f1-before", "label": "Conversion at TST-01, week to 24 Oct 2026", "kind": "conversion", "params": { "store_id": "TST-01", "start": "2026-10-18", "end": "2026-10-24" }, "value": 0.095, "display": "9.5%" },
         { "id": "f1-after", "label": "Conversion at TST-01, week to 31 Oct 2026", "kind": "conversion", "params": { "store_id": "TST-01", "start": "2026-10-25", "end": "2026-10-31" }, "value": 0.1, "display": "10.0%" }
+      ]
+    },
+    {
+      "alert_id": "TST-03:more_bills:missed_shifts",
+      "area_manager_id": "AM-TEST-1",
+      "store_ids": ["TST-03"],
+      "lever": "more_bills",
+      "headline": "TST-03 conversion fell from 11.0% to 9.0%",
+      "action_text": "Store manager at TST-03: confirm every rostered shift for the weekend before the store opens.",
+      "raised_as_of": "2026-10-24",
+      "measured_as_of": "2026-10-31",
+      "metric_label": "Conversion at TST-03",
+      "before": 0.09,
+      "after": 0.09,
+      "target": 0.11,
+      "before_display": "9.0%",
+      "after_display": "Not measured",
+      "target_display": "11.0%",
+      "moved": "not_measurable",
+      "verdict": "Conversion at TST-03 could not be measured this week: the door counter showed 0 walk-ins on 2 days that had bills.",
+      "definition": "Conversion is bills divided by walk-ins counted at the door, over the same days.",
+      "checks": [
+        { "id": "f3-before", "label": "Conversion at TST-03, week to 24 Oct 2026", "kind": "conversion", "params": { "store_id": "TST-03", "start": "2026-10-18", "end": "2026-10-24" }, "value": 0.09, "display": "9.0%" },
+        { "id": "f3-days", "label": "Days with bills and zero walk-ins, week to 31 Oct 2026", "kind": "footfall_zero_with_bills_days", "params": { "store_id": "TST-03", "start": "2026-10-25", "end": "2026-10-31" }, "value": 2, "display": "2" }
       ]
     },
     {
@@ -346,6 +459,7 @@
       "target_display": "2.2",
       "moved": "no_change",
       "verdict": "Items per bill at TST-04 stayed at 1.9. The number did not move.",
+      "definition": "Items per bill is items sold divided by the number of bills, over the same days.",
       "checks": [
         { "id": "f2-before", "label": "Items per bill at TST-04, week to 24 Oct 2026", "kind": "items_per_bill", "params": { "store_id": "TST-04", "start": "2026-10-18", "end": "2026-10-24" }, "value": 1.9, "display": "1.9" },
         { "id": "f2-after", "label": "Items per bill at TST-04, week to 31 Oct 2026", "kind": "items_per_bill", "params": { "store_id": "TST-04", "start": "2026-10-25", "end": "2026-10-31" }, "value": 1.9, "display": "1.9" }
