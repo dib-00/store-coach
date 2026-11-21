@@ -15,7 +15,7 @@ CUR_DAYS = 28  # current window
 BASE_DAYS = 91  # benchmark window (13 weeks)
 NEW_STORE_DAYS = 180  # opened less than this before as-of: not judged, not a benchmark
 
-Z_SCAN = -2.5  # undirected scan over every store, every run
+Z_SCAN = -2.9  # undirected scan over every store and city, every run
 Z_CAUSE = -2.0  # one test tied to one dated event
 MIN_REL_DROP = 0.10  # current conversion at least 10% below its benchmark
 
@@ -26,7 +26,8 @@ MIN_PRESENT_DAYS = 20  # to compare bills per present day
 
 MISSED_RATIO = 0.80  # present on at most 80% of the colleagues' median days
 MISSED_MIN_GAP = 4  # and at least 4 days fewer
-MISSED_MAX_BLOCKS_BACK = 3  # look back up to 3 further 28-day blocks for the start
+SHORT_WEEK_DAYS = 4  # a short week: present on 4 or fewer of 7 days, and fewer than colleagues
+MISSED_MAX_WEEKS_BACK = 26  # how far back to look for the week the missed shifts began
 
 THIN_RATIO = 1.25  # walk-ins per salesperson, busy days vs other days
 CITY_BEYOND = 0.10  # a store in a slow city needs a drop this much deeper than the city
@@ -305,13 +306,20 @@ class Detector:
         flagged = self._missing(store, cur)
         if not flagged:
             return None
-        # when did it start? step back in 28-day blocks while the same people are still short
-        onset = cur["start"]
-        for k in range(1, MISSED_MAX_BLOCKS_BACK + 1):
-            block = win(add_days(cur["start"], -CUR_DAYS * k), add_days(cur["start"], -CUR_DAYS * (k - 1) - 1))
-            if block["start"] < m.roster_min or not set(flagged) & set(self._missing(store, block)):
+        # When did it start? Step back one week at a time (7-day blocks ending on as-of)
+        # while at least one of these people is still having short weeks.
+        onset = None
+        for k in range(MISSED_MAX_WEEKS_BACK):
+            week = win(add_days(as_of, -7 * k - 6), add_days(as_of, -7 * k))
+            if week["start"] < m.roster_min:
                 break
-            onset = block["start"]
+            med = m.compute("peer_median_present_days", {"store_id": store, "exclude_salesperson_ids": flagged, **week})
+            short = [p for p in flagged if m.present_days(p, **week) <= min(SHORT_WEEK_DAYS, (med or 0) - 1)]
+            if not short:
+                break
+            onset = week["start"]
+        if onset is None:
+            return None
         bench = win(add_days(onset, -BASE_DAYS), add_days(onset, -1))
         test = win(onset, as_of)
         if not self.judged(store, cur, bench, test):
