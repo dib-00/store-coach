@@ -108,7 +108,7 @@ export function DoneTick({ alertId }: { alertId: string }) {
   }
 
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1" data-done={done ? "true" : "false"}>
       <label
         className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-3 py-2 font-medium ${
           done ? "border-good-ink bg-good-bg text-good-ink" : "border-line"
@@ -121,6 +121,12 @@ export function DoneTick({ alertId }: { alertId: string }) {
           disabled={!ready || state.saving}
           onChange={(event) => onChange(event.target.checked)}
         />
+        {done ? (
+          <svg aria-hidden="true" viewBox="0 0 20 20" className="h-5 w-5 shrink-0">
+            <circle cx="10" cy="10" r="9" fill="currentColor" />
+            <path d="M6 10.5l2.5 2.5L14 7.5" fill="none" stroke="var(--good-bg)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        ) : null}
         {done ? "Done" : "Mark as done"}
       </label>
       {ready && state.failed ? (

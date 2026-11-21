@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AlertCard } from "@/components/alert-card";
+import { AlertFilter } from "@/components/alert-filter";
 import {
   BackLink,
   CheckList,
@@ -80,20 +81,27 @@ export default async function ManagerPage({ params }: Props) {
       {(manager.market_notes ?? []).map((note) => (
         <section
           key={note.note_id}
-          className="mb-8 rounded-lg border border-line bg-surface px-4 py-4"
+          className="mb-8 flex gap-3 rounded-xl border border-info-ink/25 bg-info-bg px-4 py-4 text-info-ink sm:px-5"
           aria-label={`Market note for ${note.city}`}
         >
-          <p className="text-sm font-semibold uppercase tracking-wide text-muted">
-            Market note · {note.city} · not a store alert
-          </p>
-          <p className="mt-2 text-lg font-semibold leading-snug">{note.headline}</p>
-          <p className="mt-2">{note.detail}</p>
-          <details className="mt-3">
-            <summary className="cursor-pointer text-sm font-medium">Show the numbers</summary>
-            <div className="mt-2 text-sm">
-              <CheckList checks={note.checks} />
-            </div>
-          </details>
+          <svg aria-hidden="true" viewBox="0 0 20 20" className="mt-0.5 h-6 w-6 shrink-0">
+            <circle cx="10" cy="10" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
+            <path d="M10 9v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="10" cy="6" r="1.2" fill="currentColor" />
+          </svg>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold uppercase tracking-wide">
+              Market note · {note.city} · not a store alert
+            </p>
+            <p className="mt-2 text-lg font-semibold leading-snug text-ink">{note.headline}</p>
+            <p className="mt-2 text-ink">{note.detail}</p>
+            <details className="mt-3">
+              <summary className="cursor-pointer text-sm font-medium">Show the numbers</summary>
+              <div className="mt-2 text-sm text-ink">
+                <CheckList checks={note.checks} />
+              </div>
+            </details>
+          </div>
         </section>
       ))}
 
@@ -121,13 +129,13 @@ export default async function ManagerPage({ params }: Props) {
           </div>
         </section>
       ) : (
-        <ol className="space-y-5">
-          {alerts.map((alert) => (
-            <li key={alert.alert_id}>
-              <AlertCard alert={alert} knownStores={knownStores} />
-            </li>
-          ))}
-        </ol>
+        <AlertFilter
+          items={alerts.map((alert) => ({
+            key: alert.alert_id,
+            lever: alert.lever,
+            node: <AlertCard alert={alert} knownStores={knownStores} />,
+          }))}
+        />
       )}
       <p className="mt-3 text-sm text-muted">
         At most {alertCap(manager)} alerts are shown in a week, ranked by rupees at stake.

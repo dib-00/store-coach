@@ -180,3 +180,14 @@ details > summary::before {
 details[open] > summary::before {
   content: "−";
 }
+
+/* An alert marked as done is muted, so the open ones stand out. */
+article:has([data-done="true"]) {
+  opacity: 0.6;
+  filter: saturate(0.4);
+}
+article:has([data-done="true"]):hover,
+article:has([data-done="true"]):focus-within {
+  opacity: 1;
+  filter: none;
+}
