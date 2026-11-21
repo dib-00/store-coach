@@ -98,6 +98,7 @@ def items_per_bill(d, p, ctx):
 - Raise `CannotCompute("why")` when the recipe has no answer.
 - `display` is the formatter for section 5 of CHECKS.md.
 - A kind that carries an alert's rupees at stake also sets `rupees_step` (the step the figure is rounded to).
+- A kind the documents allow to read the calendar after `as_of` sets `future_calendar=True` and pins its own window, as `upcoming_busy_dates` does. Every other kind fails on a date after `as_of`.
 
 Write the recipe from the document, not from the engine. If the document does not
 reproduce the engine's value, that is a finding to report, not something to tune away.

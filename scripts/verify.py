@@ -386,25 +386,28 @@ class Data:
 # --------------------------------------------------------------------------- registry
 
 class Recipe:
-    def __init__(self, kind, fn, required, optional, display, rupees_step):
+    def __init__(self, kind, fn, required, optional, display, rupees_step, future_calendar):
         self.kind, self.fn = kind, fn
         self.required, self.optional = set(required), set(optional)
         self.display, self.rupees_step = display, rupees_step
+        self.future_calendar = future_calendar
 
 
 RECIPES = {}
 
 
-def recipe(kind, required, optional=(), display=fmt_plain, rupees_step=None):
+def recipe(kind, required, optional=(), display=fmt_plain, rupees_step=None, future_calendar=False):
     """Register the recompute function for one check kind.
 
     rupees_step: set it (e.g. 100) on the kind that carries an alert's rupees at stake;
     it is the step the figure is rounded to.
+    future_calendar: True only for a kind the documents allow to read calendar rows
+    after as_of. Every other kind fails if a param or value is dated after as_of.
     """
     def register(fn):
         if kind in RECIPES:
             raise RuntimeError(f"two recipes for kind {kind!r}")
-        RECIPES[kind] = Recipe(kind, fn, required, optional, display, rupees_step)
+        RECIPES[kind] = Recipe(kind, fn, required, optional, display, rupees_step, future_calendar)
         return fn
     return register
 
@@ -503,12 +506,16 @@ def day_count(d, p, ctx):
                for dt in days(p["start"], p["end"]))
 
 
-@recipe("upcoming_busy_dates", ("state", "start", "end"), (), fmt_day_list)
+UPCOMING_DAYS = 7  # docs/CHECKS.md section 2: "start..end is the 7 days after as_of"
+
+
+@recipe("upcoming_busy_dates", ("state", "start", "end"), (), fmt_day_list, future_calendar=True)
 def upcoming_busy_dates(d, p, ctx):
     as_of = to_date(d.as_of)
-    want = ((as_of + timedelta(1)).isoformat(), (as_of + timedelta(7)).isoformat())
+    want = ((as_of + timedelta(1)).isoformat(), (as_of + timedelta(UPCOMING_DAYS)).isoformat())
     if (p["start"], p["end"]) != want:
-        raise CannotCompute(f"window must be the 7 days after as_of, {want[0]}..{want[1]}")
+        raise CannotCompute(f"docs/CHECKS.md says the window is the {UPCOMING_DAYS} days after as_of, "
+                            f"{want[0]}..{want[1]}; the check asks for {p['start']}..{p['end']}")
     return ", ".join(dt for dt in days(p["start"], p["end"]) if d.is_busy(p["state"], dt))
 
 
@@ -762,8 +769,8 @@ def verify_no_future(check, as_of, rep):
     """No check may be built on a row dated after as_of."""
     group = "rule    nothing after as_of"
     kind = check["kind"]
-    if kind == "upcoming_busy_dates":
-        return  # the one documented exception; its window is pinned inside the recipe
+    if kind in RECIPES and RECIPES[kind].future_calendar:
+        return  # a documented exception; its window is pinned inside its recipe
     late = [f"{k}={v}" for k, v in sorted(check["params"].items())
             if isinstance(v, str) and ISO.fullmatch(v) and v > as_of]
     if isinstance(check["value"], str):

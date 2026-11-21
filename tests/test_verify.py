@@ -373,3 +373,16 @@ def test_rounding_is_half_up_and_exact():
     assert verify.indian(122600) == "1,22,600" and verify.indian(12345678) == "1,23,45,678"
     assert verify.fmt_percent1(0.1071) == "10.7%" and verify.fmt_1dp_trim(23.0) == "23"
     assert verify.fmt_day_list("2026-11-01, 2026-11-07") == "Sun 1 Nov 2026, Sat 7 Nov 2026"
+
+
+def test_busy_dates_beyond_the_documented_7_days_fail(tmp_path, csv_pack, capsys):
+    """Only the 7 days after as-of may be read from the future calendar."""
+    output = good_output()
+    check_of(output, ":busy")["params"]["end"] = "2026-10-27"
+    code, text = run_verify(tmp_path, csv_pack, output, capsys)
+    assert code == 1 and "the 7 days after as_of, 2026-10-19..2026-10-25" in text
+
+
+def test_script_does_not_import_the_engine():
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert "import engine" not in source and "from engine" not in source
