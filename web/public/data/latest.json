@@ -1,0 +1,3145 @@
+{
+  "schema_version": 1,
+  "as_of": "2026-10-31",
+  "generated_at": "2026-11-21T06:37:29Z",
+  "windows": {
+    "current": {
+      "start": "2026-10-04",
+      "end": "2026-10-31"
+    },
+    "baseline": {
+      "start": "2026-07-05",
+      "end": "2026-10-03"
+    }
+  },
+  "area_managers": [
+    {
+      "area_manager_id": "AM-01",
+      "name": "Rakesh Srivastava",
+      "city": "Lucknow",
+      "store_ids": [
+        "LKO-01",
+        "LKO-02",
+        "LKO-03",
+        "LKO-04"
+      ],
+      "max_alerts_per_week": 5,
+      "alerts": [
+        {
+          "alert_id": "LKO-02:more_bills:salesperson_left:SP1018",
+          "rank": 1,
+          "scope": "store",
+          "store_ids": [
+            "LKO-02"
+          ],
+          "city": "Lucknow",
+          "lever": "more_bills",
+          "cause_code": "salesperson_left",
+          "headline": "LKO-02 is converting 10.5% of walk-ins, down from 12.3% before Imran C. left.",
+          "cause": "Imran C. last appears on the roster on 14 Sep 2026. Imran C. made 1.23 bills for each day present, against 0.52 for a typical colleague at LKO-02. Since then the store has converted 10.4% of walk-ins.",
+          "action": {
+            "who": "Store manager at LKO-02, with Arif A. and Sumit A.",
+            "what": "Keep 8 salespeople on the floor, with Arif A. and Sumit A. working",
+            "when": "Sun 1 Nov and Sat 7 Nov",
+            "text": "On Sun 1 Nov and Sat 7 Nov, keep all 8 salespeople on the floor at LKO-02, as on busy days before Imran C. left, and make sure Arif A. and Sumit A., the strongest on bills per day now, work those days."
+          },
+          "rupees_at_stake_weekly": 85400,
+          "arithmetic": {
+            "formula": "(fair conversion − current conversion) × walk-ins a week × average bill value",
+            "worked": "(12.3% − 10.5%) × 484 walk-ins a week × ₹9,801 = ₹85,400 a week",
+            "input_check_ids": [
+              "LKO-02:more_bills:salesperson_left:SP1018:conv_benchmark",
+              "LKO-02:more_bills:salesperson_left:SP1018:conv_current",
+              "LKO-02:more_bills:salesperson_left:SP1018:walkins_per_week",
+              "LKO-02:more_bills:salesperson_left:SP1018:avg_bill_value"
+            ]
+          },
+          "benchmark_basis": "Same store, the 91 days before Imran C. left (16 Jun 2026 to 14 Sep 2026)",
+          "salesperson_ids": [
+            "SP1018"
+          ],
+          "checks": [
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:conv_current",
+              "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 0.1054,
+              "display": "10.5%"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:conv_benchmark",
+              "label": "Conversion, before Imran C. left (16 Jun 2026 to 14 Sep 2026)",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "start": "2026-06-16",
+                "end": "2026-09-14",
+                "day_type": "all"
+              },
+              "value": 0.1233,
+              "display": "12.3%"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:bills_current",
+              "label": "Bills, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "bills_count",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 204,
+              "display": "204"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:footfall_current",
+              "label": "Walk-ins, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "footfall_sum",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 1935,
+              "display": "1,935"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:bills_benchmark",
+              "label": "Bills, 16 Jun 2026 to 14 Sep 2026",
+              "kind": "bills_count",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "start": "2026-06-16",
+                "end": "2026-09-14",
+                "day_type": "all"
+              },
+              "value": 388,
+              "display": "388"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:footfall_benchmark",
+              "label": "Walk-ins, 16 Jun 2026 to 14 Sep 2026",
+              "kind": "footfall_sum",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "start": "2026-06-16",
+                "end": "2026-09-14",
+                "day_type": "all"
+              },
+              "value": 3148,
+              "display": "3,148"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:conv_since",
+              "label": "Conversion, 15 Sep 2026 to 31 Oct 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "start": "2026-09-15",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 0.1044,
+              "display": "10.4%"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:z",
+              "label": "Two-proportion z, 15 Sep 2026 to 31 Oct 2026 against 16 Jun 2026 to 14 Sep 2026",
+              "kind": "two_proportion_z",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "start": "2026-09-15",
+                "end": "2026-10-31",
+                "base_start": "2026-06-16",
+                "base_end": "2026-09-14",
+                "day_type": "all"
+              },
+              "value": -2.23,
+              "display": "-2.23"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:walkins_per_week",
+              "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "walkins_per_week",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31"
+              },
+              "value": 483.8,
+              "display": "484"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:avg_bill_value",
+              "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "avg_bill_value",
+              "params": {
+                "store_ids": [
+                  "LKO-02"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31"
+              },
+              "value": 9800.83,
+              "display": "₹9,801"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:rupees_at_stake",
+              "label": "Rupees at stake a week",
+              "kind": "rupees_at_stake",
+              "params": {
+                "benchmark_check_id": "LKO-02:more_bills:salesperson_left:SP1018:conv_benchmark",
+                "current_check_id": "LKO-02:more_bills:salesperson_left:SP1018:conv_current",
+                "walkins_check_id": "LKO-02:more_bills:salesperson_left:SP1018:walkins_per_week",
+                "avg_bill_check_id": "LKO-02:more_bills:salesperson_left:SP1018:avg_bill_value"
+              },
+              "value": 85400,
+              "display": "₹85,400"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:last_roster_date",
+              "label": "Last day Imran C. appears on the roster",
+              "kind": "last_roster_date",
+              "params": {
+                "salesperson_id": "SP1018",
+                "as_of": "2026-10-31"
+              },
+              "value": "2026-09-14",
+              "display": "14 Sep 2026"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:leaver_bills_per_present_day",
+              "label": "Bills per day present, Imran C., 16 Jun 2026 to 14 Sep 2026",
+              "kind": "bills_per_present_day",
+              "params": {
+                "salesperson_id": "SP1018",
+                "start": "2026-06-16",
+                "end": "2026-09-14"
+              },
+              "value": 1.23,
+              "display": "1.23"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:peer_bills_per_present_day",
+              "label": "Bills per day present, typical colleague at LKO-02, 16 Jun 2026 to 14 Sep 2026",
+              "kind": "peer_median_bills_per_present_day",
+              "params": {
+                "store_id": "LKO-02",
+                "exclude_salesperson_ids": [
+                  "SP1018"
+                ],
+                "start": "2026-06-16",
+                "end": "2026-09-14",
+                "min_present_days": 20
+              },
+              "value": 0.52,
+              "display": "0.52"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:upcoming_busy_dates",
+              "label": "Busy days in the next 7 days (weekends, festivals, wedding dates)",
+              "kind": "upcoming_busy_dates",
+              "params": {
+                "state": "Uttar Pradesh",
+                "start": "2026-11-01",
+                "end": "2026-11-07"
+              },
+              "value": "2026-11-01, 2026-11-07",
+              "display": "Sun 1 Nov 2026, Sat 7 Nov 2026"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:busy_day_staff_before",
+              "label": "Salespeople on the floor on a typical busy day, 16 Jun 2026 to 14 Sep 2026",
+              "kind": "median_staff_present",
+              "params": {
+                "store_id": "LKO-02",
+                "start": "2026-06-16",
+                "end": "2026-09-14",
+                "day_type": "busy"
+              },
+              "value": 8,
+              "display": "8"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:rostered_staff",
+              "label": "Salespeople on the roster on 31 Oct 2026",
+              "kind": "rostered_staff",
+              "params": {
+                "store_id": "LKO-02",
+                "date": "2026-10-31"
+              },
+              "value": 8,
+              "display": "8"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:bills_per_present_day:SP1175",
+              "label": "Bills per day present, Arif A., 4 Oct 2026 to 31 Oct 2026",
+              "kind": "bills_per_present_day",
+              "params": {
+                "salesperson_id": "SP1175",
+                "start": "2026-10-04",
+                "end": "2026-10-31"
+              },
+              "value": 1.63,
+              "display": "1.63"
+            },
+            {
+              "id": "LKO-02:more_bills:salesperson_left:SP1018:bills_per_present_day:SP1027",
+              "label": "Bills per day present, Sumit A., 4 Oct 2026 to 31 Oct 2026",
+              "kind": "bills_per_present_day",
+              "params": {
+                "salesperson_id": "SP1027",
+                "start": "2026-10-04",
+                "end": "2026-10-31"
+              },
+              "value": 1.5,
+              "display": "1.50"
+            }
+          ],
+          "follow_up": {
+            "metric_label": "Conversion at LKO-02",
+            "kind": "conversion",
+            "params": {
+              "store_ids": [
+                "LKO-02"
+              ],
+              "start": "2026-10-04",
+              "end": "2026-10-31",
+              "day_type": "all"
+            },
+            "baseline_value": 0.1054,
+            "target_value": 0.1233,
+            "higher_is_better": true
+          }
+        }
+      ],
+      "held_back": []
+    },
+    {
+      "area_manager_id": "AM-02",
+      "name": "Alok Tiwari",
+      "city": "Kanpur",
+      "store_ids": [
+        "KNP-01",
+        "KNP-02",
+        "KNP-03"
+      ],
+      "max_alerts_per_week": 5,
+      "alerts": [],
+      "held_back": []
+    },
+    {
+      "area_manager_id": "AM-03",
+      "name": "Nitin Sinha",
+      "city": "Patna",
+      "store_ids": [
+        "PAT-01",
+        "PAT-02",
+        "PAT-03",
+        "PAT-04"
+      ],
+      "max_alerts_per_week": 5,
+      "alerts": [],
+      "held_back": []
+    },
+    {
+      "area_manager_id": "AM-04",
+      "name": "Pankaj Jha",
+      "city": "Muzaffarpur",
+      "store_ids": [
+        "MZF-01",
+        "MZF-02"
+      ],
+      "max_alerts_per_week": 5,
+      "alerts": [],
+      "held_back": []
+    },
+    {
+      "area_manager_id": "AM-05",
+      "name": "Harish Gowda",
+      "city": "Bengaluru",
+      "store_ids": [
+        "BLR-01",
+        "BLR-02",
+        "BLR-03",
+        "BLR-04",
+        "BLR-05"
+      ],
+      "max_alerts_per_week": 5,
+      "alerts": [
+        {
+          "alert_id": "BLR-03:more_bills:missed_shifts",
+          "rank": 1,
+          "scope": "store",
+          "store_ids": [
+            "BLR-03"
+          ],
+          "city": "Bengaluru",
+          "lever": "more_bills",
+          "cause_code": "missed_shifts",
+          "headline": "BLR-03 is converting 10.7% of walk-ins, down from 13.2% before Manjunath K. and Vijay N. began missing shifts.",
+          "cause": "Of the last 28 days, Manjunath K. was on the floor on 16 and Vijay N. was on the floor on 15, against 23 for a typical colleague at BLR-03. Of the 9 weekend and festival days, Manjunath K. worked 0 and Vijay N. worked 1; on those days BLR-03 converted 8.8% of walk-ins, against 12.2% on other days.",
+          "action": {
+            "who": "Store manager at BLR-03, with Manjunath K. and Vijay N.",
+            "what": "Roster Manjunath K. and Vijay N. on the floor on the busy days and move the weekly off to a weekday",
+            "when": "Sun 1 Nov and Sat 7 Nov",
+            "text": "Put Manjunath K. and Vijay N. on the floor at BLR-03 on Sun 1 Nov and Sat 7 Nov. Give the weekly off to Manjunath K. on Tuesday and Vijay N. on Wednesday instead, as before the missed shifts began."
+          },
+          "rupees_at_stake_weekly": 122600,
+          "arithmetic": {
+            "formula": "(fair conversion − current conversion) × walk-ins a week × average bill value",
+            "worked": "(13.2% − 10.7%) × 486 walk-ins a week × ₹10,092 = ₹1,22,600 a week",
+            "input_check_ids": [
+              "BLR-03:more_bills:missed_shifts:conv_benchmark",
+              "BLR-03:more_bills:missed_shifts:conv_current",
+              "BLR-03:more_bills:missed_shifts:walkins_per_week",
+              "BLR-03:more_bills:missed_shifts:avg_bill_value"
+            ]
+          },
+          "benchmark_basis": "Same store, 13 weeks before the missed shifts began (7 Jun 2026 to 5 Sep 2026)",
+          "salesperson_ids": [
+            "SP1141",
+            "SP1142"
+          ],
+          "checks": [
+            {
+              "id": "BLR-03:more_bills:missed_shifts:conv_current",
+              "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 0.1071,
+              "display": "10.7%"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:conv_benchmark",
+              "label": "Conversion, before the missed shifts began (7 Jun 2026 to 5 Sep 2026)",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-06-07",
+                "end": "2026-09-05",
+                "day_type": "all"
+              },
+              "value": 0.1324,
+              "display": "13.2%"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:bills_current",
+              "label": "Bills, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "bills_count",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 208,
+              "display": "208"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:footfall_current",
+              "label": "Walk-ins, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "footfall_sum",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 1942,
+              "display": "1,942"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:bills_benchmark",
+              "label": "Bills, 7 Jun 2026 to 5 Sep 2026",
+              "kind": "bills_count",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-06-07",
+                "end": "2026-09-05",
+                "day_type": "all"
+              },
+              "value": 438,
+              "display": "438"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:footfall_benchmark",
+              "label": "Walk-ins, 7 Jun 2026 to 5 Sep 2026",
+              "kind": "footfall_sum",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-06-07",
+                "end": "2026-09-05",
+                "day_type": "all"
+              },
+              "value": 3308,
+              "display": "3,308"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:conv_since",
+              "label": "Conversion, 6 Sep 2026 to 31 Oct 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-09-06",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 0.1045,
+              "display": "10.5%"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:z",
+              "label": "Two-proportion z, 6 Sep 2026 to 31 Oct 2026 against 7 Jun 2026 to 5 Sep 2026",
+              "kind": "two_proportion_z",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-09-06",
+                "end": "2026-10-31",
+                "base_start": "2026-06-07",
+                "base_end": "2026-09-05",
+                "day_type": "all"
+              },
+              "value": -3.4,
+              "display": "-3.40"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:walkins_per_week",
+              "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "walkins_per_week",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31"
+              },
+              "value": 485.5,
+              "display": "486"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:avg_bill_value",
+              "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "avg_bill_value",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31"
+              },
+              "value": 10092.04,
+              "display": "₹10,092"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:rupees_at_stake",
+              "label": "Rupees at stake a week",
+              "kind": "rupees_at_stake",
+              "params": {
+                "benchmark_check_id": "BLR-03:more_bills:missed_shifts:conv_benchmark",
+                "current_check_id": "BLR-03:more_bills:missed_shifts:conv_current",
+                "walkins_check_id": "BLR-03:more_bills:missed_shifts:walkins_per_week",
+                "avg_bill_check_id": "BLR-03:more_bills:missed_shifts:avg_bill_value"
+              },
+              "value": 122600,
+              "display": "₹1,22,600"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:days_in_window",
+              "label": "Days, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "day_count",
+              "params": {
+                "state": "Karnataka",
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 28,
+              "display": "28"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:busy_days_in_window",
+              "label": "Weekend and festival days, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "day_count",
+              "params": {
+                "state": "Karnataka",
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "busy"
+              },
+              "value": 9,
+              "display": "9"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:peer_present_days",
+              "label": "Days present, typical colleague at BLR-03, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "peer_median_present_days",
+              "params": {
+                "store_id": "BLR-03",
+                "exclude_salesperson_ids": [
+                  "SP1141",
+                  "SP1142"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 23.0,
+              "display": "23"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:peer_present_busy_days",
+              "label": "Busy days present, typical colleague at BLR-03, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "peer_median_present_days",
+              "params": {
+                "store_id": "BLR-03",
+                "exclude_salesperson_ids": [
+                  "SP1141",
+                  "SP1142"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "busy"
+              },
+              "value": 9.0,
+              "display": "9"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:present_days:SP1141",
+              "label": "Days present, Manjunath K., 4 Oct 2026 to 31 Oct 2026",
+              "kind": "present_days",
+              "params": {
+                "salesperson_id": "SP1141",
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 16,
+              "display": "16"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:present_busy_days:SP1141",
+              "label": "Busy days present, Manjunath K., 4 Oct 2026 to 31 Oct 2026",
+              "kind": "present_days",
+              "params": {
+                "salesperson_id": "SP1141",
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "busy"
+              },
+              "value": 0,
+              "display": "0"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:present_days:SP1142",
+              "label": "Days present, Vijay N., 4 Oct 2026 to 31 Oct 2026",
+              "kind": "present_days",
+              "params": {
+                "salesperson_id": "SP1142",
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "all"
+              },
+              "value": 15,
+              "display": "15"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:present_busy_days:SP1142",
+              "label": "Busy days present, Vijay N., 4 Oct 2026 to 31 Oct 2026",
+              "kind": "present_days",
+              "params": {
+                "salesperson_id": "SP1142",
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "busy"
+              },
+              "value": 1,
+              "display": "1"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:conv_busy_current",
+              "label": "Conversion on weekend and festival days, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "busy"
+              },
+              "value": 0.0879,
+              "display": "8.8%"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:conv_other_current",
+              "label": "Conversion on other days, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "conversion",
+              "params": {
+                "store_ids": [
+                  "BLR-03"
+                ],
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "normal"
+              },
+              "value": 0.1218,
+              "display": "12.2%"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:staff_busy_current",
+              "label": "Salespeople on the floor on a typical busy day, 4 Oct 2026 to 31 Oct 2026",
+              "kind": "median_staff_present",
+              "params": {
+                "store_id": "BLR-03",
+                "start": "2026-10-04",
+                "end": "2026-10-31",
+                "day_type": "busy"
+              },
+              "value": 6,
+              "display": "6"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:staff_busy_benchmark",
+              "label": "Salespeople on the floor on a typical busy day, 7 Jun 2026 to 5 Sep 2026",
+              "kind": "median_staff_present",
+              "params": {
+                "store_id": "BLR-03",
+                "start": "2026-06-07",
+                "end": "2026-09-05",
+                "day_type": "busy"
+              },
+              "value": 8,
+              "display": "8"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:upcoming_busy_dates",
+              "label": "Busy days in the next 7 days (weekends, festivals, wedding dates)",
+              "kind": "upcoming_busy_dates",
+              "params": {
+                "state": "Karnataka",
+                "start": "2026-11-01",
+                "end": "2026-11-07"
+              },
+              "value": "2026-11-01, 2026-11-07",
+              "display": "Sun 1 Nov 2026, Sat 7 Nov 2026"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:usual_off:SP1141",
+              "label": "Usual weekly off of Manjunath K., 7 Jun 2026 to 5 Sep 2026",
+              "kind": "usual_off_weekday",
+              "params": {
+                "salesperson_id": "SP1141",
+                "start": "2026-06-07",
+                "end": "2026-09-05"
+              },
+              "value": "Tuesday",
+              "display": "Tuesday"
+            },
+            {
+              "id": "BLR-03:more_bills:missed_shifts:usual_off:SP1142",
+              "label": "Usual weekly off of Vijay N., 7 Jun 2026 to 5 Sep 2026",
+              "kind": "usual_off_weekday",
+              "params": {
+                "salesperson_id": "SP1142",
+                "start": "2026-06-07",
+                "end": "2026-09-05"
+              },
+              "value": "Wednesday",
+              "display": "Wednesday"
+            }
+          ],
+          "follow_up": {
+            "metric_label": "Conversion at BLR-03",
+            "kind": "conversion",
+            "params": {
+              "store_ids": [
+                "BLR-03"
+              ],
+              "start": "2026-10-04",
+              "end": "2026-10-31",
+              "day_type": "all"
+            },
+            "baseline_value": 0.1071,
+            "target_value": 0.1324,
+            "higher_is_better": true
+          }
+        }
+      ],
+      "held_back": []
+    },
+    {
+      "area_manager_id": "AM-06",
+      "name": "Mahesh Shetty",
+      "city": "Mysuru",
+      "store_ids": [
+        "MYS-01",
+        "MYS-02"
+      ],
+      "max_alerts_per_week": 5,
+      "alerts": [],
+      "held_back": []
+    }
+  ],
+  "stores": [
+    {
+      "store_id": "BLR-01",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "tier": "S++",
+      "opened_on": "2014-10-01",
+      "area_manager_id": "AM-05",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1109",
+          "name": "Kumar D.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1110",
+          "name": "Karthik J.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1111",
+          "name": "Deepak S.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1112",
+          "name": "Nithin J.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1113",
+          "name": "Sachin R.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1114",
+          "name": "Manjunath C.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1115",
+          "name": "Manjunath P.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1116",
+          "name": "Chetan S.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1117",
+          "name": "Raghu C.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1118",
+          "name": "Prasad M.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1119",
+          "name": "Yogesh G.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1120",
+          "name": "Suresh V.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1121",
+          "name": "Santosh T.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1122",
+          "name": "Sunil T.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1123",
+          "name": "Srinivas B.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1124",
+          "name": "Umesh N.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:BLR-01:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1247,
+          "display": "12.5%"
+        },
+        {
+          "id": "store:BLR-01:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 900.5,
+          "display": "901"
+        },
+        {
+          "id": "store:BLR-01:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 9715.02,
+          "display": "₹9,715"
+        },
+        {
+          "id": "store:BLR-01:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-01"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.1334,
+          "display": "13.3%"
+        }
+      ]
+    },
+    {
+      "store_id": "BLR-02",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "tier": "S++",
+      "opened_on": "2021-05-01",
+      "area_manager_id": "AM-05",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1125",
+          "name": "Suresh K.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1126",
+          "name": "Prasad B.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1127",
+          "name": "Harsha M.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1128",
+          "name": "Venkatesh Y.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1129",
+          "name": "Pavan N.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1130",
+          "name": "Vinay K.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1131",
+          "name": "Manjunath M.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1132",
+          "name": "Srinivas A.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1133",
+          "name": "Nagaraj G.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1134",
+          "name": "Girish V.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1135",
+          "name": "Prasad D.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1136",
+          "name": "Deepak V.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1137",
+          "name": "Deepak C.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1138",
+          "name": "Vijay N.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1139",
+          "name": "Mahesh J.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1140",
+          "name": "Venkatesh S.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:BLR-02:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1329,
+          "display": "13.3%"
+        },
+        {
+          "id": "store:BLR-02:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 893.3,
+          "display": "893"
+        },
+        {
+          "id": "store:BLR-02:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 9499.1,
+          "display": "₹9,499"
+        },
+        {
+          "id": "store:BLR-02:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-02"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.128,
+          "display": "12.8%"
+        }
+      ]
+    },
+    {
+      "store_id": "BLR-03",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "tier": "S+",
+      "opened_on": "2020-01-01",
+      "area_manager_id": "AM-05",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1141",
+          "name": "Manjunath K.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1142",
+          "name": "Vijay N.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1143",
+          "name": "Santosh V.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1144",
+          "name": "Pradeep A.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1145",
+          "name": "Yogesh N.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1146",
+          "name": "Harsha S.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1147",
+          "name": "Santosh K.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1148",
+          "name": "Sunil Y.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1149",
+          "name": "Suresh B.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1150",
+          "name": "Mohan M.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1151",
+          "name": "Arun D.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:BLR-03:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1071,
+          "display": "10.7%"
+        },
+        {
+          "id": "store:BLR-03:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 485.5,
+          "display": "486"
+        },
+        {
+          "id": "store:BLR-03:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 10092.04,
+          "display": "₹10,092"
+        },
+        {
+          "id": "store:BLR-03:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-03"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.1229,
+          "display": "12.3%"
+        }
+      ]
+    },
+    {
+      "store_id": "BLR-04",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "tier": "S+",
+      "opened_on": "2022-03-01",
+      "area_manager_id": "AM-05",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1152",
+          "name": "Venkatesh C.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1153",
+          "name": "Karthik V.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1154",
+          "name": "Arun R.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1155",
+          "name": "Srinivas P.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1156",
+          "name": "Deepak C.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1157",
+          "name": "Kumar B.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1158",
+          "name": "Vinay D.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1159",
+          "name": "Venkatesh T.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1160",
+          "name": "Ganesh P.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1161",
+          "name": "Sunil G.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1162",
+          "name": "Sachin M.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:BLR-04:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-04"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1293,
+          "display": "12.9%"
+        },
+        {
+          "id": "store:BLR-04:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "BLR-04"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 471.8,
+          "display": "472"
+        },
+        {
+          "id": "store:BLR-04:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "BLR-04"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 9072.58,
+          "display": "₹9,073"
+        },
+        {
+          "id": "store:BLR-04:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-04"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.1342,
+          "display": "13.4%"
+        }
+      ]
+    },
+    {
+      "store_id": "BLR-05",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "tier": "B",
+      "opened_on": "2026-10-10",
+      "area_manager_id": "AM-05",
+      "is_new_store": true,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1163",
+          "name": "Umesh P.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1164",
+          "name": "Harsha Y.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1165",
+          "name": "Sunil G.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:BLR-05:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "BLR-05"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1084,
+          "display": "10.8%"
+        },
+        {
+          "id": "store:BLR-05:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "BLR-05"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 117.4,
+          "display": "117"
+        },
+        {
+          "id": "store:BLR-05:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "BLR-05"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 6761.3,
+          "display": "₹6,761"
+        }
+      ]
+    },
+    {
+      "store_id": "KNP-01",
+      "city": "Kanpur",
+      "state": "Uttar Pradesh",
+      "tier": "S+",
+      "opened_on": "2017-09-01",
+      "area_manager_id": "AM-02",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1044",
+          "name": "Rohit V.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1045",
+          "name": "Ravi C.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1046",
+          "name": "Ajay G.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1047",
+          "name": "Nikhil S.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1048",
+          "name": "Vivek D.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1049",
+          "name": "Abhishek T.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1050",
+          "name": "Sachin T.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1051",
+          "name": "Prakash Y.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1052",
+          "name": "Jitendra J.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1053",
+          "name": "Dheeraj R.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1054",
+          "name": "Shahid A.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:KNP-01:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "KNP-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1327,
+          "display": "13.3%"
+        },
+        {
+          "id": "store:KNP-01:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "KNP-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 369.3,
+          "display": "369"
+        },
+        {
+          "id": "store:KNP-01:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "KNP-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 8578.37,
+          "display": "₹8,578"
+        },
+        {
+          "id": "store:KNP-01:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "KNP-01"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.1514,
+          "display": "15.1%"
+        }
+      ]
+    },
+    {
+      "store_id": "KNP-02",
+      "city": "Kanpur",
+      "state": "Uttar Pradesh",
+      "tier": "A",
+      "opened_on": "2014-01-01",
+      "area_manager_id": "AM-02",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1055",
+          "name": "Manoj T.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1056",
+          "name": "Kamal R.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1057",
+          "name": "Kunal P.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1058",
+          "name": "Arjun Y.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1059",
+          "name": "Dinesh D.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:KNP-02:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "KNP-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1153,
+          "display": "11.5%"
+        },
+        {
+          "id": "store:KNP-02:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "KNP-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 147.5,
+          "display": "148"
+        },
+        {
+          "id": "store:KNP-02:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "KNP-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 8868.99,
+          "display": "₹8,869"
+        },
+        {
+          "id": "store:KNP-02:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "KNP-02"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.0993,
+          "display": "9.9%"
+        }
+      ]
+    },
+    {
+      "store_id": "KNP-03",
+      "city": "Kanpur",
+      "state": "Uttar Pradesh",
+      "tier": "B",
+      "opened_on": "2018-12-01",
+      "area_manager_id": "AM-02",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1060",
+          "name": "Sumit S.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1061",
+          "name": "Kunal N.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1062",
+          "name": "Kunal B.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1063",
+          "name": "Om K.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:KNP-03:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "KNP-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.0867,
+          "display": "8.7%"
+        },
+        {
+          "id": "store:KNP-03:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "KNP-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 129.8,
+          "display": "130"
+        },
+        {
+          "id": "store:KNP-03:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "KNP-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 10120.27,
+          "display": "₹10,120"
+        },
+        {
+          "id": "store:KNP-03:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "KNP-03"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.0804,
+          "display": "8.0%"
+        }
+      ]
+    },
+    {
+      "store_id": "LKO-01",
+      "city": "Lucknow",
+      "state": "Uttar Pradesh",
+      "tier": "S++",
+      "opened_on": "2014-05-01",
+      "area_manager_id": "AM-01",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1001",
+          "name": "Rohit G.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1002",
+          "name": "Shahid K.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1003",
+          "name": "Ankit N.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1004",
+          "name": "Gaurav V.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1005",
+          "name": "Vikas J.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1006",
+          "name": "Imran B.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1007",
+          "name": "Kamal G.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1008",
+          "name": "Aman N.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1009",
+          "name": "Ashish K.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1010",
+          "name": "Om S.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1011",
+          "name": "Om D.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1012",
+          "name": "Manoj T.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1013",
+          "name": "Arif M.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1014",
+          "name": "Arjun A.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1015",
+          "name": "Tushar N.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1016",
+          "name": "Imran M.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:LKO-01:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1237,
+          "display": "12.4%"
+        },
+        {
+          "id": "store:LKO-01:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "LKO-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 881.0,
+          "display": "881"
+        },
+        {
+          "id": "store:LKO-01:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "LKO-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 9651.46,
+          "display": "₹9,651"
+        },
+        {
+          "id": "store:LKO-01:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-01"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.1373,
+          "display": "13.7%"
+        }
+      ]
+    },
+    {
+      "store_id": "LKO-02",
+      "city": "Lucknow",
+      "state": "Uttar Pradesh",
+      "tier": "S+",
+      "opened_on": "2017-07-01",
+      "area_manager_id": "AM-01",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1017",
+          "name": "Vikas Y.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1018",
+          "name": "Imran C.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1019",
+          "name": "Faizan M.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1020",
+          "name": "Naveen C.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1021",
+          "name": "Varun S.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1022",
+          "name": "Ashish G.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1023",
+          "name": "Jitendra V.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1024",
+          "name": "Jitendra G.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1025",
+          "name": "Faizan J.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1026",
+          "name": "Ajay S.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1027",
+          "name": "Sumit A.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1175",
+          "name": "Arif A.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:LKO-02:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1054,
+          "display": "10.5%"
+        },
+        {
+          "id": "store:LKO-02:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 483.8,
+          "display": "484"
+        },
+        {
+          "id": "store:LKO-02:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 9800.83,
+          "display": "₹9,801"
+        },
+        {
+          "id": "store:LKO-02:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-02"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.1202,
+          "display": "12.0%"
+        }
+      ]
+    },
+    {
+      "store_id": "LKO-03",
+      "city": "Lucknow",
+      "state": "Uttar Pradesh",
+      "tier": "A",
+      "opened_on": "2022-01-01",
+      "area_manager_id": "AM-01",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1028",
+          "name": "Rizwan J.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1029",
+          "name": "Sumit R.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1030",
+          "name": "Shivam M.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1031",
+          "name": "Gaurav S.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1032",
+          "name": "Yash C.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:LKO-03:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1046,
+          "display": "10.5%"
+        },
+        {
+          "id": "store:LKO-03:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "LKO-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 212.8,
+          "display": "213"
+        },
+        {
+          "id": "store:LKO-03:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "LKO-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 8786.85,
+          "display": "₹8,787"
+        },
+        {
+          "id": "store:LKO-03:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-03"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.0833,
+          "display": "8.3%"
+        }
+      ]
+    },
+    {
+      "store_id": "LKO-04",
+      "city": "Lucknow",
+      "state": "Uttar Pradesh",
+      "tier": "S+",
+      "opened_on": "2022-05-01",
+      "area_manager_id": "AM-01",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1033",
+          "name": "Kunal C.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1034",
+          "name": "Ravi K.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1035",
+          "name": "Pawan S.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1036",
+          "name": "Vivek V.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1037",
+          "name": "Gopal Y.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1038",
+          "name": "Naveen R.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1039",
+          "name": "Ajay V.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1040",
+          "name": "Vivek R.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1041",
+          "name": "Kamal A.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1042",
+          "name": "Arif C.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1043",
+          "name": "Zaid N.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:LKO-04:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-04"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1364,
+          "display": "13.6%"
+        },
+        {
+          "id": "store:LKO-04:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "LKO-04"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 419.8,
+          "display": "420"
+        },
+        {
+          "id": "store:LKO-04:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "LKO-04"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 9980.98,
+          "display": "₹9,981"
+        },
+        {
+          "id": "store:LKO-04:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "LKO-04"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.1349,
+          "display": "13.5%"
+        }
+      ]
+    },
+    {
+      "store_id": "MYS-01",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "tier": "A",
+      "opened_on": "2019-08-01",
+      "area_manager_id": "AM-06",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1166",
+          "name": "Anand B.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1167",
+          "name": "Nithin C.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1168",
+          "name": "Nithin Y.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1169",
+          "name": "Darshan G.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1170",
+          "name": "Mohan R.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:MYS-01:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "MYS-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.0843,
+          "display": "8.4%"
+        },
+        {
+          "id": "store:MYS-01:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "MYS-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 234.3,
+          "display": "234"
+        },
+        {
+          "id": "store:MYS-01:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "MYS-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 6780.3,
+          "display": "₹6,780"
+        },
+        {
+          "id": "store:MYS-01:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "MYS-01"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.0863,
+          "display": "8.6%"
+        }
+      ]
+    },
+    {
+      "store_id": "MYS-02",
+      "city": "Mysuru",
+      "state": "Karnataka",
+      "tier": "B",
+      "opened_on": "2022-11-01",
+      "area_manager_id": "AM-06",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1171",
+          "name": "Arun M.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1172",
+          "name": "Santosh B.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1173",
+          "name": "Mohan Y.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1174",
+          "name": "Madhu G.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:MYS-02:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "MYS-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.0662,
+          "display": "6.6%"
+        },
+        {
+          "id": "store:MYS-02:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "MYS-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 181.3,
+          "display": "181"
+        },
+        {
+          "id": "store:MYS-02:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "MYS-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 7037.75,
+          "display": "₹7,038"
+        },
+        {
+          "id": "store:MYS-02:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "MYS-02"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.077,
+          "display": "7.7%"
+        }
+      ]
+    },
+    {
+      "store_id": "MZF-01",
+      "city": "Muzaffarpur",
+      "state": "Bihar",
+      "tier": "A",
+      "opened_on": "2017-11-01",
+      "area_manager_id": "AM-04",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1100",
+          "name": "Chandan P.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1101",
+          "name": "Saurabh Y.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1102",
+          "name": "Amit C.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1103",
+          "name": "Raju S.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1104",
+          "name": "Chandan S.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:MZF-01:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "MZF-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.0832,
+          "display": "8.3%"
+        },
+        {
+          "id": "store:MZF-01:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "MZF-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 312.5,
+          "display": "313"
+        },
+        {
+          "id": "store:MZF-01:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "MZF-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 6637.45,
+          "display": "₹6,637"
+        },
+        {
+          "id": "store:MZF-01:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "MZF-01"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.0966,
+          "display": "9.7%"
+        }
+      ]
+    },
+    {
+      "store_id": "MZF-02",
+      "city": "Muzaffarpur",
+      "state": "Bihar",
+      "tier": "B",
+      "opened_on": "2019-08-01",
+      "area_manager_id": "AM-04",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1105",
+          "name": "Rahul Y.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1106",
+          "name": "Ankit P.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1107",
+          "name": "Jitendra K.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1108",
+          "name": "Manish C.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:MZF-02:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "MZF-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.0993,
+          "display": "9.9%"
+        },
+        {
+          "id": "store:MZF-02:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "MZF-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 143.5,
+          "display": "144"
+        },
+        {
+          "id": "store:MZF-02:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "MZF-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 7092.26,
+          "display": "₹7,092"
+        },
+        {
+          "id": "store:MZF-02:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "MZF-02"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.099,
+          "display": "9.9%"
+        }
+      ]
+    },
+    {
+      "store_id": "PAT-01",
+      "city": "Patna",
+      "state": "Bihar",
+      "tier": "S++",
+      "opened_on": "2019-07-01",
+      "area_manager_id": "AM-03",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1064",
+          "name": "Manoj N.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1065",
+          "name": "Sanjay K.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1066",
+          "name": "Prakash D.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1067",
+          "name": "Gopal R.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1068",
+          "name": "Lalit Y.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1069",
+          "name": "Kamal G.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1070",
+          "name": "Mukesh D.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1071",
+          "name": "Arjun G.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1072",
+          "name": "Faizan K.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1073",
+          "name": "Rizwan N.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1074",
+          "name": "Umesh J.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1075",
+          "name": "Vivek S.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1076",
+          "name": "Raju P.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1077",
+          "name": "Tarun B.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1078",
+          "name": "Tarun T.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1079",
+          "name": "Tarun C.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:PAT-01:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1385,
+          "display": "13.9%"
+        },
+        {
+          "id": "store:PAT-01:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 725.8,
+          "display": "726"
+        },
+        {
+          "id": "store:PAT-01:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 10652.89,
+          "display": "₹10,653"
+        },
+        {
+          "id": "store:PAT-01:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "PAT-01"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.1416,
+          "display": "14.2%"
+        }
+      ]
+    },
+    {
+      "store_id": "PAT-02",
+      "city": "Patna",
+      "state": "Bihar",
+      "tier": "S+",
+      "opened_on": "2015-06-01",
+      "area_manager_id": "AM-03",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1080",
+          "name": "Om K.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1081",
+          "name": "Manoj R.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1082",
+          "name": "Ashish C.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1083",
+          "name": "Aman B.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1084",
+          "name": "Vinod S.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1085",
+          "name": "Prakash J.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1086",
+          "name": "Abhishek B.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1087",
+          "name": "Arjun D.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1088",
+          "name": "Saurabh P.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1089",
+          "name": "Hemant M.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1090",
+          "name": "Jitendra K.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:PAT-02:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "PAT-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.1249,
+          "display": "12.5%"
+        },
+        {
+          "id": "store:PAT-02:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "PAT-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 472.2,
+          "display": "472"
+        },
+        {
+          "id": "store:PAT-02:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "PAT-02"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 8776.78,
+          "display": "₹8,777"
+        },
+        {
+          "id": "store:PAT-02:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "PAT-02"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.1253,
+          "display": "12.5%"
+        }
+      ]
+    },
+    {
+      "store_id": "PAT-03",
+      "city": "Patna",
+      "state": "Bihar",
+      "tier": "A",
+      "opened_on": "2014-02-01",
+      "area_manager_id": "AM-03",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1091",
+          "name": "Mohit B.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1092",
+          "name": "Amit A.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1093",
+          "name": "Jitendra N.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1094",
+          "name": "Aman Y.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1095",
+          "name": "Arjun A.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:PAT-03:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "PAT-03"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.0947,
+          "display": "9.5%"
+        }
+      ]
+    },
+    {
+      "store_id": "PAT-04",
+      "city": "Patna",
+      "state": "Bihar",
+      "tier": "B",
+      "opened_on": "2015-01-01",
+      "area_manager_id": "AM-03",
+      "is_new_store": false,
+      "salespeople": [
+        {
+          "salesperson_id": "SP1096",
+          "name": "Ankit Y.",
+          "active": false
+        },
+        {
+          "salesperson_id": "SP1097",
+          "name": "Prakash V.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1098",
+          "name": "Zaid A.",
+          "active": true
+        },
+        {
+          "salesperson_id": "SP1099",
+          "name": "Imran C.",
+          "active": true
+        }
+      ],
+      "summary": [
+        {
+          "id": "store:PAT-04:conversion_current",
+          "label": "Conversion, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "PAT-04"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31",
+            "day_type": "all"
+          },
+          "value": 0.0912,
+          "display": "9.1%"
+        },
+        {
+          "id": "store:PAT-04:walkins_per_week_current",
+          "label": "Walk-ins a week, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "walkins_per_week",
+          "params": {
+            "store_ids": [
+              "PAT-04"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 148.0,
+          "display": "148"
+        },
+        {
+          "id": "store:PAT-04:avg_bill_value_current",
+          "label": "Average bill value, 4 Oct 2026 to 31 Oct 2026",
+          "kind": "avg_bill_value",
+          "params": {
+            "store_ids": [
+              "PAT-04"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 6950.61,
+          "display": "₹6,951"
+        },
+        {
+          "id": "store:PAT-04:conversion_baseline",
+          "label": "Conversion, 5 Jul 2026 to 3 Oct 2026",
+          "kind": "conversion",
+          "params": {
+            "store_ids": [
+              "PAT-04"
+            ],
+            "start": "2026-07-05",
+            "end": "2026-10-03",
+            "day_type": "all"
+          },
+          "value": 0.0745,
+          "display": "7.5%"
+        }
+      ]
+    }
+  ],
+  "cards": [],
+  "follow_ups": [],
+  "data_issues": [
+    {
+      "issue_id": "PAT-03:footfall_zero_with_bills",
+      "store_id": "PAT-03",
+      "kind": "footfall_zero_with_bills",
+      "title": "PAT-03: door counter shows no walk-ins on days with bills",
+      "detail": "Footfall is 0 or blank on 12 days between 5 Oct 2026 and 16 Oct 2026, and 24 bills were made on those days. A bill needs a walk-in, so the footfall count is wrong, not the sales.",
+      "first_date": "2026-10-05",
+      "last_date": "2026-10-16",
+      "days_affected": 12,
+      "handling": "These days are left out of both bills and walk-ins wherever conversion is worked out, and no alert is raised from them. 12 of the 28 days in the current window are unusable (more than 20%), so the conversion of PAT-03 is not judged this week.",
+      "checks": [
+        {
+          "id": "PAT-03:footfall_zero_with_bills:days_affected",
+          "label": "Days left out of conversion",
+          "kind": "invalid_days",
+          "params": {
+            "store_ids": [
+              "PAT-03"
+            ],
+            "start": "2026-10-05",
+            "end": "2026-10-16",
+            "rule": "footfall_zero"
+          },
+          "value": 12,
+          "display": "12"
+        },
+        {
+          "id": "PAT-03:footfall_zero_with_bills:bills_on_those_days",
+          "label": "Bills made on those days",
+          "kind": "bills_on_invalid_days",
+          "params": {
+            "store_ids": [
+              "PAT-03"
+            ],
+            "start": "2026-10-05",
+            "end": "2026-10-16",
+            "rule": "footfall_zero"
+          },
+          "value": 24,
+          "display": "24"
+        },
+        {
+          "id": "PAT-03:footfall_zero_with_bills:invalid_days_current",
+          "label": "Days left out of the current window, any reason",
+          "kind": "invalid_days",
+          "params": {
+            "store_ids": [
+              "PAT-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 12,
+          "display": "12"
+        },
+        {
+          "id": "PAT-03:footfall_zero_with_bills:valid_days_current",
+          "label": "Usable days left in the current window",
+          "kind": "valid_days",
+          "params": {
+            "store_ids": [
+              "PAT-03"
+            ],
+            "start": "2026-10-04",
+            "end": "2026-10-31"
+          },
+          "value": 16,
+          "display": "16"
+        }
+      ]
+    }
+  ]
+}
