@@ -46,6 +46,18 @@ def safe_compute(m: Metrics, kind: str, params: dict):
     return v if is_number(v) else None
 
 
+SPOKEN = [  # figures inside a measure's name, said in words for the verdict sentence (labels keep the digits)
+    ("per 100 customers", "per hundred customers"),
+    ("30 to 180 days past their first bill", "thirty to a hundred and eighty days past their first bill"),
+]
+
+
+def spoken_label(label: str) -> str:
+    for digits, words in SPOKEN:
+        label = label.replace(digits, words)
+    return label
+
+
 def classify(before: float, after: float, noise: float, higher_is_better: bool = True) -> str:
     """improved / worse only when the change is at least `noise`; otherwise no_change."""
     change = (after - before) if higher_is_better else (before - after)
@@ -174,7 +186,11 @@ def one_follow_up(m: Metrics, alert: dict, area_manager_id: str, raised_as_of: s
                 if len(weeks) >= MIN_NOISE_WEEKS:
                     noise = REAL_MOVE * sample_sd(weeks)
                     flat = noise == 0
-            if flat:
+            if flat and kind.startswith("repeat_"):
+                why_not = ("repeat needs thirty days or more to measure: a customer counts as coming back only when "
+                           "they bill again thirty or more days after their first bill, and this figure was the same "
+                           "in every earlier week, so one week cannot show a change yet")
+            elif flat:
                 # the same figure in every earlier week (usually nought): one bill would look like a jump
                 why_not = ("the same seven-day figure read the same in every earlier week, so one week is too "
                            "short to show a change")
@@ -227,6 +243,9 @@ def one_follow_up(m: Metrics, alert: dict, area_manager_id: str, raised_as_of: s
                 f"after{sample}{target_clause}. {ending}{carried}")
 
     verdict = sentence(label)
+    if numbers_not_in_checks([verdict], book.items):
+        # name the measure in words, so the sentence still says what was measured
+        verdict = sentence(spoken_label(label))
     if numbers_not_in_checks([verdict], book.items):
         # the label itself quotes a figure no check shows ("per 100 customers"): the label is printed
         # beside the verdict anyway, so leave it out of the sentence
