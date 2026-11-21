@@ -17,13 +17,14 @@ city, always over the SAME first-bill months.
 from __future__ import annotations
 
 import math
+from fractions import Fraction
 
 import pandas as pd
 
 from . import checks, metrics
 from .checks import CheckBook, conv_tenths, fmt_date, fmt_inr, fmt_int_in, fmt_num, fmt_pct, numbers_not_in_checks
 from .detect import is_new_store, join_names
-from .metrics import Metrics, add_days, d, rnd
+from .metrics import Metrics, add_days, d, rnd, rnd_div
 from .rank import has_who_what_when
 
 LEVER = "more_repeat"
@@ -162,7 +163,7 @@ def fair_rate(S: dict, P: dict):
     if not _covered(S, P):
         return None
     n = sum(v[0] for v in S.values())
-    expected = sum(S[month][0] * P[month][1] / P[month][0] for month in sorted(S))
+    expected = sum(Fraction(S[month][0] * P[month][1], P[month][0]) for month in sorted(S))  # exact
     return expected / n
 
 
@@ -226,12 +227,12 @@ def k_returned(m, p):
 
 def k_return_rate(m, p):
     n, r = _totals(_subject(m, p))
-    return rnd(r / n, 4) if n else None
+    return rnd_div(r, n, 4) if n else None
 
 
 def k_fair_rate(m, p):
     v = fair_rate(_subject(m, p), _peers(m, p))
-    return rnd(v, 4) if v is not None else None
+    return rnd_div(v, 1, 4) if v is not None else None
 
 
 def k_z(m, p):
@@ -253,7 +254,7 @@ def _first_in(m, p, start, end):
 
 def k_new_per_week(m, p):
     days = (d(p["end"]) - d(p["start"])).days + 1
-    return rnd(len(_first_in(m, p, p["start"], p["end"])) / (days / 7), 1) if days > 0 else None
+    return rnd_div(len(_first_in(m, p, p["start"], p["end"])) * 7, days, 1) if days > 0 else None
 
 
 def _return_bills(m, p):
@@ -269,7 +270,7 @@ def k_return_bill_count(m, p):
 
 def k_avg_return_bill_value(m, p):
     x = _return_bills(m, p)
-    return rnd(float(x["value"].sum()) / len(x), 2) if len(x) else None
+    return rnd_div(float(x["value"].sum()), len(x), 2) if len(x) else None
 
 
 def k_call_list(m, p):
@@ -297,7 +298,7 @@ def k_weekly_returns(m, p):
     b = core.bills
     ok = ((b["bill_date"] >= p["start"]) & (b["bill_date"] <= p["end"]) & (b["gap"] >= p["min_gap_days"])
           & (b["gap"] <= p["max_gap_days"]) & b["customer_id"].isin(set(c.loc[mine, "customer_id"])))
-    return rnd(int(ok.sum()) / (days / 7) / len(eligible) * 100, 2)
+    return rnd_div(int(ok.sum()) * 700, days * len(eligible), 2)
 
 
 def k_date_offset(m, p):

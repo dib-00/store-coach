@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import math
 from datetime import date, timedelta
+from fractions import Fraction
 
 from .load import Data
 
@@ -38,6 +39,16 @@ def rnd(x: float, n: int = 0) -> float:
     """Round half up (not banker's rounding) to n decimals."""
     m = 10**n
     return math.floor(x * m + 0.5) / m
+
+
+def rnd_div(num, den=1, n: int = 0) -> float:
+    """num / den rounded half up to n decimals, worked out exactly.
+
+    A plain float division can land a hair under an exact half (472.25 held as 472.24999...),
+    and the figure would then round down where the recipe in docs/CHECKS.md says up.
+    """
+    q = Fraction(num) / Fraction(den) * 10**n
+    return math.floor(q + Fraction(1, 2)) / 10**n
 
 
 def median(xs: list[float]) -> float:
@@ -162,8 +173,9 @@ class Metrics:
         return sum(n for dt, n in self.sp_bills.get(sp, {}).items() if start <= dt <= end)
 
     def bills_per_present_day(self, sp, start, end):
+        """Bills divided by days Present, as an exact fraction (None when never Present)."""
         p = self.present_days(sp, start, end)
-        return self.sp_bill_count(sp, start, end) / p if p else None
+        return Fraction(self.sp_bill_count(sp, start, end), p) if p else None
 
     def last_roster_date(self, sp):
         r = self.roster.get(sp)
@@ -189,8 +201,8 @@ class Metrics:
             if kind == "valid_days":
                 return nv
             if kind == "conversion":
-                return rnd(b / f, 4) if f else None
-            return rnd(v / b, 2) if b else None
+                return rnd_div(b, f, 4) if f else None
+            return rnd_div(v, b, 2) if b else None
         if kind in ("invalid_days", "bills_on_invalid_days"):
             rule = p.get("rule", "any")
             n = bills = 0
@@ -203,12 +215,12 @@ class Metrics:
                     bills += bb
             return n if kind == "invalid_days" else int(bills)
         if kind == "walkins_per_week":
-            total = 0.0
+            total = Fraction(0)
             for s in sorted(p["store_ids"]):
                 _, f, _, nv, _ = self.parts([s], p["start"], p["end"])
                 if nv:
-                    total += f / nv * 7
-            return rnd(total, 1)
+                    total += Fraction(f) * 7 / nv
+            return rnd_div(total, 1, 1)
         if kind == "two_proportion_z":
             dt = p.get("day_type", "all")
             b1, n1, *_ = self.parts(p["store_ids"], p["start"], p["end"], dt)
@@ -222,12 +234,12 @@ class Metrics:
         if kind == "peer_median_present_days":
             peers = self.full_window_peers(p["store_id"], p["exclude_salesperson_ids"], p["start"], p["end"])
             vals = [self.present_days(x, p["start"], p["end"], p.get("day_type", "all")) for x in peers]
-            return rnd(median(vals), 1) if vals else None
+            return rnd_div(median(vals), 1, 1) if vals else None
         if kind == "last_roster_date":
             return self.last_roster_date(p["salesperson_id"])
         if kind == "bills_per_present_day":
             v = self.bills_per_present_day(p["salesperson_id"], p["start"], p["end"])
-            return rnd(v, 2) if v is not None else None
+            return rnd_div(v, 1, 2) if v is not None else None
         if kind == "peer_median_bills_per_present_day":
             vals = []
             for x in self.store_sps.get(p["store_id"], []):
@@ -235,12 +247,12 @@ class Metrics:
                     continue
                 if self.present_days(x, p["start"], p["end"]) >= p["min_present_days"]:
                     vals.append(self.bills_per_present_day(x, p["start"], p["end"]))
-            return rnd(median(vals), 2) if vals else None
+            return rnd_div(median(vals), 1, 2) if vals else None
         if kind == "median_staff_present":
             st = self.state.get(p["store_id"], "")
             pc = self.present_count.get(p["store_id"], {})
             vals = [n for dt, n in pc.items() if p["start"] <= dt <= p["end"] and self.type_ok(st, dt, p.get("day_type", "all"))]
-            return int(rnd(median(vals), 0)) if vals else None
+            return int(rnd_div(median(vals))) if vals else None
         if kind == "footfall_per_present_staff":
             pc = self.present_count.get(p["store_id"], {})
             f = n = 0.0
@@ -248,7 +260,7 @@ class Metrics:
                 if ok and dt in pc:
                     f += ff
                     n += pc[dt]
-            return rnd(f / n, 1) if n else None
+            return rnd_div(f, n, 1) if n else None
         if kind == "usual_off_weekday":
             counts = [0] * 7
             for dt, status in self.roster.get(p["salesperson_id"], {}).items():

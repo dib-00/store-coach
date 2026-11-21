@@ -82,8 +82,8 @@ def test_missed_shifts_alert_is_raised_with_a_concrete_action(result):
     assert has_who_what_when(a["action"])
     for name in ("Amar V.", "Bina V."):
         assert name in a["action"]["text"]
-    # the upcoming busy days come from the calendar: the weekend and the festival on Wed 4 Nov
-    assert a["action"]["when"] == "Sun 1 Nov, Wed 4 Nov and Sat 7 Nov"
+    # the busy days of the next 9 days come from the calendar: the weekends and the festival on Wed 4 Nov
+    assert a["action"]["when"] == "Sun 1 Nov, Wed 4 Nov (Test Festival), Sat 7 Nov and Sun 8 Nov"
 
 
 def test_every_number_in_the_alert_text_has_a_check(result):
