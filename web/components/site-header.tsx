@@ -5,6 +5,7 @@ const NAV = [
   { href: "/", label: "Area managers" },
   { href: "/follow-up", label: "Follow-up" },
   { href: "/data-issues", label: "Data issues" },
+  { href: "/method", label: "How it's checked" },
 ];
 
 export function SiteHeader({
