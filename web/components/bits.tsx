@@ -89,7 +89,7 @@ export function CheckList({ checks }: { checks: Check[] }) {
       {checks.map((check) => (
         <div key={check.id} className="flex items-baseline justify-between gap-4 py-2">
           <dt className="min-w-0 text-muted">{check.label}</dt>
-          <dd className="max-w-[55%] text-right font-semibold tabular-nums [overflow-wrap:anywhere]">
+          <dd className="max-w-[55%] text-right font-semibold tabular-nums [overflow-wrap:break-word]">
             {check.display}
           </dd>
         </div>
