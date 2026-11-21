@@ -4,7 +4,6 @@ import {
   CheckList,
   Definition,
   EmptyNote,
-  LeverChip,
   NoEngineRun,
   PageTitle,
   ShowTheNumbers,
@@ -16,6 +15,7 @@ import { formatDate } from "@/lib/format";
 import { afterFigure, beforeFigure, formatDateSpan, type Figure } from "@/lib/followup-view";
 import { followUpsByManager, movedCounts, optionalText, storeIdsWithPages } from "@/lib/rules";
 import type { FollowUp } from "@/lib/types";
+import { LeverBadge } from "@/components/lever-badge";
 
 export const metadata: Metadata = { title: "Follow-up" };
 
@@ -52,7 +52,7 @@ function FollowUpItem({ item, knownStores }: { item: FollowUp; knownStores: Set<
           <span aria-hidden="true">{moved.mark} </span>
           {moved.label}
         </span>
-        <LeverChip lever={item.lever} />
+        <LeverBadge lever={item.lever} />
         {item.store_ids.length > 0 ? (
           <span className="text-[0.95rem]">
             <StoreLinks storeIds={item.store_ids} known={knownStores} />

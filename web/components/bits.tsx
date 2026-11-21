@@ -1,24 +1,7 @@
 // Small shared pieces used on several pages. All server-rendered, no client JavaScript.
 
 import Link from "next/link";
-import { leverLabel } from "@/lib/format";
-import type { Check, Lever } from "@/lib/types";
-
-const LEVER_CLASS: Record<Lever, string> = {
-  more_bills: "bg-bills-bg text-bills-ink",
-  bigger_baskets: "bg-baskets-bg text-baskets-ink",
-  more_repeat: "bg-repeat-bg text-repeat-ink",
-};
-
-export function LeverChip({ lever }: { lever: Lever }) {
-  return (
-    <span
-      className={`inline-block rounded-full px-3 py-0.5 text-sm font-semibold ${LEVER_CLASS[lever] ?? "bg-flat-bg text-flat-ink"}`}
-    >
-      {leverLabel(lever)}
-    </span>
-  );
-}
+import type { Check } from "@/lib/types";
 
 /** Shown on every page when there is no usable engine output. */
 export function NoEngineRun() {

@@ -7,7 +7,6 @@ import {
   CheckList,
   Definition,
   EmptyNote,
-  LeverChip,
   NoEngineRun,
   PageTitle,
   SectionTitle,
@@ -30,6 +29,7 @@ import {
   visibleAlerts,
 } from "@/lib/rules";
 import type { Card } from "@/lib/types";
+import { LeverBadge } from "@/components/lever-badge";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -51,7 +51,7 @@ function SalespersonCard({ card }: { card: Card }) {
     <article className="rounded-lg border border-line bg-surface p-4 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <h3 className="text-lg font-semibold tracking-tight">{card.salesperson_name}</h3>
-        <LeverChip lever={card.lever} />
+        <LeverBadge lever={card.lever} />
       </div>
       {view.status === "show" ? (
         <>
@@ -149,7 +149,7 @@ export default async function StorePage({ params }: Props) {
         <ul className="space-y-3">
           {alerts.map((alert) => (
             <li key={alert.alert_id} className="rounded-lg border border-line bg-surface p-4">
-              <LeverChip lever={alert.lever} />
+              <LeverBadge lever={alert.lever} />
               <p className="mt-2 font-semibold">{alert.headline}</p>
               {optionalText(alert.definition) ? <Definition>{optionalText(alert.definition)}</Definition> : null}
               <p className="mt-1">{alert.action.text}</p>

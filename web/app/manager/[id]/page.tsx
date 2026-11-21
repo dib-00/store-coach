@@ -5,7 +5,6 @@ import {
   BackLink,
   CheckList,
   EmptyNote,
-  LeverChip,
   NoEngineRun,
   PageTitle,
   SectionTitle,
@@ -23,6 +22,7 @@ import {
   storeIdsWithPages,
   visibleAlerts,
 } from "@/lib/rules";
+import { LeverBadge } from "@/components/lever-badge";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -134,7 +134,7 @@ export default async function ManagerPage({ params }: Props) {
             {manager.held_back.map((held, index) => (
               <li key={`${index}-${held.headline}`} className="p-4">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <LeverChip lever={held.lever} />
+                  <LeverBadge lever={held.lever} />
                   <span className="text-muted">
                     <span className="font-semibold tabular-nums text-ink">
                       {formatRupees(held.rupees_at_stake_weekly)}

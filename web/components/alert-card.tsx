@@ -1,8 +1,9 @@
-import { CheckList, Definition, LeverChip, ShowTheNumbers, StoreLinks } from "@/components/bits";
+import { CheckList, Definition, ShowTheNumbers, StoreLinks } from "@/components/bits";
 import { DoneTick } from "@/components/done-tick";
 import { formatRupees } from "@/lib/format";
 import { optionalText } from "@/lib/rules";
 import type { Alert } from "@/lib/types";
+import { LeverBadge } from "@/components/lever-badge";
 
 export function alertAnchor(alert: Pick<Alert, "rank">): string {
   return `alert-${alert.rank}`;
@@ -22,7 +23,7 @@ export function AlertCard({ alert, knownStores }: { alert: Alert; knownStores: S
             <span className="sr-only">Rank </span>
             {alert.rank}
           </span>
-          <LeverChip lever={alert.lever} />
+          <LeverBadge lever={alert.lever} />
           {isMarket ? (
             <span className="rounded-full border border-ink px-3 py-0.5 text-sm font-semibold">
               Market issue · {alert.store_ids.length} stores in {alert.city}
