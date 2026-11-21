@@ -81,12 +81,15 @@ whole. The result is rounded half up to the nearest ₹100.
 
 The alert's `rupees_at_stake_weekly` equals the value of this check.
 
-## 6. Kinds the lever can write that the current runs do not use
+## 6. Items per bill (used by the small-store fallback)
 
-`items_per_bill` (Σ qty of product lines ÷ product bills, 2 decimals), `items_per_bill_z`
-(Welch z of items per bill, `salesperson_ids` against `peer_salesperson_ids`, sample variances,
-2 decimals), `avg_item_value` (Σ line value ÷ Σ qty, 2 decimals), `items_rupees_weekly`
-((peer − own items per bill, hundredths) × bills a week (1 decimal) × item value (whole ₹) ÷ 1000,
-nearest ₹100) and `lines_above_mrp` (product lines with `selling_price > mrp`). They are not in
-`scripts/verify.py` yet, so a run that emits one fails verification as an unknown kind until a
-recipe is added.
+| kind | params | recipe | display |
+| --- | --- | --- | --- |
+| `items_per_bill` | store_ids, start, end, [salesperson_ids] | Σ qty of product lines ÷ product bills, 2 decimals | `1.37` |
+| `items_per_bill_z` | store_ids, start, end, peer_salesperson_ids, [salesperson_ids] | Welch z of items per bill, `salesperson_ids` against `peer_salesperson_ids`: (mean₁ − mean₂) ÷ √(s₁²/n₁ + s₂²/n₂) with sample variances (divide by n − 1), 2 decimals | `-3.37` |
+| `avg_item_value` | store_ids, start, end, [salesperson_ids] | Σ line value ÷ Σ qty over the product lines, 2 decimals | rupees, whole |
+| `items_rupees_weekly` | peer_check_id, own_check_id, bills_per_week_check_id, item_value_check_id | (peer − own items per bill, in hundredths as displayed) × bills a week (1 decimal) × item value (whole ₹) ÷ 100, rounded half up to the nearest ₹100 | rupees, whole |
+
+`lines_above_mrp` (product lines with `selling_price > mrp`) is used only to decide that
+discounts cannot be judged; it is not written into the output and has no recipe in
+`scripts/verify.py`, so a run that emitted it would fail verification as an unknown kind.

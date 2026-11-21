@@ -442,12 +442,13 @@ class Data:
                 if pkg == "1":
                     continue
                 b = out.setdefault(bid, {"cats": defaultdict(Fraction), "sale": Fraction(0), "mrp": Fraction(0),
-                                         "discounted": False})
+                                         "discounted": False, "items": 0})
                 q, m, sp = Fraction(qty), Fraction(mrp), Fraction(price)
                 b["cats"][cat] += q * sp
                 b["sale"] += q * sp
                 b["mrp"] += q * m
                 b["discounted"] = b["discounted"] or sp < m
+                b["items"] += int(qty)
             self._baskets = out
         return self._baskets
 
@@ -1198,6 +1199,50 @@ def discounted_bill_share_z(d, p, ctx):
 def mrp_sales_per_week(d, p, ctx):
     made = d.baskets()
     return rhu(sum(made[b]["mrp"] for b in _product_bills(d, p)) * 7 / len(days(p["start"], p["end"])), 0)
+
+
+# ---- docs/CHECKS-baskets.md section 6: items per bill
+
+@recipe("items_per_bill", ("store_ids", "start", "end"), ("salesperson_ids",), fmt_2dp)
+def items_per_bill(d, p, ctx):
+    made, bills = d.baskets(), _product_bills(d, p)
+    if not bills:
+        raise CannotCompute("no bills")
+    return rhu(Fraction(sum(made[b]["items"] for b in bills), len(bills)), 2)
+
+
+@recipe("items_per_bill_z", ("store_ids", "start", "end", "peer_salesperson_ids"), ("salesperson_ids",), fmt_2dp)
+def items_per_bill_z(d, p, ctx):
+    """Welch z of mean items per bill, salesperson_ids against peer_salesperson_ids (sample variances)."""
+    made = d.baskets()
+    a = [made[b]["items"] for b in _product_bills(d, p)]
+    c = [made[b]["items"] for b in _product_bills(d, p, people="peer_salesperson_ids")]
+    if len(a) < 2 or len(c) < 2:
+        raise CannotCompute("fewer than two bills on one side")
+    var = lambda xs: sum((x - sum(xs) / len(xs)) ** 2 for x in xs) / (len(xs) - 1)
+    se2 = Fraction(var(a)) / len(a) + Fraction(var(c)) / len(c)
+    if se2 <= 0:
+        raise CannotCompute("standard error is zero")
+    diff = Fraction(sum(a), len(a)) - Fraction(sum(c), len(c))
+    return rhu(Fraction(float(diff) / math.sqrt(float(se2))), 2)
+
+
+@recipe("avg_item_value", ("store_ids", "start", "end"), ("salesperson_ids",), fmt_rupees)
+def avg_item_value(d, p, ctx):
+    made, bills = d.baskets(), _product_bills(d, p)
+    n = sum(made[b]["items"] for b in bills)
+    if n == 0:
+        raise CannotCompute("no items")
+    return rhu(sum(made[b]["sale"] for b in bills) / n, 2)
+
+
+@recipe("items_rupees_weekly", ("peer_check_id", "own_check_id", "bills_per_week_check_id", "item_value_check_id"),
+        (), fmt_rupees, rupees_step=100)
+def items_rupees_weekly(d, p, ctx):
+    hundredths = lambda key: rhu(ctx.value_of(p[key]) * 100)
+    raw = ((hundredths("peer_check_id") - hundredths("own_check_id")) * rhu(ctx.value_of(p["bills_per_week_check_id"]), 1)
+           * rhu(ctx.value_of(p["item_value_check_id"])) / 100)
+    return int(rhu(raw / 100) * 100)
 
 
 def _tenths(ctx, check_id):        # a rate as displayed, in tenths of a percentage point
