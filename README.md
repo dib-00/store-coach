@@ -44,13 +44,14 @@ them, and gives each salesperson one thing to do better today.
   year, aligned on Dussehra. Bengaluru stores are charged only for what they lost beyond
   the rest of the city.
 - **Data issues:**
-  - PAT-03's door counter shows zero walk-ins on 11 days with bills, so those days are left out.
+  - PAT-03's door counter shows zero walk-ins on 12 days (5 to 16 Oct) on which 24 bills were made, so
+    those days are left out.
   - Customer number C99999999 is on 1,833 bills in 19 stores. It is a placeholder, so it is
     left out of repeat.
 - **Not judged:** BLR-05 opened on 10 Oct 2026 and is too new to compare.
 - **Follow-up example:** a replay of the engine shows the BLR-03 alert of 10 Oct followed by
   a real rise, 9.5% to 13.9%, a week later. Of the seven live follow-ups (24 → 31 Oct),
-  three show no change beyond what a week moves by chance and four cannot be measured on one
+  four show no change beyond what a week moves by chance and three cannot be measured on one
   week yet. The page says which, with the figures and dates.
 
 ## How the numbers are checked
