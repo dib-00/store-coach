@@ -1,0 +1,166 @@
+# The daily run. Nobody starts it: GitHub does, every morning.
+#
+# What it does, in order:
+#   1. downloads the CSVs from a private Supabase Storage bucket (data/ is not in Git)
+#   2. runs the tests
+#   3. runs the engine
+#   4. re-checks every published figure against the raw CSVs (scripts/verify.py)
+#   5. only if that passes: writes the run to Supabase, then asks Vercel to rebuild the site
+#
+# This job never writes to the repository. Its token is read-only (permissions below)
+# and no step stages, records or uploads a change to Git. The run is kept in Supabase;
+# the site reads the newest run from there at build time and falls back to the JSON
+# already in the repo. See docs/DAILY-RUN.md.
+
+name: Daily engine run
+
+on:
+  schedule:
+    # 00:30 UTC every day = 06:00 IST. GitHub may start it a few minutes late.
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+    inputs:
+      as_of:
+        description: "Run as of this date (YYYY-MM-DD). Leave empty for the last bill date in the data."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-engine-run
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: Fetch, test, run, verify, publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AS_OF_INPUT: ${{ inputs.as_of }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch the CSVs from the private bucket
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/fetch_data.py --data-dir data/csv
+
+      - name: Run the tests
+        run: python -m pytest -q
+
+      - name: Work out the as-of date
+        id: asof
+        run: |
+          if [ -n "$AS_OF_INPUT" ]; then
+            if ! [[ "$AS_OF_INPUT" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+              echo "::error::as_of must be YYYY-MM-DD"
+              exit 1
+            fi
+            as_of="$AS_OF_INPUT"
+          else
+            as_of=$(python -c "from pathlib import Path; from engine.load import last_bill_date; print(last_bill_date(Path('data/csv')))")
+          fi
+          echo "as_of=$as_of" >> "$GITHUB_OUTPUT"
+          echo "as-of date: $as_of"
+
+      # The follow-up re-measures the alerts of the run seven days earlier, which the
+      # engine reads from web/public/data/runs/<as_of - 7>.json. If that file is not in
+      # the repo, this step restores it from the Supabase `runs` table. If Supabase has
+      # no such run either, the engine simply reports no follow-ups for this run.
+      - name: Make last week's run available for the follow-up
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          AS_OF: ${{ steps.asof.outputs.as_of }}
+        run: |
+          note=$(python scripts/fetch_data.py --skip-csv --prior-run-for "$AS_OF" --runs-dir web/public/data/runs)
+          echo "::notice::Follow-up: $note"
+
+      - name: Run the engine
+        id: engine
+        run: |
+          if [ -n "$AS_OF_INPUT" ]; then
+            python -m engine.run --as-of "$AS_OF_INPUT"
+          else
+            python -m engine.run
+          fi
+
+      # A mismatch here fails the job, and nothing below this step runs:
+      # a wrong number is never published.
+      - name: Verify every figure against the raw CSVs
+        id: verify
+        run: python scripts/verify.py
+
+      - name: Publish the run to Supabase
+        id: publish
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/publish_supabase.py --file web/public/data/latest.json
+
+      - name: Ask Vercel to rebuild the site
+        id: deploy
+        env:
+          VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$VERCEL_DEPLOY_HOOK_URL" ]; then
+            echo "::warning::VERCEL_DEPLOY_HOOK_URL is not set. The run is in Supabase, but the site will only show it after its next build."
+            echo "requested=no (secret not set)" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --retry 3 --retry-delay 5 -X POST "$VERCEL_DEPLOY_HOOK_URL")
+          if [ "$code" -ge 200 ] && [ "$code" -lt 300 ]; then
+            echo "Vercel accepted the rebuild request (HTTP $code)."
+            echo "requested=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::The Vercel deploy hook answered HTTP $code. The run is in Supabase; the site was not rebuilt."
+            exit 1
+          fi
+
+      - name: Keep the output as a workflow artifact
+        if: always() && steps.engine.outcome == 'success'
+        uses: actions/upload-artifact@v6
+        with:
+          name: engine-output-${{ steps.asof.outputs.as_of }}
+          path: web/public/data
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Write the job summary
+        if: always()
+        env:
+          ENGINE: ${{ steps.engine.outcome }}
+          VERIFY: ${{ steps.verify.outcome }}
+          PUBLISH: ${{ steps.publish.outcome }}
+          DEPLOY: ${{ steps.deploy.outputs.requested }}
+        run: |
+          {
+            if [ "$ENGINE" = "success" ]; then
+              python scripts/publish_supabase.py --file web/public/data/latest.json --summary
+            else
+              echo "## Store Coach run"
+              echo
+              echo "The engine did not finish, so this run produced nothing new."
+            fi
+            echo
+            echo "### What this job did"
+            echo
+            echo "- Engine: ${ENGINE:-not reached}"
+            echo "- Figures re-checked against the raw CSVs: ${VERIFY:-not reached}"
+            echo "- Written to Supabase: ${PUBLISH:-not reached}"
+            echo "- Vercel rebuild requested: ${DEPLOY:-no}"
+            echo "- Changes written to the repository: none (this job is read-only)"
+          } >> "$GITHUB_STEP_SUMMARY"
