@@ -69,7 +69,10 @@ def fetch_csvs(base_url: str, key: str, data_dir: Path) -> None:
         try:
             data = request("GET", url, key)
         except OpsError as e:
-            raise OpsError(f"{e}\nIs csv/{name}.csv in the bucket {BUCKET}? Upload it with: python scripts/upload_data.py") from None
+            raise OpsError(
+                f"{e} Check that csv/{name}.csv is in the bucket {BUCKET} (python scripts/upload_data.py) "
+                "and that SUPABASE_SERVICE_ROLE_KEY is the service-role key of this project."
+            ) from None
         rows = check_csv(name, data)
         tmp = data_dir / f"{name}.csv.part"
         tmp.write_bytes(data)
