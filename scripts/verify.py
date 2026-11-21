@@ -1007,14 +1007,16 @@ def repeat_placeholder_stores(d, p, ctx):
     return len({row[2] for row in _bills_of_customer_id(d, p)})
 
 
-# --------------------------------------------------------------------------- no documented recipe
+@recipe("repeat_placeholder_days", ("customer_id",), (), fmt_whole)
+def repeat_placeholder_days(d, p, ctx):
+    return len({row[1] for row in _bills_of_customer_id(d, p)})
+
+
+# --------------------------------------------------------------------------- docs/CHECKS-baskets.md
 #
-# The "bigger baskets" lever writes 18 check kinds and there is no docs/CHECKS-baskets.md.
-# A kind without a document is a FAILURE here and stays one: these functions are NOT in
-# RECIPES and can never make a check pass. They hold the plainest reading of the alert's
-# own `definition` sentence and the check labels (scripts/README.md lists each reading), so
-# that the mismatch line can also say whether the figure is at least reproducible. When a
-# document exists, check each reading against it and move the function to @recipe.
+# The "bigger baskets" lever. Recipes as written in docs/CHECKS-baskets.md (product bills only,
+# carry bags left out, half-up rounding on exact fractions). PROVISIONAL below is kept for any
+# future kind that has no document yet: such a kind is still a FAILURE, never a pass.
 
 PROVISIONAL = {}
 
@@ -1058,57 +1060,57 @@ def _has(d, bills, category):
     return [b for b in bills if category in made[b]["cats"]]
 
 
-@provisional("window_days")
+@recipe("window_days", ("start", "end"), (), fmt_whole)
 def window_days(d, p, ctx):
     return len(days(p["start"], p["end"]))
 
 
-@provisional("product_bills")
+@recipe("product_bills", ("store_ids", "start", "end"), ("salesperson_ids",), fmt_whole)
 def product_bills(d, p, ctx):
     return len(_product_bills(d, p))
 
 
-@provisional("product_bills_per_week")
+@recipe("product_bills_per_week", ("store_ids", "start", "end"), ("salesperson_ids",), fmt_1dp)
 def product_bills_per_week(d, p, ctx):
     return rhu(Fraction(len(_product_bills(d, p)) * 7, len(days(p["start"], p["end"]))), 1)
 
 
-@provisional("category_bills")
+@recipe("category_bills", ("store_ids", "start", "end", "category"), ("salesperson_ids",), fmt_whole)
 def category_bills(d, p, ctx):
     return len(_has(d, _product_bills(d, p), p["category"]))
 
 
-@provisional("category_bills_per_week")
+@recipe("category_bills_per_week", ("store_ids", "start", "end", "category"), ("salesperson_ids",), fmt_1dp)
 def category_bills_per_week(d, p, ctx):
     return rhu(Fraction(len(_has(d, _product_bills(d, p), p["category"])) * 7, len(days(p["start"], p["end"]))), 1)
 
 
-@provisional("category_bill_share")
+@recipe("category_bill_share", ("store_ids", "start", "end", "category"), ("salesperson_ids",), fmt_percent1)
 def category_bill_share(d, p, ctx):
     bills = _product_bills(d, p)
     return _share(len(_has(d, bills, p["category"])), len(bills))
 
 
-@provisional("category_bill_share_z")
+@recipe("category_bill_share_z", ("store_ids", "start", "end", "category", "peer_salesperson_ids"), ("salesperson_ids",), fmt_2dp)
 def category_bill_share_z(d, p, ctx):
     own, others = _product_bills(d, p), _product_bills(d, p, people="peer_salesperson_ids")
     return _z(len(_has(d, own, p["category"])), len(own), len(_has(d, others, p["category"])), len(others))
 
 
-@provisional("attach_rate")
+@recipe("attach_rate", ("store_ids", "start", "end", "main_category", "addon_category"), ("salesperson_ids",), fmt_percent1)
 def attach_rate(d, p, ctx):
     main = _has(d, _product_bills(d, p), p["main_category"])
     return _share(len(_has(d, main, p["addon_category"])), len(main))
 
 
-@provisional("attach_rate_z")
+@recipe("attach_rate_z", ("store_ids", "start", "end", "base_start", "base_end", "main_category", "addon_category"), ("salesperson_ids",), fmt_2dp)
 def attach_rate_z(d, p, ctx):
     now = _has(d, _product_bills(d, p), p["main_category"])
     base = _has(d, _product_bills(d, p, p["base_start"], p["base_end"]), p["main_category"])
     return _z(len(_has(d, now, p["addon_category"])), len(now), len(_has(d, base, p["addon_category"])), len(base))
 
 
-@provisional("avg_addon_value")
+@recipe("avg_addon_value", ("store_ids", "start", "end", "main_category", "addon_category"), ("salesperson_ids",), fmt_rupees)
 def avg_addon_value(d, p, ctx):
     both = _has(d, _has(d, _product_bills(d, p), p["main_category"]), p["addon_category"])
     if not both:
@@ -1117,7 +1119,7 @@ def avg_addon_value(d, p, ctx):
     return rhu(sum(made[b]["cats"][p["addon_category"]] for b in both) / len(both), 2)
 
 
-@provisional("avg_bill_value_split")
+@recipe("avg_bill_value_split", ("store_ids", "start", "end", "category", "with_category"), ("salesperson_ids",), fmt_rupees)
 def avg_bill_value_split(d, p, ctx):
     made = d.baskets()
     bills = [b for b in _product_bills(d, p) if (p["category"] in made[b]["cats"]) == bool(p["with_category"])]
@@ -1126,7 +1128,7 @@ def avg_bill_value_split(d, p, ctx):
     return rhu(sum(made[b]["sale"] for b in bills) / len(bills), 2)
 
 
-@provisional("discount_rate")
+@recipe("discount_rate", ("store_ids", "start", "end"), ("salesperson_ids",), fmt_percent1)
 def discount_rate(d, p, ctx):
     made = d.baskets()
     bills = _product_bills(d, p)
@@ -1136,21 +1138,21 @@ def discount_rate(d, p, ctx):
     return rhu(1 - sum(made[b]["sale"] for b in bills) / at_mrp, 4)
 
 
-@provisional("discounted_bill_share")
+@recipe("discounted_bill_share", ("store_ids", "start", "end"), ("salesperson_ids",), fmt_percent1)
 def discounted_bill_share(d, p, ctx):
     made = d.baskets()
     bills = _product_bills(d, p)
     return _share(sum(made[b]["discounted"] for b in bills), len(bills))
 
 
-@provisional("discounted_bill_share_z")
+@recipe("discounted_bill_share_z", ("store_ids", "start", "end", "peer_salesperson_ids"), ("salesperson_ids",), fmt_2dp)
 def discounted_bill_share_z(d, p, ctx):
     made = d.baskets()
     own, others = _product_bills(d, p), _product_bills(d, p, people="peer_salesperson_ids")
     return _z(sum(made[b]["discounted"] for b in own), len(own), sum(made[b]["discounted"] for b in others), len(others))
 
 
-@provisional("mrp_sales_per_week")
+@recipe("mrp_sales_per_week", ("store_ids", "start", "end"), ("salesperson_ids",), fmt_rupees)
 def mrp_sales_per_week(d, p, ctx):
     made = d.baskets()
     return rhu(sum(made[b]["mrp"] for b in _product_bills(d, p)) * 7 / len(days(p["start"], p["end"])), 0)
@@ -1160,21 +1162,21 @@ def _tenths(ctx, check_id):        # a rate as displayed, in tenths of a percent
     return rhu(ctx.value_of(check_id) * 1000)
 
 
-@provisional("attach_rupees_weekly")
+@recipe("attach_rupees_weekly", ("benchmark_check_id", "current_check_id", "bills_per_week_check_id", "addon_value_check_id"), (), fmt_rupees, rupees_step=100)
 def attach_rupees_weekly(d, p, ctx):
     raw = ((_tenths(ctx, p["benchmark_check_id"]) - _tenths(ctx, p["current_check_id"]))
            * rhu(ctx.value_of(p["bills_per_week_check_id"]), 1) * rhu(ctx.value_of(p["addon_value_check_id"])) / 1000)
     return int(rhu(raw / 100) * 100)
 
 
-@provisional("discount_given_away_weekly")
+@recipe("discount_given_away_weekly", ("own_check_id", "norm_check_id", "mrp_sales_check_id"), (), fmt_rupees, rupees_step=100)
 def discount_given_away_weekly(d, p, ctx):
     raw = ((_tenths(ctx, p["own_check_id"]) - _tenths(ctx, p["norm_check_id"]))
            * rhu(ctx.value_of(p["mrp_sales_check_id"])) / 1000)
     return int(rhu(raw / 100) * 100)
 
 
-@provisional("category_rupees_weekly")
+@recipe("category_rupees_weekly", ("peer_check_id", "own_check_id", "bills_per_week_check_id", "with_check_id", "without_check_id"), (), fmt_rupees, rupees_step=100)
 def category_rupees_weekly(d, p, ctx):
     raw = ((_tenths(ctx, p["peer_check_id"]) - _tenths(ctx, p["own_check_id"]))
            * rhu(ctx.value_of(p["bills_per_week_check_id"]), 1)
@@ -1690,6 +1692,9 @@ def find_earlier_run(file, raised, explicit=None):
     return None
 
 
+REAL_MOVE = 2  # docs/CHECKS-followup.md section 3: a move is called at 2 standard errors (or deviations)
+
+
 def expected_moved(fu, slug, data, alert_fu, after_window):
     """`moved` from docs/CHECKS-followup.md sections 3.1 and 3.2, and why. Uses the values of
     the follow-up's own checks (each of which is recomputed from the CSVs on its own)."""
@@ -1711,11 +1716,17 @@ def expected_moved(fu, slug, data, alert_fu, after_window):
     if kind == "conversion":
         if "after_numerator" not in slug or "after_denominator" not in slug:
             raise CannotCompute("after_numerator and after_denominator checks are needed for conversion")
+        if "before_numerator" not in slug or "before_denominator" not in slug:
+            raise CannotCompute("before_numerator and before_denominator checks are needed for conversion")
         b = as_fraction(slug["after_numerator"]["value"])
         n = as_fraction(slug["after_denominator"]["value"])
-        if n <= 0:
+        b0 = as_fraction(slug["before_numerator"]["value"])
+        n0 = as_fraction(slug["before_denominator"]["value"])
+        if n <= 0 or n0 <= 0:
             return "not_measurable", "no walk-ins in the week"
-        spread_sq, name = (b / n) * (1 - b / n) / n, "standard error"
+        # REAL_MOVE standard errors of (after - before): the two errors add in squares
+        se_sq = (b / n) * (1 - b / n) / n + (b0 / n0) * (1 - b0 / n0) / n0
+        spread_sq, name = REAL_MOVE * REAL_MOVE * se_sq, f"{REAL_MOVE} standard errors of the difference"
     else:
         weeks = [as_fraction(slug[f"earlier_week_{k}"]["value"]) for k in range(1, EARLIER_WEEKS + 1)
                  if f"earlier_week_{k}" in slug
@@ -1723,7 +1734,10 @@ def expected_moved(fu, slug, data, alert_fu, after_window):
         if len(weeks) < MIN_EARLIER_WEEKS:
             return "not_measurable", f"only {len(weeks)} earlier weeks have a value"
         mean = sum(weeks) / len(weeks)
-        spread_sq, name = sum((w - mean) ** 2 for w in weeks) / (len(weeks) - 1), "noise of the earlier weeks"
+        var = sum((w - mean) ** 2 for w in weeks) / (len(weeks) - 1)
+        if var == 0:
+            return "not_measurable", "the same seven-day figure in every earlier week"
+        spread_sq, name = REAL_MOVE * REAL_MOVE * var, f"{REAL_MOVE} standard deviations of the earlier weeks"
     why = f"change {float(change):+.4f} against {name} {math.sqrt(float(spread_sq)):.4f}"
     if change > 0 and change * change >= spread_sq:
         return "improved", why

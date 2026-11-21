@@ -294,8 +294,9 @@ def earlier_run():
 
 
 def with_follow_up(output):
-    """Week 2 against the alert of 11 Oct. 6 bills from 60 walk-ins = 10.0%; one invalid day in 7
-    (14%) is within the 20% limit. se = sqrt(0.1 × 0.9 / 60) = 0.0387; change −0.1 -> worse."""
+    """Week 2 against the alert of 11 Oct. Before: 14 bills from 70 walk-ins = 20.0%. After: 6 bills
+    from 60 walk-ins = 10.0%; one invalid day in 7 (14%) is within the 20% limit.
+    noise = 2 × sqrt(0.2 × 0.8 / 70 + 0.1 × 0.9 / 60) = 0.1231; change −0.1 is inside it -> no_change."""
     alert = earlier_run()["area_managers"][0]["alerts"][0]
     f = f"followup:{alert['alert_id']}"
     week1 = alert["follow_up"]["params"]
@@ -305,9 +306,9 @@ def with_follow_up(output):
         "headline": alert["headline"], "action_text": alert["action"]["text"],
         "raised_as_of": "2026-10-11", "measured_as_of": AS_OF, "metric_label": "Conversion at S-01",
         "before": 0.2, "after": 0.1, "target": 0.2,
-        "before_display": "20.0%", "after_display": "10.0%", "target_display": "20.0%", "moved": "worse",
+        "before_display": "20.0%", "after_display": "10.0%", "target_display": "20.0%", "moved": "no_change",
         "verdict": "Conversion at S-01 was 20.0% when raised and 10.0% in the 7 days after (6 bills from 60 "
-                   "walk-ins); the target is 20.0%. Worse than when raised, though one week is a small sample.",
+                   "walk-ins); the target is 20.0%. No real change: the difference is within what one week moves by chance.",
         "checks": [
             _check(f"{f}:before", "conversion", week1, 0.2, "20.0%"),
             _check(f"{f}:target", "conversion", {**week1, "day_type": "busy"}, 0.2, "20.0%"),
@@ -315,6 +316,8 @@ def with_follow_up(output):
             _check(f"{f}:after", "conversion", after, 0.1, "10.0%"),
             _check(f"{f}:after_numerator", "bills_count", after, 6, "6"),
             _check(f"{f}:after_denominator", "footfall_sum", after, 60, "60"),
+            _check(f"{f}:before_numerator", "bills_count", week1, 14, "14"),
+            _check(f"{f}:before_denominator", "footfall_sum", week1, 70, "70"),
         ]}]
     return output
 
@@ -384,16 +387,16 @@ def test_unknown_kind_is_a_failure_not_a_skip(tmp_path, csv_pack, capsys):
     assert "id=mystery kind=items_per_bill_from_nowhere" in text and "UNKNOWN KIND" in text
 
 
-def test_a_kind_no_document_describes_fails_even_when_it_can_be_reproduced(tmp_path, csv_pack, capsys):
-    """The basket kinds have no docs/CHECKS page. The script can reproduce them under its own
-    reading and says so, but a figure without a documented recipe never passes."""
+def test_a_documented_basket_kind_passes_and_catches_a_wrong_value(tmp_path, csv_pack, capsys):
+    """The basket kinds are documented in docs/CHECKS-baskets.md: right values pass, wrong ones fail."""
     output = good_output()
     alert_of(output)["checks"].append(
         _check("extra:window_days", "window_days", {"start": "2026-10-12", "end": AS_OF}, 7, "7"))
     code, text = run_verify(tmp_path, csv_pack, output, capsys)
-    assert code == 1
-    assert "id=extra:window_days kind=window_days" in text
-    assert "UNKNOWN KIND: no document describes it" in text and "gives 7, the same" in text
+    assert code == 0, text
+    check_of(output, "extra:window_days")["value"], check_of(output, "extra:window_days")["display"] = 8, "8"
+    code, text = run_verify(tmp_path, csv_pack, output, capsys)
+    assert code == 1 and "id=extra:window_days kind=window_days" in text and "expected from CSV: 7" in text
 
 
 def test_undocumented_param_fails(tmp_path, csv_pack, capsys):
@@ -594,7 +597,7 @@ def test_repeat_rupees_must_use_the_checks_beside_it(tmp_path, csv_pack, capsys)
 def test_follow_up_worked_by_hand_passes(tmp_path, csv_pack, capsys):
     code, text = run_with_earlier(tmp_path, csv_pack, with_follow_up(good_output()), capsys)
     assert code == 0, text
-    assert "44 checks recomputed, 0 mismatch" in text
+    assert "46 checks recomputed, 0 mismatch" in text
 
 
 def test_follow_up_without_the_earlier_run_fails(tmp_path, csv_pack, capsys):
@@ -610,10 +613,11 @@ def test_an_alert_of_last_week_with_no_follow_up_fails(tmp_path, csv_pack, capsy
 def test_follow_up_verdict_must_follow_the_rule(tmp_path, csv_pack, capsys):
     output = with_follow_up(good_output())
     fu = output["follow_ups"][0]
-    fu["moved"] = "no_change"
-    fu["verdict"] = fu["verdict"].replace("Worse than when raised, though one week is a small sample.", "No real change.")
+    fu["moved"] = "worse"                    # a 10-point fall, but inside 2 standard errors of the difference
+    fu["verdict"] = fu["verdict"].replace("No real change: the difference is within what one week moves by chance.",
+                                          "Worse than when raised.")
     code, text = run_with_earlier(tmp_path, csv_pack, output, capsys)
-    assert code == 1 and "[follow-up verdict follows the rule]" in text and "expected from CSV: worse" in text
+    assert code == 1 and "[follow-up verdict follows the rule]" in text and "expected from CSV: no_change" in text
 
 
 def test_follow_up_after_must_be_the_seven_days_after_the_alert(tmp_path, csv_pack, capsys):

@@ -106,49 +106,10 @@ that is not the value of a check, a check repeated with identical content.
 
 ### Kinds that no document describes
 
-The "bigger baskets" lever writes 18 kinds: `attach_rate`, `attach_rate_z`,
-`attach_rupees_weekly`, `avg_addon_value`, `avg_bill_value_split`, `category_bill_share`,
-`category_bill_share_z`, `category_bills`, `category_bills_per_week`,
-`category_rupees_weekly`, `discount_given_away_weekly`, `discount_rate`,
-`discounted_bill_share`, `discounted_bill_share_z`, `mrp_sales_per_week`, `product_bills`,
-`product_bills_per_week` and `window_days`. There is no `docs/CHECKS-baskets.md`, so every
-one of these checks **fails** as `UNKNOWN KIND`, and so does the alert's rupee figure and
-its follow-up baseline.
-
-So that the failure also says whether the figure is reproducible, the script tries its
-own reading of each kind. The readings were taken from the alert's `definition` sentence
-and the check labels, not from the engine, and they live apart in `PROVISIONAL`, which
-can never make a check pass. The mismatch line reads
-`UNKNOWN KIND: no document describes it; the undocumented reading in scripts/README.md gives 0.1444, the same`.
-
-The readings, for whoever writes the document:
-
-- **Product bill.** A bill made at one of `store_ids`, dated `start..end`, by one of
-  `salesperson_ids` when given, with at least one line whose SKU has `is_packaging` not 1.
-  Only those lines are used. The valid store-day rule plays no part.
-- `window_days`: days from `start` to `end`, both included.
-- `product_bills`: number of product bills. `product_bills_per_week`: × 7 ÷ `window_days`, 1 decimal.
-- `category_bills`: product bills with a line of `category`. `category_bills_per_week`: × 7 ÷ `window_days`, 1 decimal.
-- `category_bill_share`: `category_bills` ÷ `product_bills`, 4 decimals.
-- `attach_rate`: of the product bills with a `main_category` line, the share that also have an `addon_category` line, 4 decimals.
-- `avg_addon_value`: over the bills with both, the sum of qty × selling price of their `addon_category` lines ÷ the number of those bills, 2 decimals.
-- `avg_bill_value_split`: mean value (qty × selling price) of the product bills that have (`with_category` true) or do not have a line of `category`, 2 decimals.
-- `discount_rate`: 1 − sum(qty × selling price) ÷ sum(qty × MRP), 4 decimals.
-- `discounted_bill_share`: share of product bills with a line sold under its MRP, 4 decimals.
-- `mrp_sales_per_week`: sum(qty × MRP) × 7 ÷ `window_days`, whole rupees.
-- `attach_rate_z`, `category_bill_share_z`, `discounted_bill_share_z`: the two-proportion z of
-  CHECKS.md section 2 on the two counts. `attach_rate_z` compares `start..end` with
-  `base_start..base_end`; the other two compare `salesperson_ids` with `peer_salesperson_ids`.
-- `attach_rupees_weekly`: (benchmark − current, in tenths of a point as displayed) × bills a week to 1 decimal × add-on value in whole rupees, to the nearest ₹100.
-- `discount_given_away_weekly`: (own − norm) × MRP sales a week, the same way.
-- `category_rupees_weekly`: (peer − own) × bills a week × (average bill with − average bill without), the same way.
-
-On the runs of 24 Oct and 31 Oct 2026 every basket check is reproduced by these readings.
-That shows the figures can be recomputed. It does not show that these are the recipes the
-lever means, and the checks stay failed until a document says so. When
-`docs/CHECKS-baskets.md` exists, compare each reading with it and move the function from
-`@provisional` to `@recipe`, adding its params, its display format and, for the three
-rupee kinds, `rupees_step=100`.
+Every kind the engine writes today has a recipe: the "bigger baskets" kinds are in
+`docs/CHECKS-baskets.md`. A kind with no recipe in `verify.py` is a failure (`UNKNOWN KIND`),
+never a skip. `PROVISIONAL` stays available for a future kind that is reproducible but not yet
+documented: it can say "reproducible" in the failure line, but it can never make a check pass.
 
 ### Adding a check kind
 

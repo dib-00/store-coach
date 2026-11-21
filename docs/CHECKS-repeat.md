@@ -164,6 +164,7 @@ On a role-model alert `fair_rate` holds the role model's rate and `own_rate` the
 |---|---|---|
 | `repeat_placeholder_bills` | `customer_id` | Number of bills (up to as-of) carrying that customer id. |
 | `repeat_placeholder_stores` | `customer_id` | Number of different `store_id` on those bills. |
+| `repeat_placeholder_days` | `customer_id` | Number of different `bill_date` on those bills. |
 
 At as-of 2026-10-31: C99999999 has 1,833 bills at 19 stores.
 
