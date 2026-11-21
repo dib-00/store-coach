@@ -33,23 +33,24 @@ changing what the site shows.
 One week in one store is a small sample. A store with 800 walk-ins and 11% conversion
 moves by about one point from week to week with nothing having changed. So:
 
-- **improved** or **worse** only when the change from before to after is at least one
-  standard error of the 7-day figure, `sqrt(p × (1 − p) / walk-ins)` with `p` the
-  7-day conversion;
+- **improved** or **worse** only when the change from before to after is at least two
+  standard errors of the difference, `2 × sqrt(se_before² + se_after²)`, each
+  `sqrt(p × (1 − p) / walk-ins)` for its own window;
 - **no change** otherwise;
 - **not measurable** when the week cannot be measured: for conversion, when more than
   20% of the store-days in the week have unusable footfall (the rule that also stops an
   alert) or there is nothing to count. The follow-up then shows no "after" figure
   rather than a guess.
 
-For a measure that is not a rate on a count (the other levers' measures), the noise is
-the standard deviation of the same 7-day figure over the 8 weeks before the alert, and
-at least 4 of those weeks must have a value.
+For a measure that is not a rate on a count (the other levers' measures), the bar is two
+standard deviations of the same 7-day figure over the 8 weeks before the alert, and at
+least 4 of those weeks must have a value. When the figure was the same in every earlier
+week (usually nought), one bill would look like a jump, so there is no verdict.
 
-One standard error is a low bar on purpose: about one week in three will clear it by
-chance alone. That is why every verdict that reports a move also says that one week is
-a small sample, and why "before" (four weeks or more) and "after" (one week) are both
-printed with the bills and walk-ins behind the week.
+Why two standard errors and not one: before and after are separate samples, so both
+errors count, and one standard error of the week alone would call a move on about one
+quiet week in three. Printing "before" (four weeks or more) and "after" (one week) with
+the bills and walk-ins behind them lets a reader judge the size for themselves.
 
 ### What the verdict may and may not say
 
@@ -65,12 +66,12 @@ stores did on their own:
 
 | Alert raised 24 Oct | Before | 7 days after | Target | Verdict |
 | --- | --- | --- | --- | --- |
-| LKO-02, salesperson left | 9.8% | 11.4% (92 bills from 805 walk-ins) | 12.3% | improved, short of target |
-| BLR-03, missed shifts | 11.1% | 9.4% (74 bills from 784 walk-ins) | 13.2% | worse |
+| LKO-02, salesperson left | 9.8% | 11.4% (92 bills from 805 walk-ins) | 12.3% | no real change: up, but within two standard errors |
+| BLR-03, missed shifts | 11.1% | 9.4% (74 bills from 784 walk-ins) | 13.2% | no real change: down, but within two standard errors |
 
-Both are reported as they are. "Worse" for BLR-03 is a legitimate outcome: the two
-salespeople were still off the floor that weekend, and the 31 Oct run raises the same
-alert again with a larger rupee figure.
+Both are reported as they are. The roster line of the BLR-03 follow-up states whether the
+two salespeople were on the floor on the weekend days of that week, as a fact, without
+crediting or blaming anything for the number. The 31 Oct run raises the same alert again.
 
 ## 2. Cards for the "more bills" lever
 

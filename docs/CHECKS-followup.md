@@ -56,26 +56,32 @@ When the week cannot be measured, `after` is `null` and `after_display` is
 ### 3.1 `moved`, for conversion (a rate on a count)
 
 ```
-b = after_numerator, n = after_denominator          (bills and walk-ins in the 7 days)
-se = sqrt( (b/n) × (1 − b/n) / n )                  (standard error of the 7-day figure)
+b  = after_numerator,  n  = after_denominator       (bills and walk-ins in the 7 days after)
+b0 = before_numerator, n0 = before_denominator      (bills and walk-ins behind the figure when raised;
+                                                     same params as the alert's follow_up)
+se_after  = sqrt( (b/n)   × (1 − b/n)   / n  )
+se_before = sqrt( (b0/n0) × (1 − b0/n0) / n0 )
+noise  = 2 × sqrt( se_before² + se_after² )         (2 standard errors of after − before)
 change = after − before                             (before − after when higher_is_better is false)
 
-improved    if change > 0 and  change >= se
-worse       if change < 0 and −change >= se
+improved    if change > 0 and  change >= noise
+worse       if change < 0 and −change >= noise
 no_change   otherwise
 ```
 
-`after` and `before` are the check values (fractions to 4 decimals). `se` is not rounded.
+`after` and `before` are the check values (fractions to 4 decimals). `noise` is not rounded.
+Why 2 and not 1: before and after are separate samples, so their errors add, and one standard
+error of the week alone would call a move on about one quiet week in three.
 
 `not_measurable`, for conversion, when for any store of the alert the window
 `raised + 1 day .. as_of` has no valid store-day or more than 20% of its store-days are
 invalid (the same rule that stops an alert, CHECKS.md section 1), or when the recipe
 gives no value.
 
-Worked, 31 Oct 2026, LKO-02: before 0.0975, 92 bills from 805 walk-ins, after 0.1143,
-se = sqrt(0.1143 × 0.8857 / 805) = 0.0112, change = +0.0168, so `improved`.
-BLR-03: before 0.1111, 74 bills from 784 walk-ins, after 0.0944, se = 0.0104,
-change = −0.0167, so `worse`.
+Worked, 31 Oct 2026, LKO-02: change = +0.0168 (0.0975 to 0.1143), which is under 2 standard
+errors of the difference, so `no_change`. BLR-03: change = −0.0167 (0.1111 to 0.0944), also
+under the bar, so `no_change`. One week of a small store's walk-ins rarely settles anything,
+and the verdict says so.
 
 ### 3.2 `moved`, for any other measure
 
@@ -84,11 +90,13 @@ There is no counting rule to give a standard error, so the noise is how much the
 
 ```
 w1..w8 = the earlier_week checks that have a value
-noise  = sample standard deviation of those values (divide by count − 1)
+noise  = 2 × sample standard deviation of those values (divide by count − 1)
 ```
 
-Then the same three lines as in 3.1 with `noise` in place of `se`. With fewer than 4
-earlier weeks the result is `not_measurable` and the verdict says why.
+Then the same three lines as in 3.1. With fewer than 4 earlier weeks the result is
+`not_measurable`. When every earlier week has the same value (usually nought, as for a
+salesperson's share of returning customers), the standard deviation is 0, a single bill would
+look like a jump, and the result is also `not_measurable`. The verdict says why in each case.
 
 ### 3.3 The verdict
 
