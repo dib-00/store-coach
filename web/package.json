@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/fetch-latest.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test lib/*.test.ts"
+    "test": "node --test lib/*.test.ts scripts/*.test.mjs"
   },
   "dependencies": {
     "next": "16.4.6",
